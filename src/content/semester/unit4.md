@@ -1,24 +1,24 @@
 ---
-title: Unit Four - Animations and modals
-summary: This unit will introduce CSS animations and techniques for building modals in your pages.
-tags: [forms,
-		 	animations,
-			modals,
-			dynamic menus
+title: Unit Four - Final Project
+summary: This unit will allow the students to design and build a fullstack project of their choosing with a team.
+tags: [planning,
+		 	capstone
 			]
 ---
 
 ## Prepare
 
-- [Week 7 Exploration](../../prepare/unit4a)
-- [Week 8 Exploration](../../prepare/unit4b)
+- [Week 9 Exploration](../../prepare/unit4a)
+- [Week 10 Exploration](../../prepare/unit4b)
+- [Week 11 Exploration](../../prepare/unit4c)
 
 ## Ponder
 
-- [Practice with CSS Animations](https://byui-cit.github.io/learning-modules/modules/css/animations/ponder1/)
-- [Build an HTML modal](https://byui-cit.github.io/learning-modules/modules/css/modals/ponder1/)
+- [Authentication](https://byui-cit.github.io/learning-modules/modules/css/animations/ponder1/)
+- [Testing](https://byui-cit.github.io/learning-modules/modules/css/modals/ponder1/)
+- [UX]()
 
 ## Prove
 
-- [NPS 5](../../prove/nps-5)
-- [Team 3](../../prove/team-3)
+- [Project Proposal](../../prove/project-proposal)
+- [Project Final](../../prove/project-final)

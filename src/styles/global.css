@@ -3,7 +3,9 @@
   https://github.com/HermanMartinus/bearblog/blob/297026a877bc2ab2b3bdfbd6b9f7961c350917dd/templates/styles/blog/default.css
   License MIT: https://github.com/HermanMartinus/bearblog/blob/master/LICENSE.md
  */
-
+@view-transition {
+  navigation: auto;
+}
 :root {
   --global-bg: #ffffff;
   --accent: #2337ff;
@@ -31,7 +33,7 @@
 
 @font-face {
   font-family: "Atkinson";
-  src: url("/wdd231-course/fonts/atkinson-regular.woff") format("woff");
+  src: url("/wdd360-course/fonts/atkinson-regular.woff") format("woff");
   font-weight: 400;
   font-style: normal;
   font-display: swap;
@@ -39,7 +41,7 @@
 
 @font-face {
   font-family: "Atkinson";
-  src: url("/wdd231-course/fonts/atkinson-bold.woff") format("woff");
+  src: url("/wdd360-course/fonts/atkinson-bold.woff") format("woff");
   font-weight: 700;
   font-style: normal;
   font-display: swap;
@@ -153,7 +155,7 @@ pre {
   border-radius: 8px;
 }
 
-pre>code {
+pre > code {
   all: unset;
 }
 
@@ -161,7 +163,7 @@ blockquote {
   border-left: 4px solid var(--accent);
   padding: 0 0 0 20px;
   margin: 0px;
-  font-size: 1.333em;
+  font-size: 1.1em;
 }
 
 hr {

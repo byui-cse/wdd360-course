@@ -1,10 +1,10 @@
 ---
-title: Unit Three - Accessibility and Compatibility
-summary: This unit will teach the importance of making our pages accessible along with methods to do so. We will also introduce the concept of Progressive Enhancement.
+title: Unit Three - SleepOutside
+summary: This unit will focus on finishing the Frontend and Backend of the SleepOutside retail web application. It will introduce a frontend framework - Svelte, and a component based approach to the design of our application.
 tags: [
-		 	accessibility,
-			progressive enhancement,
-			caniuse
+		 	frontend,
+			svelte
+			
 			]
 ---
 
@@ -12,13 +12,16 @@ tags: [
 
 - [Week 5 Exploration](../../prepare/unit3a)
 - [Week 6 Exploration](../../prepare/unit3b)
+- [Week 7 Exploration](../../prepare/unit3c)
 
 ## Ponder
 
-- [localStorage Practice](https://byui-cit.github.io/learning-modules/modules/js/localStorage/ponder1)
-- [Progressive Enhancement](https://byui-cit.github.io/learning-modules/modules/design/progressive-enhancement/ponder1/)
+- [Svelte practice](https://byui-cit.github.io/learning-modules/modules/js/localStorage/ponder1)
+- [SleepOutside](https://byui-cit.github.io/learning-modules/modules/design/progressive-enhancement/ponder1/)
 
 ## Prove
 
-- [NPS 4](../../prove/nps-4)
-- [Team 2](../../prove/team-2)
+- [Team 5](../../prove/team-5)
+- [Team 6](../../prove/team-6)
+- [Team 7](../../prove/team-7)
+- [Team 8](../../prove/team-8)

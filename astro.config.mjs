@@ -6,6 +6,6 @@ import sitemap from "@astrojs/sitemap";
 // https://astro.build/config
 export default defineConfig({
   site: "https://byui-cse.github.io",
-  base: "/wdd260-course",
+  base: "/wdd360-course",
   integrations: [mdx(), sitemap()]
 });

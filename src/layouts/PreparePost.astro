@@ -5,14 +5,14 @@ import Header from "../components/Header.astro";
 import Footer from "../components/Footer.astro";
 import FormattedDate from "../components/FormattedDate.astro";
 
-type Props = CollectionEntry<"prove">["data"];
+type Props = CollectionEntry<"prepare">["data"];
 
 const { title, description, time } = Astro.props;
 ---
 
 <html lang="en">
   <head>
-    <BaseHead title={title} description="Prove activity for WDD 231 " />
+    <BaseHead title={title} description="Prepare activity for WDD 360 " />
     <style>
       main {
         width: calc(100% - 2em);
@@ -63,41 +63,40 @@ const { title, description, time } = Astro.props;
         <h2>Activity Instructions</h2>
         <p>Estimated Time: {time}</p>
         <hr />
+
         <p>
-          Please explore the following topics in your preferred method. You
-          could use the help of an AI assistant, or you could use other
-          resources online such as Stack Overflow, MDN, or Youtube.
-          <div class="callout">
-            <p>
-              For each topic you have been given sample question(s) to get you
-              started. However you decide to do your research, at the end of
-              each week you should be comfortable answering the questions or
-              talking about each topic. As we move further into the semester you
-              will notice that the *topics* will turn more into *tasks*. "How
-              can I use this thing to accomplish the task I have before me?"
-              should be the question you are asking yourself.
-            </p>
-            <p>
-              Whether using StackOverflow, Youtube, or an AI assistant, if you
-              ask about accomplishing a task and you get code back you should
-              always review the code line by line to understand what it is
-              doing, and how it works. Then test that code. Don't just trust
-              that it will work correctly.
-            </p>
-          </div>
-          <p>
-            Keep digging until you feel like you understand the topics and how
-            to apply them. Sometimes this might not take long, other times it
-            could take a while. Keep notes as you do your research. Submit these
-            notes in ILearn.
-          </p>
-          <div>
-            <h3>Topics:</h3>
-            <slot />
-          </div>
+          As you begin with this first preparation activity for the course, it
+          is crucial that you understand the importance of preparation. Do not
+          treat these activities as a task to check off in as little time as
+          possible. Instead always treat them as opportunities to learn.
+        </p>
+
+        <p>
+          Throughout the semester your instructor will assume that you know and
+          understand the concepts from the Prepare activities...<em
+            >unless you tell them differently!</em
+          >
+        </p>
+
+        <p>
+          The other activities and discussions will be designed to move beyond
+          the readings...give examples and use cases, talk about potential
+          problems, etc. Because of this, it is extremely important that you ask
+          for clarification on parts of the readings that didn't make sense.
+          Your instructor is happy to talk about them...but will assume
+          everything is good unless you ask.
+        </p>
+        <div>
+          <slot />
+        </div>
+        <h2>Submission</h2>
+
+        <p>
+          Submit your notes from the readings, including any questions you have
+          about the material.
         </p>
       </article>
-      <Footer />
     </main>
+    <Footer />
   </body>
 </html>

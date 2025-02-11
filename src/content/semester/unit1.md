@@ -1,11 +1,11 @@
 ---
-title: Unit One - Introduction
-summary: This unit will review concepts in HTML, CSS, and Javascript. It will also instruct how to setup our environment for the course.
+title: Unit One - Introduction and Setup
+summary: This unit will introduce the course. Teams will be formed and time will be spent discussing strategies for being successful in teams. We will also review using Javascript for client and server side applications.
 tags: [
-	HTML basics,
-	CSS basics,
-	JS Variables,
-	DOM basics
+	Teamwork,
+	Git,
+	Project Management,
+	Review
 ]
 ---
 
@@ -16,10 +16,14 @@ tags: [
 
 ## Ponder
 
-- [Course Setup](../../prove/setup/)
-- [Practice with JSON](https://byui-cit.github.io/learning-modules/modules/js/json/ponder1/)
+- [Course Setup](../../resources/course-setup)
+- [Teamwork](../../ponder/team-building)
+- [Javascript Review](../../ponder/js-review)
+- [Javascript Node Review](../../ponder/js-backend-review)
+- [Typescript Introduction](../../ponder/ts-intro)
 
 ## Prove
 
-- [NPS 1](../../prove/nps-1)
-- [NPS 2](../../prove/nps-2)
+- [Team 1](../../prove/team-1)
+- [First Trello Card](../../ponder/first-trello-card)
+- [Team 2](../../prove/team-2)

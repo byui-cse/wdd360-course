@@ -1,0 +1,63 @@
+---
+title: Complete a Trello card
+description: This activity will assign you your first individual task on the SleepOutside site.
+time: 1 hours
+---
+import Details from '../../components/Details.astro'
+
+## Introduction
+Each team should have made a copy of this [Trello board](https://trello.com/b/LO93bmJy/sleepoutside). This is a shared board that you will all be working from over the semester.
+
+There are some tasks marked "Team" and others that are not. Each week the team should complete the appropriate team activity together. The goal is then to complete one additional card per team member per week. These should be done individually as much as possible, but remember that you have a team to help you if you get stuck on a particular task.
+
+In order to demonstrate how this should work it is recommended that each member of the team complete the same card for this first time. **After this week each member should complete different cards**.
+
+Begin with the "Add item to cart broken" task. This is largely a debugging and troubleshooting task, but it will help you to become familiar with the code we were given.
+
+## **01** Getting Started
+
+Visit the team's copy of the Trello board for the project. Add yourself to the "Add item to cart broken" task...then move it to "Doing" (if the card is already in "Doing" then just add yourself). Read the details of the card.
+
+Open up the project that you and your team should have setup in the Team Activity 1. Most of the work you will be doing over the first half of the course will be in this shared repository. Make sure to `pull` any changes from GitHub before proceeding. Next create a new branch called `initials--add cart broken`. So if the name name were John Doe the branch should be called `jd--add cart broken`
+
+## **02** Inspect
+
+Spend some time looking through the code. Start the development environment up (`npm run start`). Try adding an item to the cart. Notice that nothing seems to happen. Open the browser developer tools and check there.
+
+>The code stores the cart contents inside localStorage. This is a place in the browser where a website can keep things. LocalStorage works like cookies, in that it will persist until a user clears their browser cache, but you can store more information there. 
+>To see what is currently stored in your browser's localStorage go to the Application tab if you are in Chrome dev tools. Then on the side select "Local Storage->http://127.0.0.1". Notice there should be something there...you can clear out the contents of the storage from here as well.
+
+Try adding another item to the cart. Note what happens in localStorage.
+
+## **03** Debug
+
+Debug the code to figure out what is wrong and fix it.
+
+<Details summary="Hints">
+- Pay careful attention to the error in the console, but be aware that where the error is caught is not always where the problem is.
+- Remember that you can set breakpoints to stop your code and inspect it. Do this. (Sources tab, open a JS file. Click on the line number where you want the breakpoint.) It is also a good way to figure out how everything is put together.
+- As you poke around you will hopefully find the function `addToCart`. Pay attention to what it is doing. What does `setLocalStorage` do?
+   
+</Details>
+
+## **04** Make a pull request.
+
+    After you have completed the card and have things working, you should commit and push your changes (don't forget to lint and format your code before committing!), then submit a pull request for this branch.
+
+    Normally your pull request would get reviewed by another member of the team and merged back into main, in this case however we have more than one branch that has solved the same problem. We only want to merge **ONE** of those branches back into main. Discuss with your team which branch you want to keep and have one of the team merge that pull request. The other requests can be closed without merging. Finally someone should move the Trello card to "Done".
+
+    From here on you should follow this process with each of the Trello tasks you complete:
+
+    1.  Choose a Trello card, assign yourself to it, and move to "Doing"
+    2.  Make a branch
+    3.  Complete the work
+    4.  Lint and format
+    5.  Commit and push
+    6.  Move the Trello card to "Done"
+    7.  Make a pull request for your branch
+    8.  Let your group know there is a pull request waiting
+    9.  Another team member should review the pull request in GitHub and, if everything looks good, Merge the request. I would also recommend deleting the old branch as part of that process as well.
+
+## **05** Submit
+
+When you have completed the task, submit a link to your branch in Github to ILearn. Also post a response to this prompt: "What was the problem you found? How did you fix it?"

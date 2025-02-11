@@ -5,7 +5,33 @@ time: 1 hour
 ---
 
 ## Requirements
+To begin do the following:
 
+1. Create a new node project (pnpm init)
+2. Install express and nodemon with npm or pnpm. (pnpm i express nodemon)
+3. Create a file to serve as our application entrypoint. (server.js)
+4. Setup some scripts to be able to easily run our application with nodemon. (remember to add "type": "module" as well so we can use ESModules)
+5. Using express start up a web server listening on port 3000
+6. Create a route to the webroot (/) that just returns a simple message.
+7. Run your server and test your route.
+
+import Details from '../../components/Details.astro'
+
+<Details summary="server.js">
+```javascript
+import express from "express";
+
+const app = express();
+
+app.get("/", (req, res) => {
+  res.send("Hello World!");
+});
+
+app.listen(3000, () => {
+  console.log("Server is running on port 3000");
+});
+```
+</Details>
 This project will be completed in a team of 2 students. After forming your team you will be responsible to plan and complete a web application as a showcase that demonstrates your mastery of the topics taught during this course. Your web application can take many different forms, but there is a list of requirements that each app must include:
 
 - At least one detailed, validated form

@@ -1,4 +1,4 @@
-# Course Content for BYUI WDD 231 Frontend Development I
+# Course Content for BYUI WDD 360 Full Stack Foundations
 
 ## Credit
 

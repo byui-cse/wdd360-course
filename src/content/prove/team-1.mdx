@@ -1,78 +1,141 @@
 ---
-title: Team Project - part 1
-description: This activity will introduce the Team project that we will work on over the rest of the semester.
+title: SleepOutside Team 1
+description: This activity will introduce the Sleepoutside Team project that we will work on over much of the semester.
 time: 2 hours
 ---
 
-## Introduction
 
-This project will be completed in a team of 2 students. After forming your team you will be responsible to plan and complete a web application as a showcase that demonstrates your mastery of the topics taught during this course. Your web application can take many different forms, but there is a list of requirements that each app must include:
+## Overview
 
-- At least one detailed, validated form
-- Local storage for persistence
-- Fetching data from an API or json file.
-- Drop-down menu
-- CSS Animation
-- Responsive design
-- Good user experience (UX) and accessibility
-- URL parameters (data that is passed from page to page in an app through the URL, for example https://example.com/page2.html?id=34 Send the `id` of `34` to the code running at `page2.html`)
-- Use of modules for organization
+This activity will aid you in getting the project and environment setup for your team. It will introduce a NodeJS based workflow and development/build tools.
 
-## **01** Meet your teammate
+## Instructions
 
-After forming your team, spend some time learning a little about each other. Here is a list of questions to get you started:
+Complete the following assignment as a team. Designate one team member as the "main driver" and collaborate on their copy of the code. Normally the driver should be the only one entering code, the rest of the team should direct the driver and tell them what to write. This week will be an exception to that though in a couple of spots. Everyone on the team should be actively engaged in writing the code and contributing to the solution. Each week let someone else be the "main driver" of the coding.
 
-- What is your name?
-- Where are you from?
-- What are your interests?
-- What is your favorite programming language?
-- What do you hope to get out of this course?
-- What has your experience with teamwork been in the past?
-- What are your strengths and weaknesses?
-- What can we do to make this team work well?
-- What is the best way to communicate with you?
-- What are your concerns about this project?
+It will be very helpful if you have completed the Github course: [Introduction to Github](https://github.com/skills/introduction-to-github) before you do this.
 
-## **02** Brainstorm
+If your group is ready to start the activity and you have not had a chance to complete the course above...you can quickly review this [shorter GitHub guide](https://guides.github.com/activities/hello-world/) or this [guide specifically about using git with VS Code](https://code.visualstudio.com/docs/editor/versioncontrol) (Just remember to go back and do the other...it goes into much more detail).
 
-Make a list of at least 15 ideas for a web application. The sky is the limit as you make this list. Put anything that comes to mind that sounds interesting. Feel free to leverage generative AI if you are struggling to come up with ideas.
+## Core Requirements
 
-Once you have the initial list it is time to narrow it down. As you review your list keep the following in mind:
+### **01** Getting Started
+  *   Each member of the team should have already completed the [course setup](../resources/course-setup/) activity. Go and do that now if you have not.
+    *   The driver should visit the Team's copy of the project Trello board and add each team member to the "Setup project for all team members" task. Then move it to "Doing".
+    *   Make sure that you are familiar with how to use the command prompt for your operating system. Here are some quickstarts for the [command line for Mac](https://byui-cit.github.io/learning-modules/modules/general/cli-basics/prepare1/) and the [command line for Windows](https://byui-cit.github.io/learning-modules/modules/general/cli-basics/prepare1/) if you need a review.
+    *   The driver for this week should then log into GitHub, and visit this [repository](https://github.com/matkat99/sleepoutside-v3) for the project. Click on the "Use this template" button to create a copy of the base project code in a new repository then give the new repo a name.
+    *   The driver should then goto Settings->Manage Access and add the rest of the team members as collaborators. (Each team member needs to have their own GitHub account for this step. Create one if you do not have one.)
+    *   Each member of the team should then clone the repository to their computer.
 
-1. Your interests and passions
-2. The requirements of the project
-3. Your team's strengths and weaknesses
-4. The time it will take to complete the project
-5. The potential for learning and growth
-6. The potential for fun and enjoyment
-7. Data/API availability
-8. Complexity of the project
+### **02**  Finish the project setup:
 
-Negotiate with your partner to remove ideas until there is one left. This is the idea you will prepare a proposal for.
+1. Open the project in VS Code. File->Open, then select the *directory* that the repository cloned into.
+2. Each member of the team should then open a terminal window and switch to the project directory. If you are using VS Code `ctrl ~` toggles the terminal panel open and closed. When you open the terminal in VS Code it will automatically be set to the root of your project. Type `ls` if you are on a unix based system (MacOS, Linux), or `dir` if on Windows. Make sure that you see `package.json` in the list of files it prints out. If not you will need to change the working directory in the terminal to whatever directory you put the project files in. Then type `npm install`.
+3. Notice that a new directory was created: `node_modules`
+4. This project comes with several tools built in to help the team to write error free consistent code. The driver should open up the `package.json` file. There are two sections initially you should review. `devDependencies`, and `scripts`.
 
-## **03** Setup your environment
+    *   `devDependencies` contains all of the tools we will be using in our development for this project. When you ran `npm install` earlier, it referred to this list to know what to install.
+    *   `scripts` are shortcuts to commands we can run to manage the project. It contains the following:
 
-Your team should use Github to manage your code. One of the team members should create a new repository and invite the other to it. Then both should clone the project to their computer. 
+        ```json
+        "scripts": {
+            "start": "vite",
+            "build": "vite build --emptyOutDir",
+            "lint": "eslint *.js src/**/*.js",
+            "format": "prettier --ignore-path ./.gitignore --write \"./**/*.{html,json,js,ts,css}\"",
+        },
+        ```
+    *   `start`: This will run our development server. You will use this the most.
+    *   `build`: This will prepare our code to be deployed to production. You can run this at anytime to see what the "build" version of the site looks like.
+    *   `lint`: This will run Eslint against the code to look for style and syntax errors. You should do this each time you are ready to commit. Make sure to clean up any errors it finds before you commit!
+    *   `format`: This will run Prettier on your code and format it all consistently. You should also do this as a step in your commit process.
 
-Agree how the team will communicate with each other, and exchange any info required to make that work. Also negotiate how you will manage and assign tasks.
+    The commands are run in the terminal. If you wanted to start up the development server for example you would type `npm run start`. If you wanted to lint your code: `npm run lint`
 
-Discuss how you would like to work together. Will you use a peer programming model or work more independently?
+    Try running the linter now. What did you see? Have the driver open up the `.eslintrc.json` file. You may have noticed that one of the errors it is complaining about is that your quotes should all be single. You might be saying to yourself..."why does *that* matter?" Well, the truth is that it does not really matter whether you use single or double quotes in your code. What matters is that the whole team is consistent in using one or the other. Decide as a team whether you would like to use single or double quotes. Then find the line that looks like this: `"quotes":["error", "single"]` in the `.eslintrc.json` file. If you want single quotes then make no changes. If you want double quotes then change the word "single" to "double".
 
-## **04** Prepare your proposal
+    >The `.eslintrc.json` file belongs to the team. If your team disagrees with any of the rules that are being enforced, change them! Just make sure that all the team members are on board with the changes. If you do decide to dig into setting up custom Eslint rules you might want to get the `LintLens` extension for VSCode.
 
-After settling on your app idea, your team should prepare a proposal together with the following details:
+    Next run `npm run format`. Then go and run the linter again. What happened? Have the driver fix any remaining errors , then commit and push the changes.
 
-- Project name
-- Description of the project
-- Target audience
-- Features and functionalities
-- How the project requirements listed below will be met.
-    - What will the detailed form be used for? What other forms might you need?
-    - What data would you need to store in Local storage for persistence?
-    - What data will your app need? Is there an API or will you need to build your own dataset in a json file?
-    - Where would it make sense to use a drop-down menu or modal?
-    - Where are opportunities to use CSS Animations?
+    Each member of the team should run the format AND lint command BEFORE they commit after making any changes.
 
-## **05** Submit proposal to ILearn
+    >If you are using VS Code there are extensions you can install that will format (Prettier) and lint (ESLint) your code everytime you save! Alternatively you could take advantage of npm and scripts such as [prebuild](https://docs.npmjs.com/cli/v6/using-npm/scripts) to further automate these tasks
 
-Submit your proposal to Ilearn. Both teammates should submit the file.
+5. Each person in the group should try running `npm run start`. This runs several processes on our code and launches a web server at `localhost:8080`. It should also open that address in your default browser as well, if it did not you can type that address directly into a browser. You should use this server as you develop your project instead of something like LiveServer!
+
+    When you are done working you can stop the dev server by typing `ctrl c` in the same terminal window in which the process is running. That will terminate it.
+
+6. The driver should run `npm run build`. This will create a directory called `dist`. Commit those changes and push them to GitHub. If you goto github.com you will notice that the `dist` directory did not transfer with our commit. If you check the `.gitignore` file that is part of your project you will see why.
+7. We will be using a product called [Netlify](https://www.netlify.com/) to host our site. One person in the group will need to create a free account there and login for the next step.
+8. After logging in you need to add a new site. Click on the "Add New Site" button and select "Import an Existing Project". Connect to your Github account using the "Github" button. You should see a list of repositories on your account. Find the one that contains the Sleepoutside project.
+9. Select the "main" branch. Then in the "build command" box enter `npm run build`. Then "Deploy Site". Netlify will produce a randomized URL for the site that should be shared with all the team members. This is the link to your "production" site. (You could even put this into the `Readme.md` file to make it easy to find!)
+
+    >The `build` version of the site will be considered the production version. This should always work! The instructor should be able to go to that address at any time and not see any errors. Netlify will update your site everytime it sees a change to the "main" branch. So after pull requests are reviewed and merged you should probably go check Netlify to make sure nothing broke.
+
+
+### **03** GitHub with a team
+
+    1.  The driver should create a file in the root of the project called `team.txt` and add the link to the team Trello board, and their name. Then commit that change, and push it up to GitHub.
+    2.  Each other member of the team should pull the changes down and add their names. Then commit and push.
+    3.  The driver should then edit `team.txt`. Add your middle initial. Then commit and push. What happened?
+
+        >This should have resulted in an error with Git. There were multiple changes made to the same file and Git doesn't know which to keep! This results in a *merge conflict*.
+        >
+        >How can we avoid conflicts? A couple of ways:
+        >
+        >*   First make sure whenever you sit down to work on the project you should *pull* before you do anything else to make sure you get changes any of your teammates have made recently.
+        >*   Commit often! Small commits are less likely to result in conflicts than large ones...and they are much easier to fix if a conflict does occur.
+        >*   Take advantage of software design techniques like [modules](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Modules) to break your code up into smaller pieces.
+        >*   Finally take advantage of Git's ability to *branch*. See the stretch goals for more on that.
+
+    4.  Before you can commit the merge conflict will need to be resolved. Make sure that the `team.txt` file is open. You should see some additions to the file from Git. It should look something like below.
+
+        ![merge error from GitHub](../../images/330-merge-conflict.PNG)
+
+        We must decide which code should be kept. The code under the `<<<<<< HEAD` is the code you were just trying to send up. The code under the `=========` is the code that was already in GitHub. If you want to keep the code you were just writing, and throw the other away you could choose "Accept Current Change". If you wanted to keep what was on GitHub and remove your recent changes choose "Accept Incoming Changes". Or if you choose "Accept Both Changes" it will smoosh both sets of changes together. This is often the quickest way to get rid of the conflict, but is usually requires more work to actually fix the problem.
+
+        In this case we should accept both, then delete the name without the initial. That would leave us with the most current versions of everything.
+
+        Once you fix the code you will need to `commit` the merge...then you will be able to `push` your changes to GitHub again.
+
+        >This was a simple merge…easy to see what we needed to keep…imagine if the file was 200-300 lines long, and two team members had made edits in 10-15 lines of code scattered across the file and caused a merge conflict! It would have been far harder to figure out what to keep and what to throw…KEEP your commits small!
+
+
+## Stretch Goals
+
+### **01**  Branching
+
+    One of the most powerful features of Git is the ability to *branch* your code. Branching makes a copy of your code at the current point in time that you can make changes to without affecting any other branch! This allows an organization to always keep a fully working *production* version of their code that can be deployed at any time, and also work on adding features, fixing bugs, etc that often result in things breaking until they are done.
+
+    You can also use branches to reduce merge conflicts if multiple team members need to make changes to the same file in a codebase. Each team member should complete the following steps:
+
+    1.  Create a branch. Name your branch something like `initials--branch_test`. (So for me the actual name of the branch would be `st--branch_test`)
+    2.  Add a file in the root of the project called `yourname.txt`. Type your name in the file.
+    3.  Commit and publish (push) your branch to GitHub
+    4.  Push your commit to GitHub...then do a pull after the other members of the team have all pushed their branches.
+    5.  Switch to one of the new branches in the repository. Notice what happens to the listing of files in your editor when you do. Switch back to your own branch. Switch back to the master branch. Discuss with your team what you saw.
+
+    >Throughout the semester you will be fixing bugs and adding features to the SleepOutside site. When you assign a task to yourself I would create a new branch to hold the work you will do. Name the branch `initials--feature-name`. So if I were going to work on the card dealing with the cart total not calculating correctly, and my name were John Doe, I would make a branch with a name something like `jd--cart-total-calculation`
+
+    When you are done with your work and you are confident everything is working you should submit a pull request (see below).
+
+### **02**  Pull requests
+
+    When you are done with the feature that you created a branch for, the new code should be merged back into the master or main branch. This can be done in two ways...one is by directly merging the working branch back into the main branch, and the other is through a pull request.
+
+    On projects where there is only one developer, merging directly works fine...but when working with a team it is more common to work through pull requests. A pull request essentially means "My work is done and tested, I am ready for the code to be merged in with the main branch. Can someone check it out and make sure you don't see any issues. (So I don't break anything :)"
+
+    In our case right now, the branches do not contain anything important that needs to be merged back into the main branch. So most of them can just be deleted. Have one person however submit a pull request for their branch so we can see what the process is like.
+
+    After the pull request has been made (you can do this through [github.com](https://guides.github.com/activities/hello-world/#pr)) the driver should go to the repository in GitHub and review the request and then finish the merge. Make sure that any extra branches are deleted once you are done merging.
+
+    Move the card in Trello to "Done".
+
+## Instructor's Solution
+
+No instructor's solution this week.
+
+## Submission
+
+When you have finished this activity, please fill out the assessment in I-Learn. You are welcome to complete any additional parts of this activity by yourself or with others after your meeting before submitting the assessment.

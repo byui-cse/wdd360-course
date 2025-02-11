@@ -1,10 +1,11 @@
 ---
-title: Unit Two - Working with APIs
-summary: This unit will introduce the tools and concepts behind Application Programming Interfaces (API). We will also introduce the team project.
+title: Unit Two - NoSQL Database & API Development
+summary: This Unit will introduce NoSql databases and data models. Principles of good API design will also be learned.
 tags: [
 	API,
-	fetch,
-	planning
+	nosql,
+	rest,
+	rpc
 ]
 ---
 
@@ -15,11 +16,11 @@ tags: [
 
 ## Ponder
 
-- [Fetch Basics](https://byui-cit.github.io/learning-modules/modules/js/fetch-basics/)
-- [Practice with APIs](https://byui-cit.github.io/learning-modules/modules/js/apis/ponder1/)
+- [Data modeling for NoSQL](https://byui-cit.github.io/learning-modules/modules/js/fetch-basics/)
+- [API design](https://byui-cit.github.io/learning-modules/modules/js/apis/ponder1/)
 <!-- - [Debugging Practice](https://byui-cit.github.io/learning-modules/modules/js/debugging/ponder1/) -->
 
 ## Prove
 
-- [NPS 3](../../prove/nps-3)
-- [Team 1](../../prove/team-1)
+- [Team 3](../../prove/team-3)
+- [Team 4](../../prove/team-4)
