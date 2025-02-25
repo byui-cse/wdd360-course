@@ -1,8 +1,17 @@
 ---
-title: Unit 4 Exploration.
+title: Week 10 Exploration.
 
-time: 20min
+time: 60min
 ---
 
-- **Linters**:  
-"What is a linter?", "Why do developers use linters?", "What is the difference between a linter and a formatter?", "How can I use a linter for javascript in VS Code?", "How can I use a linter for CSS in VS Code?"
+## Topics
+
+If you want to find your own sources and learn in your own way, here is the list of topics.
+
+1. Testing code
+2. Writing Unit tests
+3. Integration Testing 
+
+## Reading
+
+...Or if you would rather here is a list of short articles to read about the topics.

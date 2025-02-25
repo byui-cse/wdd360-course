@@ -13,6 +13,7 @@ tags: [
 - [Week 5 Exploration](../../prepare/unit3a)
 - [Week 6 Exploration](../../prepare/unit3b)
 - [Week 7 Exploration](../../prepare/unit3c)
+- [Week 8 Exploration](../../prepare/unit3d)
 
 ## Ponder
 

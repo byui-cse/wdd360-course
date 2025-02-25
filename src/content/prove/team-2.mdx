@@ -61,49 +61,51 @@ We also need to make some changes to the new file. We are going to dynamically i
   
 Open up the `productData.mjs` module file. Note a few things:
 
-import Dialog from '../../components/Dialog.astro'
+{/* // import Dialog from '../../components/Dialog.astro' */}
 
-<Dialog class = "dialog1">
-<h3>Dialog</h3>
-<p>Some stuff</p>
-</Dialog>
+{/* // <Dialog class = "dialog1">
+// <h3>Dialog</h3>
+// <p>Some stuff</p>
+// </Dialog> */}
 
 import Details from '../../components/Details.astro'
 
 <Details summary="Click for example code (productData.mjs)">
  
 ```javascript
-function convertToJson(res) {
-    if (res.ok) {
-        return res.json();
-    } else {
-        throw new Error("Bad Response");
-    }
+function convertToJson(res:Response) {
+  if (res.ok) {
+    return res.json();
+  } else {
+    throw new Error("Bad Response");
+  }
 }
 
 export function getData(category = "tents") {
-    return fetch(`../json/${category}.json`)
+  return fetch(`../json/${category}.json`)
     .then(convertToJson)
     .then((data) => data);
 }
 
-export async function findProductById(id) {
-    const products = await getData();
-    return products.find((item) => item.Id === id);
+export async function findProductById(id:string) {
+  const products = await getData();
+  return products.find((item:Product) => item.Id === id);
 }
+
 ```
 </Details>
 
   1. Right now this module is quite small. Sometimes we will need to get a list of all the data, sometimes we will only need the data for one product. Keeping those functions separate lets us only bring in what we need when we need it. Note that the `convertToJson` function is NOT exported. We really don't have a need to run that outside of the module.
   2. We will eventually want to use these functions for more than just tents. We can do that by passing in the name of the category of products we want to pull from into the `getData` function. Note that it defaults to `tents`, so if we pass in nothing when we use it (like on line 16), we will automatically get tents.
-  3. Notice the `getData()` function compared to the `findProductById()` function. One uses just promises and `.then()`, the other uses [async/await](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/async_function). Many find the async/await syntax to be easier to read (and write) than the typical `.then()` based promise handling.
-  4. If the syntax on line 12 `(data) => data` is confusing you may want to spend more time reading about arrow functions in JavaScript. You could re-write that short callback function like this using a more traditional anonymous function declaration:
+  3. Notice on `findProductById` the argument is written like this: `id:string`. This is Typescript. The project uses it and you will be expected to use it in additions as well. 
+  4. Notice the `getData()` function compared to the `findProductById()` function. One uses just promises and `.then()`, the other uses [async/await](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/async_function). Many find the async/await syntax to be easier to read (and write) than the typical `.then()` based promise handling.
+  5. If the syntax on line 12 `(data) => data` is confusing you may want to spend more time reading about arrow functions in JavaScript. You could re-write that short callback function like this using a more traditional anonymous function declaration:
 
     ```javascript
     function(data) { return data; }
     ```
 
-  5. The callback on line 17 is similar...`(item) => item.Id === id`. Another way to write that could be:
+  6. The callback on line 17 is similar...`(item) => item.Id === id`. Another way to write that could be:
 
     ```javascript
     function(item) { return item.Id === id; }
@@ -111,7 +113,7 @@ export async function findProductById(id) {
 
     It is very common to see short functions that just return some value or expression written using the arrow function syntax.
 
-  6. If you open up the `product.js` file you will see how the `productData.mjs` module is used. First note that we have to import the function we need, then we can use that function just like if it were declared locally in that file.
+  7. If you open up the `product.js` file you will see how the `productData.mjs` module is used. First note that we have to import the function we need, then we can use that function just like if it were declared locally in that file.
 
     >Remember that to use ESModules in JavaScript we have to tell the browser we want to use modules...we do that with `type="module"` in the script tag in the HTML. If you look at any of the HTML files in the `product-pages` directory you will see that this has already been added.
 
@@ -126,7 +128,9 @@ const urlParams = new URLSearchParams(queryString);
 const product = urlParams.get('product')
 ```
 
-Use those lines to create a new function in the utils.mjs file called getParam(param) that we can use to get a parameter from the URL when we need to. (Don't forget to return the parameter!)
+Use those lines to create a new function in the utils.mjs file called `getParam(param)` that we can use to get a parameter from the URL when we need to. (Don't forget to return the parameter!)
+
+>When you create that function you will need to specify a type for the argument: `param`. What type of data will be be passing in?
 
 Import your new function into `product.js`. Open `/index.html` and change the link to the first product page from: `href="product_pages/marmot-ajax-3.html"` to `href="product_pages/index.html?product=880RR"`
 

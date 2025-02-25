@@ -1,6 +1,6 @@
 ---
 title: Week 2 Exploration
-time: 30min
+time: 90min
 ---
 
 > ### Tips
@@ -19,9 +19,22 @@ where you spend all your time for the week on concepts that you may have already
 >    * [Exploring ES6](http://exploringjs.com/es6/index.html#toc_ch_overviews)
 >    * [MDN Web Docs](https://developer.mozilla.org/en-US/)
 
+## Topics
+
+If you want to find your own sources and learn in your own way, here is the list of topics.
+
+1. Different ways to modify the Document with Javascript
+2. LocalStorage and SessionStorage
+3. ES Modules
+4. Optional Chaining '?.'
+5. TypeScript
+
 ## Reading
 
-1. Read [1.7 Modifying the document](https://javascript.info/modifying-document). This should be mostly review, but pay special attention to the `insertAdjacentHTML` section.
-2. Read [4.2 LocalStorage, sessionStorage](https://javascript.info/localstorage).
-3. Read [13.2 Modules: Import and Export](https://javascript.info/import-export).
-4. Read [Typescript for Javascript Programmers](https://www.typescriptlang.org/docs/handbook/typescript-in-5-minutes.html)
+...Or if you would rather here is a list of short articles to read about the topics.
+
+1. Review [1.7 Modifying the document](https://javascript.info/modifying-document). This should be mostly review, but pay special attention to the `insertAdjacentHTML` section.
+2. Review [4.2 LocalStorage, sessionStorage](https://javascript.info/localstorage).
+3. Read [4.6 Optional chaining '?.'](https://javascript.info/optional-chaining).
+4. Read [13.2 Modules: Import and Export](https://javascript.info/import-export).
+5. Read [Typescript for Javascript Programmers](https://www.typescriptlang.org/docs/handbook/typescript-in-5-minutes.html)

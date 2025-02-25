@@ -1,10 +1,21 @@
 ---
-title: Unit 4 Exploration.
+title: Week 9 Exploration.
 
-time: 30min
+time: 90min
 ---
 
-- **CSS Animations**:  
-"What are CSS Animations?", "What is the difference  between CSS Transitions and CSS Animations?", "How do you create a CSS Animation?", "How do you create a CSS Animation with multiple keyframes?"
-- **Hide and seek with CSS**:  
-"How can I hide things with CSS?", "How can I toggle things with CSS?", "How can I fade things in and out with CSS?", "How can I make something cover the entire browser window with CSS?"
+## Topics
+
+If you want to find your own sources and learn in your own way, here is the list of topics.
+
+1. JWT - JSON web tokens
+2. OAuth - Open authorization
+3. Implementing Authentication
+
+## Reading
+
+...Or if you would rather here is a list of short articles to read about the topics.
+
+1. Read [Getting Started with JSON Web Tokens](https://auth0.com/learn/json-web-tokens/)
+2. Read [Website Authentication](https://swoopnow.com/website-authentication/)
+3. Read [What the Heck is OAuth?](https://developer.okta.com/blog/2017/06/21/what-the-heck-is-oauth)
