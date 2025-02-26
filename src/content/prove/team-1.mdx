@@ -24,7 +24,7 @@ If your group is ready to start the activity and you have not had a chance to co
     *   The driver should visit the Team's copy of the project Trello board and add each team member to the "Setup project for all team members" task. Then move it to "Doing".
     *   Make sure that you are familiar with how to use the command prompt for your operating system. Here are some quickstarts for the [command line for Mac](https://byui-cit.github.io/learning-modules/modules/general/cli-basics/prepare1/) and the [command line for Windows](https://byui-cit.github.io/learning-modules/modules/general/cli-basics/prepare1/) if you need a review.
     *   The driver for this week should then log into GitHub, and visit this [repository](https://github.com/matkat99/sleepoutside-v3) for the project. Click on the "Use this template" button to create a copy of the base project code in a new repository then give the new repo a name.
-    *   The driver should then goto Settings->Manage Access and add the rest of the team members as collaborators. (Each team member needs to have their own GitHub account for this step. Create one if you do not have one.)
+    *   The driver should then go to Settings->Manage Access and add the rest of the team members as collaborators. (Each team member needs to have their own GitHub account for this step. Create one if you do not have one.)
     *   Each member of the team should then clone the repository to their computer.
 
 ### **02**  Finish the project setup:
@@ -56,7 +56,7 @@ If your group is ready to start the activity and you have not had a chance to co
 
     >The `.eslintrc.json` file belongs to the team. If your team disagrees with any of the rules that are being enforced, change them! Just make sure that all the team members are on board with the changes. If you do decide to dig into setting up custom Eslint rules you might want to get the `LintLens` extension for VSCode.
 
-    Next run `npm run format`. Then go and run the linter again. What happened? Have the driver fix any remaining errors , then commit and push the changes.
+    Next run `npm run format`. Then go and run the linter again. What happened? Have the driver fix any remaining errors, then commit and push the changes.
 
     Each member of the team should run the format AND lint command BEFORE they commit after making any changes.
 
@@ -66,8 +66,8 @@ If your group is ready to start the activity and you have not had a chance to co
 
     When you are done working you can stop the dev server by typing `ctrl c` in the same terminal window in which the process is running. That will terminate it.
 
-6. The driver should run `npm run build`. This will create a directory called `dist`. Commit those changes and push them to GitHub. If you goto github.com you will notice that the `dist` directory did not transfer with our commit. If you check the `.gitignore` file that is part of your project you will see why.
-7. We will be using a product called [Netlify](https://www.netlify.com/) to host our site. One person in the group will need to create a free account there and login for the next step.
+6. The driver should run `npm run build`. This will create a directory called `dist`. Commit those changes and push them to GitHub. If you go to github.com you will notice that the `dist` directory did not transfer with our commit. If you check the `.gitignore` file that is part of your project you will see why.
+7. We will be using a product called [Netlify](https://www.netlify.com/) to host our site. One person in the group will need to create a free account there and login for the next step. **Note!** The person who created the repo for the project should be the one that does the setup in Netlify as well.
 8. After logging in you need to add a new site. Click on the "Add New Site" button and select "Import an Existing Project". Connect to your Github account using the "Github" button. You should see a list of repositories on your account. Find the one that contains the Sleepoutside project.
 9. Select the "main" branch. Then in the "build command" box enter `npm run build`. Then "Deploy Site". Netlify will produce a randomized URL for the site that should be shared with all the team members. This is the link to your "production" site. (You could even put this into the `Readme.md` file to make it easy to find!)
 

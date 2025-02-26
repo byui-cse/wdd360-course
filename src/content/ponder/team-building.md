@@ -49,7 +49,9 @@ Once you have the initial list it is time to narrow it down. As you review your 
 7. Data/API availability
 8. Complexity of the project
 
-From now until week 9 you should continue negotiating with your partners to remove ideas until there is one left. This is the idea you will prepare a proposal for.
+From now until week 9 you should continue negotiating with your partners to remove ideas until there is one left. This is the idea you will prepare a proposal for. 
+
+> If you get up to 7-8 ideas and find one that the entire team is really excited about...you can probably stop generating ideas :)
 
 ## Submission
 
