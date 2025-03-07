@@ -29,9 +29,9 @@ We currently have one HTML file for each product we offer. This works okay when 
 Additionally as our code becomes more complex we will be well served by organizing it using ESModules.
 
    - Our goal will be to eventually have a one to one relationship with views/pages and modules. Then any functionality that needs to be shared between modules can be placed in a utility module.
-   - We will begin now by creating a module (`productDetails.mjs`) to contain the code we will need to dynamically produce our product detail pages.
-   - It's very likely that other parts of our application will need to make requests for product data. That functionality has already been exposed in the `productData.mjs` module.
-   - There will likely be other functionality that needs to be shared between parts of the application, you should notice that there is already a `utils.mjs` module to hold those.
+   - We will begin now by creating a module (`productDetails.mts`) to contain the code we will need to dynamically produce our product detail pages.
+   - It's very likely that other parts of our application will need to make requests for product data. That functionality has already been exposed in the `productData.mts` module.
+   - There will likely be other functionality that needs to be shared between parts of the application, you should notice that there is already a `utils.mts` module to hold those.
 
 ### **03** product_pages/index.html
 
@@ -57,9 +57,9 @@ We also need to make some changes to the new file. We are going to dynamically i
 >
 > When you run `npm run start` it will use the files in `src`.
 
-### **04** Review `productData.mjs`
+### **04** Review `productData.mts`
   
-Open up the `productData.mjs` module file. Note a few things:
+Open up the `productData.mts` module file. Note a few things:
 
 {/* // import Dialog from '../../components/Dialog.astro' */}
 
@@ -70,7 +70,7 @@ Open up the `productData.mjs` module file. Note a few things:
 
 import Details from '../../components/Details.astro'
 
-<Details summary="Click for example code (productData.mjs)">
+<Details summary="Click for example code (productData.mts)">
  
 ```javascript
 function convertToJson(res:Response) {
@@ -113,7 +113,7 @@ export async function findProductById(id:string) {
 
     It is very common to see short functions that just return some value or expression written using the arrow function syntax.
 
-  7. If you open up the `product.js` file you will see how the `productData.mjs` module is used. First note that we have to import the function we need, then we can use that function just like if it were declared locally in that file.
+  7. If you open up the `product.ts` file you will see how the `productData.mts` module is used. First note that we have to import the function we need, then we can use that function just like if it were declared locally in that file.
 
     >Remember that to use ESModules in JavaScript we have to tell the browser we want to use modules...we do that with `type="module"` in the script tag in the HTML. If you look at any of the HTML files in the `product-pages` directory you will see that this has already been added.
 
@@ -128,19 +128,20 @@ const urlParams = new URLSearchParams(queryString);
 const product = urlParams.get('product')
 ```
 
-Use those lines to create a new function in the utils.mjs file called `getParam(param)` that we can use to get a parameter from the URL when we need to. (Don't forget to return the parameter!)
+Use those lines to create a new function in the utils.mts file called `getParam(param)` that we can use to get a parameter from the URL when we need to. (Don't forget to return the parameter!)
 
 >When you create that function you will need to specify a type for the argument: `param`. What type of data will be be passing in?
 
-Import your new function into `product.js`. Open `/index.html` and change the link to the first product page from: `href="product_pages/marmot-ajax-3.html"` to `href="product_pages/index.html?product=880RR"`
+Import your new function into `product.js` and use it to retrieve the URL param "product". Store the value in a variable for later use.Open `/index.html` and change the link to the first product page from: `href="product_pages/marmot-ajax-3.html"` to `href="product_pages/index.html?product=880RR"`
 
 > Where did the 880RR come from? If you look in the json/tents.json file you will see that each record in there has an id. 880RR is the id for the first tent!
 
-Then test your getParams function in product.js to see if you can get the product id successfully when someone navigates to the product-details page. This would be a good time to test out our findProductById method as well.
+Then test your getParams function in product.ts to see if you can get the product id successfully when someone navigates to the product-details page. You could set a breakpoint in your code and inspect, or you could use a `console.log`. This would be a good time to test out our findProductById method as well.
 
-<Details summary="Click for example code (product.js)">
+<Details summary="Click for example code (product.ts)">
 
- ```javascript import { findProductById } from "./productData.mjs"; import { setLocalStorage, getParam } from './utils.mjs';
+ ```javascript import { findProductById } from "./productData.mts"; 
+import { setLocalStorage, getParam } from './utils.mts';
 const productId = getParam('product');
 
 console.log(findProductById(productId));
@@ -150,22 +151,22 @@ console.log(findProductById(productId));
 You should also update the rest of the links in /index.html to match the first one. You can look up the IDs in the tents.json file.
 
 
-### **06** productDetails.mjs
+### **06** productDetails.mts
 
-Create a new file in the js folder called `productDetails.mjs`
+Create a new file in the js folder called `productDetails.mts`
 
-The `productDetails.mjs` module will be responsible for all of the functionality needed to lookup data for a specific product and display it in HTML. Good modules often follow a "black box" philosophy. The module should be very upfront about what it needs to function, but very opaque about the details of how it accomplishes it's work. This means in part that we should only expose as much as we need to for it to work. The following functions are recommended:
+The `productDetails.mts` module will be responsible for all of the functionality needed to lookup data for a specific product and display it in HTML. Good modules often follow a "black box" philosophy. The module should be very upfront about what it needs to function, but very opaque about the details of how it accomplishes it's work. This means in part that we should only expose as much as we need to for it to work. The following functions are recommended:
 
 1. `productDetails(productId, selector)`: there are a few things that need to happen before our module can be used. This function will become the entrypoint into our module and will make sure that everything happens in the right order. This function should be the default export.
 2. `addProductToCart()`: This is the function that is currently in product.js. We need to move it here.
 3. `productDetailsTemplate(product)`: this will insert the product specifics into a string of markup.
 4. You will also need somewhere to store the product data that we will lookup. You can just declare a variable in the module file for this.
 
-To use our module we need to pull everything from the last few steps together in the product.js file. Once we get everything refactored that file should look something like this:
+To use our module we need to pull everything from the last few steps together in the product.ts file. Once we get everything refactored that file should look something like this:
 
 ```javascript
-import { getParam } from "./utils.mjs";
-import productDetails from "./productDetails.mjs";
+import { getParam } from "./utils.mts";
+import productDetails from "./productDetails.mts";
 
 const productId = getParam("product");
 productDetails(productId, ".product-detail");
@@ -187,33 +188,36 @@ Open up the vite.config.js file. Note the section that looks like this:
 
 ```javascript
 build: {
-  outDir: "../dist",
-  rollupOptions: {
-    input: {
-      main: resolve(__dirname, "src/index.html"),
-      cart: resolve(__dirname, "src/cart/index.html"),
-      product1: resolve(__dirname, "src/product_pages/cedar-ridge-rimrock-2.html"),
-      product2: resolve(__dirname, "src/product_pages/marmot-ajax-3.html"),
-      product3: resolve(__dirname, "src/product_pages/northface-alpine-3.html"),
-      product4: resolve(__dirname, "src/product_pages/northface-talus-4.html"),
+    outDir: '../dist',
+    rollupOptions: {
+      input: {
+        main: resolve('src/index.html'),
+        cart: resolve('src/cart/index.html'),
+        checkout: resolve('src/checkout/index.html'),
+        product1: resolve('src/product_pages/cedar-ridge-rimrock-2.html'),
+        product2: resolve('src/product_pages/marmot-ajax-3.html'),
+        product3: resolve('src/product_pages/northface-alpine-3.html'),
+        product4: resolve('src/product_pages/northface-talus-4.html'),
+      },
     },
   },
-},
 ```
 
 We aren't using the specific product pages anymore, and instead have an index.html file that we need to let our bundler know about. Change that section so that it looks like this instead:     
 
 ```javascript
 build: {
-  outDir: "../dist",
-  rollupOptions: {
-    input: {
-      main: resolve(__dirname, "src/index.html"),
-      cart: resolve(__dirname, "src/cart/index.html"),
-      product: resolve(__dirname, "src/product_pages/index.html"),
+    outDir: '../dist',
+    rollupOptions: {
+      input: {
+        main: resolve('src/index.html'),
+        cart: resolve('src/cart/index.html'),
+        checkout: resolve('src/checkout/index.html'),
+        product1: resolve('src/product_pages/index.html'),
+        
+      },
     },
   },
-},
 ```
 
 Anytime we add or remove more .HTML files to the site we will need to update this config or the production version of our site will break!
@@ -230,7 +234,7 @@ Someone on the team should check the build periodically to make sure it is not b
 
 ### **01** Finish it up!
 
-Complete this activity by writing the rest of the code to display our product.
+Complete this activity by writing the rest of the code to display our product. Make sure to pay attention to your Types as you go.
 
 - `productDetailsTemplate(product)`: The easiest way to do this would be to use a template literal string, e.g.:
 ```javascript
@@ -238,7 +242,7 @@ function productDetailsTemplate(product) {
     return `<p>${product.Name}</p>`;
 }
 ```
-- `addProductToCart()`: Move the code from `product.js` for this function and make any changes necessary to make it work.
+- `addProductToCart()`: Move the code from `product.ts` for this function and make any changes necessary to make it work.
 - `productDetails()`: This function needs to do a few things. Copy/paste the following into your code to use as a guide for finishing it:
 ```javascript
 export default async function productDetails(productId, selector) {
@@ -254,7 +258,7 @@ As a part of this team activity, you are expected to look over a solution from t
 
 Please DO NOT open the solution until you have worked through this activity as a team for at least one hour. At the end of the hour, if you are still struggling with some of the core requirements, you are welcome to view the instructor's solution and use it to help you complete your own code. Even if you use the instructor's code to help you, you are welcome to report that you finished the core requirements, if you code them up yourself.
 
-After working with your team for the one hour activity, [click here for the instructor's solution](https://github.com/matkat99/sleepoutside/tree/v3.6-team2/src).
+After working with your team for the one hour activity, [click here for the instructor's solution](https://github.com/matkat99/sleepoutsideClient/tree/team-02).
 
 ## Make a pull request.
 
