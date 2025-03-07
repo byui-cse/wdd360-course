@@ -92,13 +92,13 @@ We will use the code above as a starting point to see how we can connect to Atla
 3. Create a variable called `client` and set it equal to a new instance of `MongoClient`. Pass in the `uri` you created above as an argument. Also, pass in an object with the key `serverApi`, and set its value to `{ version: ServerApiVersion.v1, strict: true, deprecationErrors: true }`. See the code example above for help with the exact syntax for this step. This client object will allow us to connect to our database.
 4. Create a function called `init` that will be called when we run our `init-db.js` file. Inside this function:
 5. In a try/catch block, call the `.connect()` method on the client variable you created above.
-6. Create a variable called `db` and set it equal to the `.db(<database>)` method on the client variable you created above.
-7. We need to setup all of the collections for our project. Though there will be more later, initially we will start with one: `products`. Do some research if needed to find out how to create a collection through the Node.js client. Since we will be running this initialiation more than once, it would be a good practice to drop and re-create the collection each time before we insert the data to avoid duplication. Create a function called `seedProducts` and pass in the `db` object as an argument. 
+6. Create a variable called `db` and set it equal to the `.db(<database>)` method on the client variable you created above. Use the actual name of the database that your team created. We also put that in an environment variable.
+7. We will end up with several collections in our project and will use this script to set them all up. Initially we will start with the first one: `products`. Do some research if needed to find out how to create a collection through the Node.js client. Since we will be running this initialization more than once, it would be a good practice to drop and re-create the collection each time before we insert the data to avoid duplication. Create a function called `seedProducts` and pass in the `db` object as an argument. Add the code to drop and add a new collection called `products` in that function. Then call that function in `init`.
 8. We have been given some data to seed our products table with, but it is not quite in the correct format. If you look at `Reviews.ReviewsUrl` you will see something like this: `/reviewsbyproduct/14gvf/` This is not how we will be creating our route to pull our reviews. We need to change that to this: `/products/<productId>/reviews/` where `<productId>` is the Id of our product. Transform the data from `products.js` to make this change.
-8. Call the `.insertMany()` method on the productCollection you created above and pass in the updated `products` array that we imported earlier as an argument.
-9. Once the insert is complete, call the `.close()` method on the client object to close our connection to the database.
-10. Add a new script to our `package.json` file to allow us to run our script. Add this script: `"init-db": "node --env-file=.env src/database/initDb.js"` and save the file.
-11. Run the script and then login to Atlas to check to make sure the collection exists with the products in it.
+9. Call the `.insertMany()` method on the product collection you created above and pass in the updated `products` array that we imported earlier as an argument.
+10. Once our work is complete, call the `.close()` method on the client object to close our connection to the database.
+11. Add a new script to our `package.json` file to allow us to run our script. Add the following: `"init-db": "node --env-file=.env src/database/initDb.js"` and save the file.
+12. Run the script and then login to Atlas to check to make sure the collection exists with the products in it.
 
 Once done we will be able to reset and rebuild our database at any time.
 
