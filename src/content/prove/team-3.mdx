@@ -1,55 +1,335 @@
 ---
-title: Team Project - part 3
-description: This activity outlines a recommended pace for your project to stay on track.
-time: 1 hour
+title: SleepOutside - Team 3
+description: We will setup the backend for our application and make a connection to our database. We will also create our first API endpoint for our application.
+time: 2 hours
 ---
-
-## Requirements
-To begin do the following:
-
-1. Create a new node project (pnpm init)
-2. Install express and nodemon with npm or pnpm. (pnpm i express nodemon)
-3. Create a file to serve as our application entrypoint. (server.js)
-4. Setup some scripts to be able to easily run our application with nodemon. (remember to add "type": "module" as well so we can use ESModules)
-5. Using express start up a web server listening on port 3000
-6. Create a route to the webroot (/) that just returns a simple message.
-7. Run your server and test your route.
-
 import Details from '../../components/Details.astro'
 
-<Details summary="server.js">
+## Overview
+This activity will review the tools introduced last week, and begin the process of making our application scalable by adding dynamically generated product detail pages, and more organization using ESModules.
+
+## Instructions
+Complete the following assignment as a team. Designate one team member as the "main driver" and collaborate on their copy of the code. Everyone on the team should be actively engaged in writing the code and contributing to the solution. Once the solution is working, make sure that everyone on the team gets a copy of the code. Each week let someone else be the "main driver" of the coding.
+
+There are many spots where code examples have been given. To get the most out of this activity, do not look at the examples until your group has given that section a try. Then after you look at the example, resist the temptation to copy/paste. Use the examples to get correction, or help you get unstuck...do not just use them to get it done.
+
+## Core Requirements
+
+### **01** Backend Setup
+
+One person in the team should copy the [Sleepoutside server template](https://github.com/matkat99/sleepoutsideServer) to their own Github repository. Invite the other teammembers as collaborators.
+
+Each member of the team should clone the new repo to their local machine. It might help to put it close to the code for the Sleepoutside client code. I would recommend a file structure like: 
+
+```
+sleepoutside/
+├── sleepoutsideServer/
+│   ├── src/
+│   ├── server.js
+│   └── package.json
+└── sleepoutsideClient/
+    ├── src/
+    └── package.json
+```
+
+>As you work on either the frontend or backend you should open that project folder in it's own editor window. You will need to open and run both when you are working on the frontend.
+
+### **02** Review provided code
+
+Take a few minutes with your team to review the code you were given. Here are a few things in particular to discuss:
+
+1. What are the dependencies?
+2. What scripts can we run?
+3. How does the server.js file work?
+4. How is the routing setup?
+5. What is the purpose of the `models` folder? 
+6. What is the purpose of `models/types.mts`?
+7. Where do you find the database connection information?
+
+If the structure looks familiar, it should. It's based heavily on the structure used in CSE 340. It is using an MVC (Model, View, Controller) approach, but the `routes` are doing double duty as the controllers as well.
+
+### **03** Connect to MongoDB Atlas
+One member of the team should connect to MongoDB Atlas and create a new database for this project. You can call the database `sleepoutside`. On the Clusters screen click on 'Connect', then select "Drivers" and make sure "Node.js" is selected. It will show you some code that will look something like this:
 ```javascript
-import express from "express";
 
-const app = express();
+const { MongoClient, ServerApiVersion } = require('mongodb');
+const uri = "mongodb+srv://<db_username>:<db_password>@cluster0.knuhy.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0";
 
-app.get("/", (req, res) => {
-  res.send("Hello World!");
+// Create a MongoClient with a MongoClientOptions object to set the Stable API version
+const client = new MongoClient(uri, {
+  serverApi: {
+    version: ServerApiVersion.v1,
+    strict: true,
+    deprecationErrors: true,
+  }
 });
 
-app.listen(3000, () => {
-  console.log("Server is running on port 3000");
+async function run() {
+  try {
+    // Connect the client to the server	(optional starting in v4.7)
+    await client.connect();
+    // Send a ping to confirm a successful connection
+    await client.db("admin").command({ ping: 1 });
+    console.log("Pinged your deployment. You successfully connected to MongoDB!");
+  } finally {
+    // Ensures that the client will close when you finish/error
+    await client.close();
+  }
+}
+run().catch(console.dir);
+```
+
+We will use this code as a starting point for connecting our Node server with MongoDB Atlas. Notice that the `uri` variable is missing some important information...namely your real database user and password. This is the user you created when you created your database user in MongoDB Atlas. We really don't want the server address, username, or password just hard coded though, we should store those in an environment variable so it can be set at runtime.
+
+Save the `.env.sample` file as `.env`, and add your database user information and URI in there. 
+
+>**Note** Each member of the team will need to do this step. We are excluding the `.env` file from our repo and so these changes won't show up automatically.
+
+We will use the code above as a starting point to see how we can connect to Atlas, and run some commands to make sure the database is setup and provisioned correctly.
+
+1. Create a new file called `init-db.js` in the `database` folder. and import in the modules we need from mongodb: `MongoClient` and `ServerApiVersion`. We will also need to import the products data from our `products.js` file. This is a simple array of objects that we can use to seed our database with some initial data.
+2. Create a variable called `uri` and set it to the value of your database URI, including your username and password. It should be in the format `mongodb+srv://username:password@MongoUri`. You can find your username, password, and URI in the `.env` file you created earlier. Remember that the variables in the `.env` file can be found in `process.env`.
+3. Create a variable called `client` and set it equal to a new instance of `MongoClient`. Pass in the `uri` you created above as an argument. Also, pass in an object with the key `serverApi`, and set its value to `{ version: ServerApiVersion.v1, strict: true, deprecationErrors: true }`. See the code example above for help with the exact syntax for this step. This client object will allow us to connect to our database.
+4. Create a function called `init` that will be called when we run our `init-db.js` file. Inside this function:
+5. In a try/catch block, call the `.connect()` method on the client variable you created above.
+6. Create a variable called `db` and set it equal to the `.db(<database>)` method on the client variable you created above.
+7. We need to setup all of the collections for our project. Though there will be more later, initially we will start with one: `products`. Do some research if needed to find out how to create a collection through the Node.js client. Since we will be running this initialiation more than once, it would be a good practice to drop and re-create the collection each time before we insert the data to avoid duplication. Create a function called `seedProducts` and pass in the `db` object as an argument. 
+8. We have been given some data to seed our products table with, but it is not quite in the correct format. If you look at `Reviews.ReviewsUrl` you will see something like this: `/reviewsbyproduct/14gvf/` This is not how we will be creating our route to pull our reviews. We need to change that to this: `/products/<productId>/reviews/` where `<productId>` is the Id of our product. Transform the data from `products.js` to make this change.
+8. Call the `.insertMany()` method on the productCollection you created above and pass in the updated `products` array that we imported earlier as an argument.
+9. Once the insert is complete, call the `.close()` method on the client object to close our connection to the database.
+10. Add a new script to our `package.json` file to allow us to run our script. Add this script: `"init-db": "node --env-file=.env src/database/initDb.js"` and save the file.
+11. Run the script and then login to Atlas to check to make sure the collection exists with the products in it.
+
+Once done we will be able to reset and rebuild our database at any time.
+
+You can use the following to scaffold out your functions if you need a little direction to get started:
+
+<Details summary="Hint">
+```javascript
+// import MongoClient and ServerApiVersion from the mongodb library and import products from the products.js file.
+
+//build the uri for our connection string
+
+// Create a MongoClient with a MongoClientOptions object to set the Stable API version
+
+//define the init function to connect to our database and create collections
+const init = async () => {
+  try {
+    await client.connect();
+    console.log(`Connected to MongoDB`);
+    // get a reference to the actual database we will be using with .db(<database name>)
+   
+    
+    // initialize the Products collection
+    await seedProducts(db);
+  } catch (error) {
+    console.error(error.message);
+  } finally {
+    await client.close();
+  }
+};
+
+const seedProducts = async (db) => {
+  // we need to make a small transform to the provided data before inserting
+  // use .map() to transform each product before inserting it into the database
+  // change Reviews.ReviewUrl to match the following pattern: /products/<productId>/reviews/
+  
+  try {
+    // drop the collection to clear out the old records
+    
+    console.log("Collection 'products' dropped successfully");
+    // create a new collection
+    
+    console.log("Collection 'products' created successfully");
+    // insert all products
+    
+    console.log(
+      `${result.insertedCount} new listing(s) created with the following id(s):`
+    );
+    console.log(result.insertedIds);
+  } catch (error) {
+    console.error(error.message);
+  }
+};
+
+init();
+
+```
+</Details>
+
+Once you have completed this step, or if you get stuck you can look at this solution.
+<Details summary="init-db.js - completed">
+```javascript
+import { MongoClient, ServerApiVersion } from "mongodb";
+import { products } from "./products.js";
+
+const uri = `mongodb+srv://${process.env.MONGO_USER}:${process.env.MONGO_PASSWORD}@${process.env.MONGO_URI}`;
+console.log(uri);
+// Create a MongoClient with a MongoClientOptions object to set the Stable API version
+const client = new MongoClient(uri, {
+  serverApi: {
+    version: ServerApiVersion.v1,
+    strict: true,
+    deprecationErrors: true
+  }
+});
+const init = async () => {
+  try {
+    await client.connect();
+    console.log(`Connected to MongoDB`);
+ 
+       // initialize the Products collection
+    await seedProducts(client.db("sleepoutside"));
+  } catch (error) {
+    console.error(error.message);
+  } finally {
+    await client.close();
+  }
+};
+const seedProducts = async (db) => {
+  // we need to make a small transform to the provided data before inserting
+  const newProducts = products.map((product) => {
+    product.Reviews.ReviewsUrl = `/products/${product.Id}/reviews/`;
+    return product;
+  });
+  try {
+    // drop the collection to clear out the old records
+    await db.collection("products").drop();
+    console.log("Collection 'products' dropped successfully");
+    // create a new collection
+    await db.createCollection("products");
+    console.log("Collection 'products' created successfully");
+    // insert all products
+    const result = await db.collection("products").insertMany(newProducts);
+    console.log(
+      `${result.insertedCount} new listing(s) created with the following id(s):`
+    );
+    console.log(result.insertedIds);
+  } catch (error) {
+    console.error(error.message);
+  }
+};
+init();
+```
+</Details>
+
+### **04** Initialize the database
+
+For our main application we need to connect to Atlas when the application starts up, then connect to a database, and make that connection available throughout the application. If you inspect `database/index.js` You will see some code that should look familiar (we used it in `init-db.js`) and some that is different. We are exporting two functions: `initDb` and `getDb`. We should run the `initDb` function once when the server starts up, and `getDb` each time we need to query the database. If you look at the code in `server.ts` you can see how this will work.
+
+```javascript
+mongodb.initDb((err:Error) => {
+  if (err) {
+    console.error("Error initializing database:", err);
+    return;
+  } else
+    // Start the server after successful initialization of the database
+      app.listen(port, () => console.log(`Server is listening on port ${port}...`));
+});
+```
+We pass a callback function into `initDb`. If the database connects correctly then it will execute the callback function which will launch our express server. If the database fails it will not. This is a common pattern in Javascript development.
+
+Go ahead and run `npm run dev` and make sure your server is running. If you see the message `Server is listening on port ...` then your server has started up successfully.
+
+You should be able to enter the URL `http://localhost:3000/products` in your browser and see the list of products that we imported earlier. If you do, then you are ready to move on! 
+
+### **05** `getProductsById`
+
+Now that we are connected to Atlas and have some data in a collection, we need to start pulling data. The work to query the database will happen in `model` files, which will then be used in `routes`. Create a model and route to pull the product with the provided `id` from the database.
+
+<Details summary="getProductsById">
+
+```javascript
+// model/productModel.ts
+export async function getProductById(id: string): Promise<Product | null> {
+  try {
+    const product = await mongodb.getDb().collection<Product>("products").findOne({Id: id});
+    if (!product) throw new Error(`Product with ID ${id} not found`);
+    return product;
+  } catch (error) {
+    console.error(error);
+    return null;
+  }
+}
+```
+
+```javascript
+// routes/productRoutes.ts
+// GET /products/:id
+router.get('/:id', async function (req, res) {
+  try {
+    const {id} = req.params;
+    const product = await getProductById(id);
+    if (!product) {
+      return res.status(404).send('Product not found');
+    }
+    res.setHeader('Content-Type', 'application/json');
+    res.status(200).json(product);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
 });
 ```
 </Details>
-This project will be completed in a team of 2 students. After forming your team you will be responsible to plan and complete a web application as a showcase that demonstrates your mastery of the topics taught during this course. Your web application can take many different forms, but there is a list of requirements that each app must include:
 
-- At least one detailed, validated form
-- Local storage for persistence
-- Fetching data from an API or json file.
-- Drop-down menu
-- CSS Animation
-- Responsive design
-- Good user experience (UX) and accessibility
-- URL parameters (data that is passed from page to page in an app through the URL, for example https://example.com/page2.html?id=34 Send the `id` of `34` to the code running at `page2.html`)
-- Use of modules for organization
+### **06** Connect the Frontend
 
-## Checkpoint
+Open the Frontend code in a new editor window, and start up the development server. Currently the frontend is pulling data from a local json file. Now that we have a server setup with the ability to look up a product by it's Id, we need to update the code to pull from the backend server instead. 
 
-By the end of this unit (Unit 4) it is recommended that you switch out the static content for dynamically generated markup using data retrieved from an API or json file. You may also start on the code to store and retrieve data in localStorage.
+The first thing we need to do is to identify the URL for our API. We could hardcode this...but this value will usually change between development and production environments. Just like we used environment files in our server, they can be useful on the frontend as well. Vite will actually load and make our environment variables available to us. We can use the `process.env` object to access them.
 
-Keep the requirements list above in mind as you code up your application. 
+1. Create a file called `.env` in the `src` directory. Add the following: VITE_SERVER_URL=http://localhost:3000/
+2. Open the `productData.mts` file up and add a variable towards the top. This will pull the URL from the .env file and make it available to use. We will need to do this slightly differently from on our server however. On the server the environment variables are found in `process.env`.  With Vite they are found in `import.meta.env`. So our variable declaration will look like this: `const baseURL = import.meta.env.VITE_SERVER_URL;`
+3. Modify the `findProductById` function to fetch from the API with our new URL. Remember the path will be baseUrl + "products/productId"
 
-## Meet with the instructor
+<Details summary="productData.mts changes">
+```javascript
+export async function findProductById(id:string) {
+    const response = await fetch(baseURL + `products/${id}`);
+    const product = await convertToJson(response) as Product;
+    console.log(product)
+    return product;
+}
+```
 
-Each unit your team should meet with the instructor to review progress and discuss potential problems. Your instructor will give you more details about how this is to happen. It is your responsibility to make sure this meeting does occur!
+</Details>
+
+Try going to one of the product detail pages. You will find that nothing is showing! If you open up the Developer tools and go to the Network tab we can inspect the request. Find the line for our request. It should be red. This means that our request failed! Depending on which browser you are in the error will show up differently, but all of them should mention something called CORS.
+
+We are making a request from frontend Javascript from one origin (localhost:5173) to another origin (localhost:3000). CORS is a security feature in browsers that prevents websites from making requests to other domains unless they have been explicitly allowed to do so. We have not allowed this on the server.
+
+### **07** CORS
+
+Go back to the server code. We need to add some code to our server so it can handle requests from other origins. We can use the `cors` middleware to easily do this.
+
+1. Make sure your server is shut down by typing `ctrl-c` in the terminal in which it was running.
+2. Install the cors module: `pnpm install cors @types/cors`
+3. Add `import cors from 'cors';` at the top of server.js.
+4. Just before you add your routes, enable the cors middleware: `app.use(cors());`
+5. Save and restart the server: `pnpm dev`
+
+Go back to your frontend application and try hitting a product details page again. You should see the data show now, but may notice that the image isn't showing. Turns out the data structure for a product that we have been using locally is different from the one coming from the server. The server should win in this case, so we need to make one more change.
+
+Go to `models/types.ts` in your server code and copy the contents. Paste them into `js/types.ts` in your frontend code. Replace what was in there.
+
+Now you can open up `productDetails.mts` and you will notice that there is a red line under this portion of your template: `src="${product.Image}"`. If you hover over it you will see the following error message: "Property 'Image' does not exist on type 'Product'". Because we have updated the type for a Product, Typescript is helping to fix errors that have arisen from the updated data structure. Change `Image` to `Images.` As soon as you put the dot you should see the valid options. Pick one...medium or large would probably be good. Check the page in the browser again to make sure it is working.
+
+Oh, and you should go update `cart.ts` as well...it also uses the product image.
+
+
+## Instructor's Solution
+
+As a part of this team activity, you are expected to look over a solution from the instructor to compare your approach to that one. One of the questions on the I-Learn submission will ask you to provide insights from this comparison.
+
+Please DO NOT open the solution until you have worked through this activity as a team for at least one hour. At the end of the hour, if you are still struggling with some of the core requirements, you are welcome to view the instructor's solution and use it to help you complete your own code. Even if you use the instructor's code to help you, you are welcome to report that you finished the core requirements, if you code them up yourself.
+
+After working with your team for the one hour activity, click here for the instructor's solution: [server](https://github.com/matkat99/sleepoutsideServer/tree/team-03/src) and [client](https://github.com/matkat99/sleepoutsideClient/tree/team-03/src).
+
+## Make a pull request.
+
+After you have completed what you can, reviewed the instructor's solution, and gotten your code working, the driver should commit and push their changes (don't forget to lint and format your code before committing!), then submit a pull request for this branch. Then review the pull request as a team, close it, and merge the branch back into Main. Finally, someone should move the Trello card to "Done".
+
+## Submission
+
+When you have finished this activity, please fill out the assessment in I-Learn. You are welcome to complete any additional parts of this activity by yourself or with others after your meeting before submitting the assessment.
