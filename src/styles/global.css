@@ -107,6 +107,7 @@ h5 {
 strong,
 b {
   font-weight: 700;
+  text-transform: uppercase;
 }
 
 a {

@@ -155,12 +155,12 @@ You should also update the rest of the links in /index.html to match the first o
 
 Create a new file in the js folder called `productDetails.mts`
 
-The `productDetails.mts` module will be responsible for all of the functionality needed to lookup data for a specific product and display it in HTML. Good modules often follow a "black box" philosophy. The module should be very upfront about what it needs to function, but very opaque about the details of how it accomplishes it's work. This means in part that we should only expose as much as we need to for it to work. The following functions are recommended:
+The `productDetails.mts` module will be responsible for all of the functionality needed to lookup data for a specific product and display it in HTML. Good modules often follow a "black box" philosophy. The module should be very upfront about what it needs to function, but very opaque about the details of how it accomplishes its work. This means in part that we should only expose as much as we need to for it to work. The following functions are recommended:
 
 1. `productDetails(productId, selector)`: there are a few things that need to happen before our module can be used. This function will become the entrypoint into our module and will make sure that everything happens in the right order. This function should be the default export.
 2. `addProductToCart()`: This is the function that is currently in product.js. We need to move it here.
 3. `productDetailsTemplate(product)`: this will insert the product specifics into a string of markup.
-4. You will also need somewhere to store the product data that we will lookup. You can just declare a variable in the module file for this.
+4. You will also need somewhere to store the product data that we will look up. You can just declare a variable in the module file for this.
 
 To use our module we need to pull everything from the last few steps together in the product.ts file. Once we get everything refactored that file should look something like this:
 
