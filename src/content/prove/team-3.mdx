@@ -297,11 +297,11 @@ export async function findProductById(id:string) {
 
 Try going to one of the product detail pages. You will find that nothing is showing! If you open up the Developer tools and go to the Network tab we can inspect the request. Find the line for our request. It should be red. This means that our request failed! Depending on which browser you are in the error will show up differently, but all of them should mention something called CORS.
 
-We are making a request from frontend Javascript from one origin (localhost:5173) to another origin (localhost:3000). CORS is a security feature in browsers that prevents websites from making requests to other domains unless they have been explicitly allowed to do so. We have not allowed this on the server.
+We are making a request from frontend Javascript from one origin (localhost:5173) to another origin (localhost:3000). This is called CORS, or Cross-Origin Resource Sharing.  CORS is governed by a security feature in browsers that prevents websites from making requests to other domains unless they have been explicitly allowed to do so. We have not allowed this on the server.
 
 ### **07** CORS
 
-Go back to the server code. We need to add some code to our server so it can handle requests from other origins. We can use the `cors` middleware to easily do this.
+Go back to the server project. We need to add some code to our server so it can handle requests from other origins. We can use the `cors` middleware to easily do this.
 
 1. Make sure your server is shut down by typing `ctrl-c` in the terminal in which it was running.
 2. Install the cors module: `pnpm install cors @types/cors`

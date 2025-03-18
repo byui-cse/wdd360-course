@@ -29,7 +29,7 @@ We currently have one HTML file for each product we offer. This works okay when 
 Additionally as our code becomes more complex we will be well served by organizing it using ESModules.
 
    - Our goal will be to eventually have a one to one relationship with views/pages and modules. Then any functionality that needs to be shared between modules can be placed in a utility module.
-   - We will begin now by creating a module (`productDetails.mts`) to contain the code we will need to dynamically produce our product detail pages.
+   - We will begin now by creating a module (`js/productDetails.mts`) to contain the code we will need to dynamically produce our product detail pages.
    - It's very likely that other parts of our application will need to make requests for product data. That functionality has already been exposed in the `productData.mts` module.
    - There will likely be other functionality that needs to be shared between parts of the application, you should notice that there is already a `utils.mts` module to hold those.
 
@@ -95,20 +95,20 @@ export async function findProductById(id:string) {
 ```
 </Details>
 
-  1. Right now this module is quite small. Sometimes we will need to get a list of all the data, sometimes we will only need the data for one product. Keeping those functions separate lets us only bring in what we need when we need it. Note that the `convertToJson` function is NOT exported. We really don't have a need to run that outside of the module.
-  2. We will eventually want to use these functions for more than just tents. We can do that by passing in the name of the category of products we want to pull from into the `getData` function. Note that it defaults to `tents`, so if we pass in nothing when we use it (like on line 16), we will automatically get tents.
+  1. Right now this module is quite small. Sometimes we will need to get a list of all the data, sometimes we will only need the data for one product. Keeping those functions separate lets us only bring in what we need when we need it. Note that the `convertToJson` function is NOT exported. We really don't have a need to run that outside of the module/file.
+  2. We will eventually want to use these functions for more than just tents. We can do that by passing in the name of the category of products we want to pull from into the `getData` function. Note that it defaults to `tents`, so if we pass in nothing when we use it, we will automatically get tents.
   3. Notice on `findProductById` the argument is written like this: `id:string`. This is Typescript. The project uses it and you will be expected to use it in additions as well. 
   4. Notice the `getData()` function compared to the `findProductById()` function. One uses just promises and `.then()`, the other uses [async/await](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/async_function). Many find the async/await syntax to be easier to read (and write) than the typical `.then()` based promise handling.
-  5. If the syntax on line 12 `(data) => data` is confusing you may want to spend more time reading about arrow functions in JavaScript. You could re-write that short callback function like this using a more traditional anonymous function declaration:
+  5. If the syntax on line 13 `(data) => data` is confusing you may want to spend more time reading about arrow functions in JavaScript. You could re-write that short callback function like this using a more traditional anonymous function declaration:
 
     ```javascript
     function(data) { return data; }
     ```
 
-  6. The callback on line 17 is similar...`(item) => item.Id === id`. Another way to write that could be:
+  6. The callback on line 18 is similar...`(item:Product) => item.Id === id`. Another way to write that could be:
 
     ```javascript
-    function(item) { return item.Id === id; }
+    function(item:Product) { return item.Id === id; }
     ```
 
     It is very common to see short functions that just return some value or expression written using the arrow function syntax.
@@ -125,14 +125,14 @@ export async function findProductById(id:string) {
 ```javascript
 const queryString = window.location.search;
 const urlParams = new URLSearchParams(queryString);
-const product = urlParams.get('product')
+const value = urlParams.get('product')
 ```
 
-Use those lines to create a new function in the utils.mts file called `getParam(param)` that we can use to get a parameter from the URL when we need to. (Don't forget to return the parameter!)
+Use those lines to create a new function in the utils.mts file called `getParam(param)` that we can use to get a parameter from the URL when we need to. (Don't forget to return the value!). Why are we passing in `param`? We might not always be looking for a URL parameter called `product`, so we need to be able to pass in any parameter name.
 
 >When you create that function you will need to specify a type for the argument: `param`. What type of data will be be passing in?
 
-Import your new function into `product.js` and use it to retrieve the URL param "product". Store the value in a variable for later use.Open `/index.html` and change the link to the first product page from: `href="product_pages/marmot-ajax-3.html"` to `href="product_pages/index.html?product=880RR"`
+Import your new function into `product.ts` and use it to retrieve the URL param "product". Store the value in a variable for later use. Open `/index.html` (remember that a leading slash indicates a root path...the one in `src` in this case) and change the link to the first product page from: `href="product_pages/marmot-ajax-3.html"` to `href="product_pages/index.html?product=880RR"`
 
 > Where did the 880RR come from? If you look in the json/tents.json file you will see that each record in there has an id. 880RR is the id for the first tent!
 
@@ -158,7 +158,7 @@ Create a new file in the js folder called `productDetails.mts`
 The `productDetails.mts` module will be responsible for all of the functionality needed to lookup data for a specific product and display it in HTML. Good modules often follow a "black box" philosophy. The module should be very upfront about what it needs to function, but very opaque about the details of how it accomplishes it's work. This means in part that we should only expose as much as we need to for it to work. The following functions are recommended:
 
 1. `productDetails(productId, selector)`: there are a few things that need to happen before our module can be used. This function will become the entrypoint into our module and will make sure that everything happens in the right order. This function should be the default export.
-2. `addProductToCart()`: This is the function that is currently in product.js. We need to move it here.
+2. `addProductToCart()`: This is the function that is currently in product.ts. We need to move it here.
 3. `productDetailsTemplate(product)`: this will insert the product specifics into a string of markup.
 4. You will also need somewhere to store the product data that we will lookup. You can just declare a variable in the module file for this.
 
