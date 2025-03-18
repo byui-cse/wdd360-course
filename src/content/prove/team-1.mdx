@@ -91,7 +91,7 @@ If your group is ready to start the activity and you have not had a chance to co
 
     4.  Before you can commit the merge conflict will need to be resolved. Make sure that the `team.txt` file is open. You should see some additions to the file from Git. It should look something like below.
 
-        ![merge error from GitHub](/wdd360-course/images/330-merge-conflict.PNG)
+        ![merge error from GitHub](/images/330-merge-conflict.PNG)
 
         We must decide which code should be kept. The code under the `<<<<<< HEAD` is the code you were just trying to send up. The code under the `=========` is the code that was already in GitHub. If you want to keep the code you were just writing, and throw the other away you could choose "Accept Current Change". If you wanted to keep what was on GitHub and remove your recent changes choose "Accept Incoming Changes". Or if you choose "Accept Both Changes" it will smoosh both sets of changes together. This is often the quickest way to get rid of the conflict, but is usually requires more work to actually fix the problem.
 
@@ -110,11 +110,12 @@ If your group is ready to start the activity and you have not had a chance to co
 
     You can also use branches to reduce merge conflicts if multiple team members need to make changes to the same file in a codebase. Each team member should complete the following steps:
 
-    1.  Create a branch. Name your branch something like `initials--branch_test`. (So for me the actual name of the branch would be `st--branch_test`)
+    1.  Create a branch. Name your branch something like `initials--branch-test`. (So for me the actual name of the branch would be `st--branch-test`)
     2.  Add a file in the root of the project called `yourname.txt`. Type your name in the file.
     3.  Commit and publish (push) your branch to GitHub
     4.  Push your commit to GitHub...then do a pull after the other members of the team have all pushed their branches.
-    5.  Switch to one of the new branches in the repository. Notice what happens to the listing of files in your editor when you do. Switch back to your own branch. Switch back to the master branch. Discuss with your team what you saw.
+    5.  Switch to one of the new branches in the repository. Notice what happens to the listing of files in your editor when you do. Switch back to your own branch. Switch back to the master branch. Discuss with your team what you saw. In VSCode there are two ways to switch branches. First, if you use the command line you can run `git checkout branch-name`. The other way is to look at the bottom left corner of the VSCode window. You will see the current branch listed. Click on it to switch branches. If a branch you are expecting does not show up try doing a `git fetch`.
+    
 
     >Throughout the semester you will be fixing bugs and adding features to the SleepOutside site. When you assign a task to yourself I would create a new branch to hold the work you will do. Name the branch `initials--feature-name`. So if I were going to work on the card dealing with the cart total not calculating correctly, and my name were John Doe, I would make a branch with a name something like `jd--cart-total-calculation`
 

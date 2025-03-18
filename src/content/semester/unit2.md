@@ -1,5 +1,5 @@
 ---
-title: Unit Two - NoSQL Database & API Development
+title: Unit Two - Database & API Development
 summary: This Unit will introduce NoSql databases and data models. Principles of good API design will also be learned.
 tags: [
 	API,
@@ -16,8 +16,8 @@ tags: [
 
 ## Ponder
 
-- [Data modeling for NoSQL](https://byui-cit.github.io/learning-modules/modules/js/fetch-basics/)
-- [API design](https://byui-cit.github.io/learning-modules/modules/js/apis/ponder1/)
+- [Data modeling for NoSQL](../../ponder/nosql-data-modeling)
+- [API design and documentation](../../ponder/api-design)
 <!-- - [Debugging Practice](https://byui-cit.github.io/learning-modules/modules/js/debugging/ponder1/) -->
 
 ## Prove

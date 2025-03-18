@@ -14,4 +14,10 @@ If you want to find your own sources and learn in your own way, here is the list
 
 ## Reading
 
-...Or if you would rather here is a list of short articles to read about the topics.
+...Or if you would rather here is a list of articles to read about the topics.
+
+1. [Rethinking REST](https://kieranpotts.com/rethinking-rest)
+2. [Hypermedia API vs Data API](https://htmx.org/essays/hypermedia-apis-vs-data-apis/)
+3. [REST API tutorial](https://restapitutorial.com/)
+4. [Zalando RESTful API and Event Guidelines](https://opensource.zalando.com/restful-api-guidelines/#introduction)
+5. [Swagger/OpenAPI](https://swagger.io/)
