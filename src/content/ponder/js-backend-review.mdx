@@ -50,12 +50,12 @@ The request/response cycle in Node.js refers to the flow of HTTP requests and re
 Here’s how the cycle works:
 
 1. Request:
-The cycle begins when a client (e.g., a browser, mobile app) sends an HTTP request to a Node.js server. This request could be for data (GET request), to create or update resources (POST, PUT request), or to delete something (DELETE request).
+The cycle begins when a client (e.g., a browser, mobile app) sends an HTTP request to a Node.js server. This request could be for data (**get** request), to create or update resources (**post**, **put** request), or to delete something (**delete** request).
 The HTTP request typically contains:
     - URL: The resource the client is requesting (e.g., /home).
-    - HTTP Method: Indicates the type of request (GET, POST, PUT, DELETE, etc.).
+    - HTTP Method: Indicates the type of request (**get**, **post**, **put**, **delete**, etc.).
     - Headers: Metadata about the request (e.g., content type, authentication).
-    - Body: Data sent with the request (used in POST, PUT requests).
+    - Body: Data sent with the request (used in **post**, **put** requests).
 2. Processing the Request:
 When the server receives the request, the Node.js application processes it. Typically, this involves:
     - Routing: Determining which code or function should handle the request based on the URL and HTTP method. For example, if the request is for `/home`, the server may have a handler for that URL.
@@ -71,7 +71,7 @@ Finally, the client receives the response. Depending on the content type, the cl
 
 ### Example Flow:
 1. Client Request: The user enters http://localhost:3000/about in their browser.
-2. Server: Node.js receives the request and matches it to a route handler, e.g., for the GET /about route.
+2. Server: Node.js receives the request and matches it to a route handler, e.g., for the **get** /about route.
 3. Processing: The server may run some logic, like fetching data from a database or processing the request.
 4. Server Response: The server sends an HTML page (or JSON, depending on the request) back with a 200 OK status code.
 5. Client: The browser displays the content returned by the server.
@@ -134,7 +134,7 @@ Other important bits of information that are not necessarily part of the `header
 - `body`: The data sent with the request.
 - `params`: The data sent as part of the URL.
 - `query`: The data sent as part of the URL search string.
-- `method`: The type of request (GET, POST, PUT, DELETE, etc.)
+- `method`: The type of request (**get**, **post**, **put**, **delete**, etc.)
 - `url`: The URL of the request.
 - `ip`: The IP address of the client.
 - `cookies`: Any cookies sent with the request.
