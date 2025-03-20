@@ -136,7 +136,9 @@ Import your new function into `product.ts` and use it to retrieve the URL param 
 
 > Where did the 880RR come from? If you look in the json/tents.json file you will see that each record in there has an id. 880RR is the id for the first tent!
 
-Then test your getParams function in product.ts to see if you can get the product id successfully when someone navigates to the product-details page. You could set a breakpoint in your code and inspect, or you could use a `console.log`. This would be a good time to test out our findProductById method as well.
+Then test your getParams function in product.ts to see if you can get the product id successfully when someone navigates to the product-details page. You could set a breakpoint in your code and inspect, or you could use a `console.log`. This would be a good time to test out our findProductById method as well. You will need to visit the first product page (Marmot Ajax) to see the logged value.
+
+You should also update the rest of the links in `/index.html` to match the first one. You can look up the IDs in the tents.json file.
 
 <Details summary="Click for example code (product.ts)">
 
@@ -148,12 +150,9 @@ console.log(findProductById(productId));
 ```
 </Details>
 
-You should also update the rest of the links in /index.html to match the first one. You can look up the IDs in the tents.json file.
-
-
 ### **06** productDetails.mts
 
-Create a new file in the js folder called `productDetails.mts`
+If you didn't do it earlier, create a new file in the js folder called `productDetails.mts`.
 
 The `productDetails.mts` module will be responsible for all of the functionality needed to lookup data for a specific product and display it in HTML. Good modules often follow a "black box" philosophy. The module should be very upfront about what it needs to function, but very opaque about the details of how it accomplishes its work. This means in part that we should only expose as much as we need to for it to work. The following functions are recommended:
 
@@ -172,7 +171,7 @@ const productId = getParam("product");
 productDetails(productId, ".product-detail");
 ```
 
-Notice we import in the code we need from our modules. Then we get the id of our product using our helper function getParams. Then we use the function from productDetails with the productId to finish setting everything up.
+Notice we import in the code we need from our modules. Then we get the id of our product using our helper function `getParam`. Then we use the function from productDetails with the productId to finish setting everything up.
 
 ### **07**  Check Your Build
 
@@ -180,7 +179,7 @@ We just made some changes to the structure of our site. You probably don't reali
 
 We can check the production build locally. If you run npm run build it will update the files in the dist directory. You should do this periodically to check to make sure nothing is broken!
 
-Before moving on go ahead and run `npm run build`. We can get Vite to preview that build directory as well by adding a new command to our package.json file. Add the following: `"preview": "vite preview",` to the scripts section, then run it. Check to see what still works and what is broken. (You always need to run npm run build before you run npm run preview after you have made any changes.)
+Before moving on go ahead and execute `npm run build`. We can get Vite to preview that build directory as well by using another command in our package.json file. Ensure the following line is also in the scripts section: `"preview": "vite preview",` (add it if it is not there), then run it. Check to see what still works and what is broken. (You always need to execute `npm run build` before you execute `npm run preview` after you have made any changes.)
 
 When we made the changes to the product details page, we forgot to update Vite so that it knew about the changes. Let's do that now.
 
@@ -224,9 +223,9 @@ Anytime we add or remove more .HTML files to the site we will need to update thi
 
 We need to make one more build tool related change. If you look inside of the `dist` directory...you will notice that the .json files from the json folder are not there! Vite doesn't know it needs to copy them over. That means that on production the Product details page will not work since it relies on that file to look up the product information.
 
-The easiest way to fix this would be to create a new directory called `src/public`. Then move the `json` directory into that new folder. Vite will automatically copy everything in the `public` folder over to the build.
+The easiest way to fix this would be to move the `json` directory into the `public` directory. Vite will automatically copy everything in the `public` folder over to the build. If you do not have a `public` directory create one.
 
-You should move the `images` directory into the `public` directory as well.
+You should move the `images` directory into the `public` directory as well, if it is not already there.
 
 Someone on the team should check the build periodically to make sure it is not broken. A good time to do this would be each time a pull request is merged!
 
@@ -236,7 +235,7 @@ Someone on the team should check the build periodically to make sure it is not b
 
 Complete this activity by writing the rest of the code to display our product. Make sure to pay attention to your Types as you go.
 
-- `productDetailsTemplate(product)`: The easiest way to do this would be to use a template literal string, e.g.:
+- `productDetailsTemplate(product)`: The markup you need can be found in step 3. Grab that code and put it into a template literal string, e.g.:
 ```javascript
 function productDetailsTemplate(product) {
     return `<p>${product.Name}</p>`;

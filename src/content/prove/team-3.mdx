@@ -242,33 +242,27 @@ Now that we are connected to Atlas and have some data in a collection, we need t
 ```javascript
 // model/productModel.ts
 export async function getProductById(id: string): Promise<Product | null> {
-  try {
     const product = await mongodb.getDb().collection<Product>("products").findOne({Id: id});
-    if (!product) throw new Error(`Product with ID ${id} not found`);
     return product;
-  } catch (error) {
-    console.error(error);
-    return null;
-  }
 }
 ```
 
 ```javascript
 // routes/productRoutes.ts
 // GET /products/:id
-router.get('/:id', async function (req, res) {
-  try {
+router.get("/:id", async (req:Request, res:Response) => {
+  
     const {id} = req.params;
+    if (!id)  {
+      throw new EntityNotFoundError({message : 'Id required',code: 'ERR_VALID', statusCode : 400})
+    }
     const product = await getProductById(id);
     if (!product) {
-      return res.status(404).send('Product not found');
+      throw new EntityNotFoundError({message : `Product ${id} Not Found`,code: 'ERR_NF',
+        statusCode : 404})
     }
-    res.setHeader('Content-Type', 'application/json');
     res.status(200).json(product);
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ error: 'Internal server error' });
-  }
+  
 });
 ```
 </Details>
@@ -316,6 +310,8 @@ Go to `models/types.ts` in your server code and copy the contents. Paste them in
 Now you can open up `productDetails.mts` and you will notice that there is a red line under this portion of your template: `src="${product.Image}"`. If you hover over it you will see the following error message: "Property 'Image' does not exist on type 'Product'". Because we have updated the type for a Product, Typescript is helping to fix errors that have arisen from the updated data structure. Change `Image` to `Images.` As soon as you put the dot you should see the valid options. Pick one...medium or large would probably be good. Check the page in the browser again to make sure it is working.
 
 Oh, and you should go update `cart.ts` as well...it also uses the product image.
+
+>**Note** After this branch is merged back into main, each member of the team will need to run `(p)npm install` again after they pull `main` to get the cors package installed into their local environment.
 
 
 ## Instructor's Solution
