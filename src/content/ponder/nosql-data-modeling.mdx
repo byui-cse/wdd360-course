@@ -155,61 +155,73 @@ Once you have your list of collections, think about how they relate to each othe
 
 When representing related data in NoSQL we have two options. Embed the information, or link to it. Note that there was a decision made to not embed the product reviews, and yet the images were embedded. Why do you think that is? Record your thoughts about these decisions.
 
+Here are a few other things to consider:
+- What information do we need about a User? You should generally try and store the minimum necessary, but make sure you have enough to do what you need...ie complete an Order.
+- Do we need a CartItems collection or should that just live inside of a User?
+- Should a CartItem just be a copy of an entire Product? or should we only store productId and join with the Product collection when we need the rest of the details? Do we need to know everything about a product for the cart?
+- Similar thoughts about an Order. How much information do we need about a Product in an Order document to be able to successfully process an order?
+- If we decide that the Product in the cart does not need contain all of the product info, does it need a similar set of information as an Order? Could the cart and order share a schema?
+- If we store Product details in the Products, Users, and Orders collections that seems like a lot of duplicated information. Is that OK?
+
 Create document schemas for the other collections in your list.  You do not need to have values for each field. In fact since we are using Typescript in our project a good way to provide the schema is with a Typescript interface:
 
 ```javascript
-interface Product {
-    _id: string;
-    Id: string;
-    IsClearance: boolean;
-    Category: string;
-    IsNew: boolean;
-    Url: string;
-    Reviews: {
-      ReviewsUrl: string;
-      ReviewCount: number;
-      AverageRating: number;
-    };
-    NameWithoutBrand: string;
-    Name: string;
-    Images: {
-      PrimarySmall: string;
-      PrimaryMedium: string;
-      PrimaryLarge: string;
-      PrimaryExtraLarge: string;
-      ExtraImages: {
-        Title: string;
-        Src: string;
-      }[];
-    };
-    SizesAvailable: {
-      ZIPPER: string[];
-    };
-    Colors: Color[];
-    DescriptionHtmlSimple: string;
-    SuggestedRetailPrice: number;
-    Brand: {
-      Id: string;
-      Url: string;
-      ProductsUrl: string;
-      LogoSrc: string;
-      Name: string;
+export interface Product {
+  _id: ObjectId;
+  id: string;
+  productId: string; // note that 'Id' was originally used as a key, but in TypeScript it's convention to use camelCase for properties, not keys
+  isClearance: boolean;
+  category: string;
+  isNew: boolean;
+  url: string;
+  reviews: {
+    reviewsUrl: string;
+    reviewCount: number;
+    averageRating: number;
   };
-    ListPrice: number;
-    FinalPrice: number;
-  }
-  interface Color {
-    ColorCode: string;
-      ColorName: string;
-      ColorChipImageSrc: string;
-      ColorPreviewImageSrc: string;
-  }
+  nameWithoutBrand: string;
+  name: string;
+  images: {
+    primarySmall: string;
+    primaryMedium: string;
+    primaryLarge: string;
+    primaryExtraLarge: string;
+    extraImages: {
+      title: string;
+      src: string;
+    }[];
+  };
+  sizesAvailable: {
+    zipper: string[];
+  };
+  colors: Color[];
+  descriptionHtmlSimple: string;
+  suggestedRetailPrice: number;
+  brand: Brand;
+  listPrice: number;
+  finalPrice: number;
+}
+
+export interface Color {
+  colorCode: string;
+  colorName: string;
+  colorChipImageSrc: string;
+  colorPreviewImageSrc: string;
+}
+
+export interface Brand {
+  id: string;
+  url: string;
+  productsUrl: string;
+  logoSrc: string;
+  name: string;
+}
 ```
 
 
 ## **03** Turn in your schema.
 
-Submit your list of collections with an example document for each to ILearn. Make sure that all the functionality listed above can be met, and that the relationships are all modeled correctly.
+Submit your list of collections with an example document (can be json or in the form of a Typescript Interface) for each to ILearn. Make sure that all the functionality listed above can be met, and that the relationships are all modeled correctly.
 
 Submit also your thoughts about how you decided to implement the relationships in your model.
 
