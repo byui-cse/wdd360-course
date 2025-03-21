@@ -49,7 +49,7 @@ Take a few minutes with your team to review the code you were given. Here are a 
 If the structure looks familiar, it should. It's based heavily on the structure used in CSE 340. It is using an MVC (Model, View, Controller) approach, but the `routes` are doing double duty as the controllers as well.
 
 ### **03** Connect to MongoDB Atlas
-One member of the team should connect to MongoDB Atlas and create a new database for this project. You can call the database `sleepoutside`. On the Clusters screen click on 'Connect', then select "Drivers" and make sure "Node.js" is selected. It will show you some code that will look something like this:
+One member of the team should connect to [MongoDB Atlas](https://www.mongodb.com/products/platform/atlas-database/getting-started) and create a new database for this project. You can call the database `sleepoutside`. On the Clusters screen click on 'Connect', then select "Drivers" and make sure "Node.js" is selected. It will show you some code that will look something like this:
 ```javascript
 
 const { MongoClient, ServerApiVersion } = require('mongodb');
@@ -95,10 +95,11 @@ We will use the code above as a starting point to see how we can connect to Atla
 6. Create a variable called `db` and set it equal to the `.db(<database>)` method on the client variable you created above. Use the actual name of the database that your team created. We also put that in an environment variable.
 7. We will end up with several collections in our project and will use this script to set them all up. Initially we will start with the first one: `products`. Do some research if needed to find out how to create a collection through the Node.js client. Since we will be running this initialization more than once, it would be a good practice to drop and re-create the collection each time before we insert the data to avoid duplication. Create a function called `seedProducts` and pass in the `db` object as an argument. Add the code to drop and add a new collection called `products` in that function. Then call that function in `init`.
 8. We have been given some data to seed our products table with, but it is not quite in the correct format. If you look at `Reviews.ReviewsUrl` you will see something like this: `/reviewsbyproduct/14gvf/` This is not how we will be creating our route to pull our reviews. We need to change that to this: `/products/<productId>/reviews/` where `<productId>` is the Id of our product. Transform the data from `products.js` to make this change.
-9. Call the `.insertMany()` method on the product collection you created above and pass in the updated `products` array that we imported earlier as an argument.
-10. Once our work is complete, call the `.close()` method on the client object to close our connection to the database.
-11. Add a new script to our `package.json` file to allow us to run our script. Add the following: `"init-db": "node --env-file=.env src/database/initDb.js"` and save the file.
-12. Run the script and then login to Atlas to check to make sure the collection exists with the products in it.
+9. While we are at it...the provided data is in PascalCase. Let's take this opportunity to change the keys to use camelCase instead. Take a look at the provided `lowerCaseKeys` function in the "Hint" below.
+10. Call the `.insertMany()` method on the product collection you created above and pass in the updated `products` array that we imported earlier as an argument.
+11. Once our work is complete, call the `.close()` method on the client object to close our connection to the database.
+12. Add a new script to our `package.json` file to allow us to run our script. Add the following: `"init-db": "node --env-file=.env src/database/initDb.js"` and save the file.
+13. Run the script and then login to Atlas to check to make sure the collection exists with the products in it.
 
 Once done we will be able to reset and rebuild our database at any time.
 
@@ -129,10 +130,41 @@ const init = async () => {
   }
 };
 
+const lowerCaseKeys = function(obj) {
+  // if it is an object, but NOT an array, then we need to iterate through all of its keys
+  if (typeof obj === "object" && !Array.isArray(obj)) {
+    for (let key in obj) {
+      // take the first letter (key[0]) of the key and make it lowercase
+      // then add that to the rest of the key after REMOVING the first letter (key.slice(1))
+      let newKey = key[0].toLowerCase() + key.slice(1);
+      // if the value of this key is an object, then we need to call this function again
+      if (typeof obj[key] === "object") {
+        obj[newKey] = lowerCaseKeys(obj[key]);
+        delete obj[key];
+      } else {
+        obj[newKey] = obj[key];
+        delete obj[key];
+      }
+    }
+  } else if (Array.isArray(obj)) {
+    // if it is an array, then we need to iterate through each item in the array
+    // and for each object value call the function again.
+    for (let i = 0; i < obj.length; i++) {
+      let item = obj[i];
+      if (typeof item === "object") {
+        obj[i] = lowerCaseKeys(item);
+      }
+    }
+  }
+  return obj;
+}
+
 const seedProducts = async (db) => {
   // we need to make a small transform to the provided data before inserting
   // use .map() to transform each product before inserting it into the database
   // change Reviews.ReviewUrl to match the following pattern: /products/<productId>/reviews/
+
+  // while we are at it...the data provided used a PascalCase naming convention for its keys. Use the provided lowerCaseKeys function to convert all keys to camelCase. This will make it consistent with the rest of our models.
   
   try {
     // drop the collection to clear out the old records
@@ -160,9 +192,11 @@ init();
 Once you have completed this step, or if you get stuck you can look at this solution.
 <Details summary="init-db.js - completed">
 ```javascript
+// import MongoClient and ServerApiVersion from the mongodb library and import products from the products.js file.
 import { MongoClient, ServerApiVersion } from "mongodb";
 import { products } from "./products.js";
 
+//build the uri for our connection string
 const uri = `mongodb+srv://${process.env.MONGO_USER}:${process.env.MONGO_PASSWORD}@${process.env.MONGO_URI}`;
 console.log(uri);
 // Create a MongoClient with a MongoClientOptions object to set the Stable API version
@@ -177,19 +211,53 @@ const init = async () => {
   try {
     await client.connect();
     console.log(`Connected to MongoDB`);
- 
-       // initialize the Products collection
-    await seedProducts(client.db("sleepoutside"));
+    // get a reference to the actual database we will be using with .db(<database name>)
+    const db = client.db(process.env.MONGO_DATABASE);
+
+    // initialize the Products collection
+    await seedProducts(db);
   } catch (error) {
     console.error(error.message);
   } finally {
     await client.close();
   }
 };
+const lowerCaseKeys = function(obj) {
+  // if it is an object, but NOT an array, then we need to iterate through all of its keys
+  if (typeof obj === "object" && !Array.isArray(obj)) {
+    for (let key in obj) {
+      // take the first letter (key[0]) of the key and make it lowercase
+      // then add that to the rest of the key after REMOVING the first letter (key.slice(1))
+      let newKey = key[0].toLowerCase() + key.slice(1);
+      // if the value of this key is an object, then we need to call this function again
+      if (typeof obj[key] === "object") {
+        obj[newKey] = lowerCaseKeys(obj[key]);
+        delete obj[key];
+      } else {
+        obj[newKey] = obj[key];
+        delete obj[key];
+      }
+    }
+  } else if (Array.isArray(obj)) {
+    // if it is an array, then we need to iterate through each item in the array
+    // and for each object value call the function again.
+    for (let i = 0; i < obj.length; i++) {
+      let item = obj[i];
+      if (typeof item === "object") {
+        obj[i] = lowerCaseKeys(item);
+      }
+    }
+  }
+  return obj;
+}
 const seedProducts = async (db) => {
   // we need to make a small transform to the provided data before inserting
+  // use .map() to transform each product before inserting it into the database
+  // change Reviews.ReviewUrl to match the following pattern: /products/<productId>/reviews/
+  // while we are at it...the data provided used a PascalCase naming convention for its keys. Use the provided lowerCaseKeys function to convert all keys to camelCase. This will make it consistent with the rest of our models.
   const newProducts = products.map((product) => {
     product.Reviews.ReviewsUrl = `/products/${product.Id}/reviews/`;
+    product = lowerCaseKeys(product);
     return product;
   });
   try {
@@ -209,7 +277,9 @@ const seedProducts = async (db) => {
     console.error(error.message);
   }
 };
+
 init();
+
 ```
 </Details>
 
@@ -242,7 +312,7 @@ Now that we are connected to Atlas and have some data in a collection, we need t
 ```javascript
 // model/productModel.ts
 export async function getProductById(id: string): Promise<Product | null> {
-    const product = await mongodb.getDb().collection<Product>("products").findOne({Id: id});
+    const product = await mongodb.getDb().collection<Product>("products").findOne({id: id});
     return product;
 }
 ```
@@ -307,7 +377,7 @@ Go back to your frontend application and try hitting a product details page agai
 
 Go to `models/types.ts` in your server code and copy the contents. Paste them into `js/types.ts` in your frontend code. Replace what was in there.
 
-Now you can open up `productDetails.mts` and you will notice that there is a red line under this portion of your template: `src="${product.Image}"`. If you hover over it you will see the following error message: "Property 'Image' does not exist on type 'Product'". Because we have updated the type for a Product, Typescript is helping to fix errors that have arisen from the updated data structure. Change `Image` to `Images.` As soon as you put the dot you should see the valid options. Pick one...medium or large would probably be good. Check the page in the browser again to make sure it is working.
+Now you can open up `productDetails.mts` and you will notice that there is a red line under this portion of your template: `src="${product.image}"`. If you hover over it you will see the following error message: "Property 'Image' does not exist on type 'Product'". Because we have updated the type for a Product, Typescript is helping to fix errors that have arisen from the updated data structure. Change `image` to `images.` As soon as you put the dot you should see the valid options. Pick one...medium or large would probably be good. Check the page in the browser again to make sure it is working.
 
 Oh, and you should go update `cart.ts` as well...it also uses the product image.
 
