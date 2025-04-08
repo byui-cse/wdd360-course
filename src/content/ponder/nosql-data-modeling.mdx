@@ -163,65 +163,131 @@ Here are a few other things to consider:
 - If we decide that the Product in the cart does not need contain all of the product info, does it need a similar set of information as an Order? Could the cart and order share a schema?
 - If we store Product details in the Products, Users, and Orders collections that seems like a lot of duplicated information. Is that OK?
 
-Create document schemas for the other collections in your list.  You do not need to have values for each field. In fact since we are using Typescript in our project a good way to provide the schema is with a Typescript interface:
+Create document schemas for the other collections in your list.  I recommend starting by creating a text file outlining the following bits of information about each document in the collection:
+
+- the name of the field
+- the type of data it should contain
+- whether or not it is required
+- whether or not it is unique
+- any restrictions on length
+- a description of the field explaining it's purpose and giving hints about what makes it valid or invalid.
+
+For example for the alerts collection these notes would look like this:
+
+```text
+Alert: 
+_id: 
+    string,
+    required
+title:
+    string,
+    required,
+    description: "The title of the alert, must not be blank"
+type:
+    string,
+    required,
+    enum: ["warning", "info", "promotion"],
+    description: "The type of the alert, must be one of: warning, info, promotion"
+status:
+    string,
+    required,
+    enum: ["active", "inactive"]
+    description: "The status of the alert, must be one of: active or inactive"
+createdAt:
+    date,
+    required
+modifiedAt:
+    date,
+    required
+```
+
+>Why `_id` instead of just `id`? This is a MongoDB thing. It wants the primary identifier of the document to always be `_id`.
+>
+>For the Products collection we have been given existing data that already has an `id` field. When we import that into Mongo it will create an additional `_id`
+
+Notice that we have just written these as formatted text without paying too much attention to a specific format. We are just trying to get the information down in a quick and easy way so that we can use it later. Ultimately we will need this information in three different formats:
+
+- a Typescript interface
+- a [JSON Schema](https://json-schema.org/learn/getting-started-step-by-step) that we will use for validation of our data later
+- and as an [OpenAPI specification](https://swagger.io/docs/specification/about/) that we will use for documentation of our API.
+
+We will produce the first two in this activity, the last will wait until later. Turns out that AI is very good at re-formatting information. Open up your favorite AI tool and paste in the definition for an Alert above along with instructions to convert it into the JSON Schema format. Then ask AI to produce a Typescript Interface.
+You should get something like this:
 
 ```javascript
-export interface Product {
-  _id: ObjectId;
-  id: string;
-  productId: string; // note that 'Id' was originally used as a key, but in TypeScript it's convention to use camelCase for properties, not keys
-  isClearance: boolean;
-  category: string;
-  isNew: boolean;
-  url: string;
-  reviews: {
-    reviewsUrl: string;
-    reviewCount: number;
-    averageRating: number;
-  };
-  nameWithoutBrand: string;
-  name: string;
-  images: {
-    primarySmall: string;
-    primaryMedium: string;
-    primaryLarge: string;
-    primaryExtraLarge: string;
-    extraImages: {
-      title: string;
-      src: string;
-    }[];
-  };
-  sizesAvailable: {
-    zipper: string[];
-  };
-  colors: Color[];
-  descriptionHtmlSimple: string;
-  suggestedRetailPrice: number;
-  brand: Brand;
-  listPrice: number;
-  finalPrice: number;
-}
-
-export interface Color {
-  colorCode: string;
-  colorName: string;
-  colorChipImageSrc: string;
-  colorPreviewImageSrc: string;
-}
-
-export interface Brand {
-  id: string;
-  url: string;
-  productsUrl: string;
-  logoSrc: string;
-  name: string;
+// JSON Schema
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Alert",
+  "description": "Schema for Alert object",
+  "type": "object",
+  "required": [
+    "_id",
+    "title",
+    "type",
+    "status",
+    "createdAt",
+    "modifiedAt"
+  ],
+  "properties": {
+    "_id": {
+      "type": "string",
+      "description": "Unique identifier for the alert"
+    },
+    "title": {
+      "type": "string",
+      "description": "The title of the alert, must not be blank"
+    },
+    "type": {
+      "type": "string",
+      "enum": [
+        "warning",
+        "info",
+        "promotion"
+      ],
+      "description": "The type of the alert, must be one of: warning, info, promotion"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "active",
+        "inactive"
+      ],
+      "description": "The status of the alert, must be one of: active or inactive"
+    },
+    "createdAt": {
+      "type": "date",
+      "format": "date-time"
+    },
+    "modifiedAt": {
+      "type": "date",
+      "format": "date-time"
+    }
+  }
 }
 ```
+```javascript
+// TypeScript Interface
+interface Alert {
+  _id: string;
+  title: string;
+  type: 'warning' | 'info' | 'promotion';
+  status: 'active' | 'inactive';
+  createdAt: Date;
+  modifiedAt: Date;
+}
+```
+
+Do this for the rest of the collections. You will probably have better luck if you do them one at a time.
+
+>Make sure to look over the results from the AI. It doesn't always get things right...for example it might decide to add `"required": true` to properties. This is not valid JSON Schema. Instead all the required fields should be gathered into one `required:[]` array. You may need to tweak your prompt until it gets it right.
 
 
 ## **03** Turn in your schema.
 
-Submit your list of collections with an example document (can be json or in the form of a Typescript Interface) for each to ILearn. Make sure that all the functionality listed above can be met, and that the relationships are all modeled correctly.
+Submit your list of collections with the JSON schema and Typescript Interface for each to ILearn. Add your schemas to a file called `schemas.mjs`. You may need to create variables for each depending on how the AI gave you the results. Create another file called `types.mts` and put all the Typescript Interfaces in there.  Submit both files.
+
+Make sure that all the functionality listed above can be met, and that the relationships are all modeled correctly. The number of collections you end up with can vary depending on how you decide to structure things. 
 
 Submit also your thoughts about how you decided to implement the relationships in your model.
 
