@@ -432,13 +432,28 @@ const find:Find = {};
 
 ### **05** Deploy Backend
 
+We have already deployed our frontend...on Netlify. For Node that would not be the best choice. Instead we will deploy to a service called [Render](https://render.com/). The person who created the server repo in Github should complete this part.
+
+1. Open up the [Render First Deploy](https://render.com/docs/your-first-deploy) instructions and start following them.
+2. Choose "Web Service" for the type of app.
+3. After linking your Github account choose the correct repo.
+4. Verify the build command uses the correct package manager (npm or pnpm)
+5. Change the "Start Command" to `(p)npm run start`
+6. Set the environment variables. (You will need `MONGO_URI`, `PORT`, and `MONGO_DATABASE`)
+7. Save your setup, then once you can see the Dashboard for you project click on the "Connect" button. There will be a list of ip addresses. Copy them then login in the MongoDB Atlas account your team is using. On the left sidebar find the "Network Access" menu item. Add the IP addresses from Render to the list of allowed IPs.
+8. On the project Dashboard for render click on "Manual Deploy". Wait until it finishes, then try browsing to your app address.
+
+Once you have your server running on Render, we will need to make a change to our Netlify site to point it to our new backend server. The person who created the Netlify account should log in, then goto the correct project and select "Site Configuration". Goto the Environment Variables section. check to see if you have a `VITE_SERVER_URL` defined. If you do then update it to the URL for you render server. If you do not then create it and set it.
+
+Test to make sure everything is working.
+
 ## Instructor's Solution
 
 As a part of this team activity, you are expected to look over a solution from the instructor to compare your approach to that one. One of the questions on the I-Learn submission will ask you to provide insights from this comparison.
 
 Please DO NOT open the solution until you have worked through this activity as a team for at least one hour. At the end of the hour, if you are still struggling with some of the core requirements, you are welcome to view the instructor's solution and use it to help you complete your own code. Even if you use the instructor's code to help you, you are welcome to report that you finished the core requirements, if you code them up yourself.
 
-After working with your team for the one hour activity, click here for the instructor's solution: [server](https://github.com/matkat99/sleepoutsideServer/tree/team-03/src) and [client](https://github.com/matkat99/sleepoutsideClient/tree/team-03/src).
+After working with your team for the one hour activity, click here for the instructor's solution: [server](https://github.com/matkat99/sleepoutsideServer/tree/team-04/src).
 
 ## Make a pull request.
 
