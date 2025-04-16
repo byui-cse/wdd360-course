@@ -397,10 +397,26 @@ Here is an outline you can follow to direct your efforts:
 >
 >For example the last query we need to implement is the ability to restrict the results sent back to a specific list of fields. It would look something like this: `?fields=name,finalPrice` which would return only the `name` and `finalPrice` fields. The projection param specifies which fields to return in MongoDB. You can find more information on how to do this in the [MongoDB projection](https://www.mongodb.com/docs/manual/reference/method/db.collection.find/#projections) 
 6. Remove the `toArray()` from the end of our query.
-8. Check to see if we have a `fields` param. If so convert your field string into an object that looks like this: `{name: 1, finalPrice: 1}`.
+8. Check to see if we have a `fields` param. If so convert your field string into an object that looks like this: `{name: 1, finalPrice: 1}`. This is something that we will probably need to do elsewhere so encapsulate this in a function called `formatFields(fields:string)` then create a files called `services/utils.mts`, place the function there and export it.
 9. Use the fields object to limit your results. (`cursor.project(fields))
 10. Call `toArray()` to convert your cursor into an array. 
-11. Return the results.
+11. Format and return the data as a JSON object with `count`, `next` and `previous` fields, along with an array of objects that contain all of the product information. 
+sults.
+
+If you look closely at the response for our Products endpoint you will notice that it should send back something like this:
+
+```javascript
+{
+    "count": 1,
+    "next": null,
+    "previous": null,
+    "results": [
+        {
+           // product details
+        }
+    ]
+}
+```
 
 <Details summary="Hints">
 
@@ -426,6 +442,35 @@ interface Find {
 ... later when you declare your find variable
 const find:Find = {};
 
+```
+4. Building out the pagination wrapper is something that we will need to do more than once...so it makes sense to put it in a function that we cah re-use. Add this function to `utils.mts` as well and export it:
+```javascript
+export function buildPaginationWrapper(totalCount:number, query:Record<string, any>) {
+    const {limit=20, offset=0} = query;
+    const totalPages = Math.ceil(totalCount / limit);
+    const currentPage = Math.ceil(offset / limit);
+    const hasPreviousPage = currentPage > 1;
+    const hasNextPage = currentPage < totalPages;
+    let next, prev;
+    // create a new URLSearchParams object from the query parameters. This will make it easy to modify the fields we need to, while passing all the others on.
+  const params = new URLSearchParams(query);
+  if (hasPreviousPage) {
+    params.set("offset", (offset - limit).toString());
+    // query.offset = offset - limit;
+    prev = `/?${params}`;
+  }
+  if (hasNextPage) {
+    params.set("offset", offset + limit);
+    next = `/?${params}`;
+  }
+       
+    return {
+        count: totalCount, 
+        prev: prev || null, 
+        next: next || null, 
+        results: [] as any
+    }
+}
 ```
 
 </Details>
