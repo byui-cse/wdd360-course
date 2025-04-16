@@ -400,7 +400,7 @@ Here is an outline you can follow to direct your efforts:
 8. Check to see if we have a `fields` param. If so convert your field string into an object that looks like this: `{name: 1, finalPrice: 1}`. This is something that we will probably need to do elsewhere so encapsulate this in a function called `formatFields(fields:string)` then create a files called `services/utils.mts`, place the function there and export it.
 9. Use the fields object to limit your results. (`cursor.project(fields))
 10. Call `toArray()` to convert your cursor into an array. 
-11. Format and return the data as a JSON object with `count`, `next` and `previous` fields, along with an array of objects that contain all of the product information. 
+11. Format and return the data as a JSON object with `count`, `next` and `previous` fields, along with an array of objects that contain all of the product information. (you can get the count of total records with `await collection.countDocuments({query object})`)
 sults.
 
 If you look closely at the response for our Products endpoint you will notice that it should send back something like this:
