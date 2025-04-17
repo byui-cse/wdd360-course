@@ -501,7 +501,39 @@ export function buildPaginationWrapper(totalCount:number, query:QueryParams) {
 
 </Details>
 
-### **05** Deploy Backend
+### **05** Sanitize
+
+We should take a moment and talk about the security of our app. Whenever you allow users to provide parts of queries you are making ot a database you need to worry about security. We should always sanitize our inputs, especially when we are dealing with user provided data.
+
+Express does help with part. When data comes in through `req.body`, `req.params`, or `req.query` Express will convert any special characters into encoded versions. But there is an additional layer we should add to protect from MongoDB related attacks. In a MongoDB query the `$` is a special character that is used to run commands. We never want to allow a user to provide a command!. We strip the `$` character out of input provided by users.
+
+Add the following function to `utils.mts`
+
+```javascript
+export function sanitize(v:Record<string, any>) {
+  if (typeof v === "object") {
+      for (var key in v) {
+        console.log(key,/^\$/.test(key) )
+        if (/^\$/.test(key) ) {
+          delete v[key];
+        } else {
+          sanitize(v[key]);
+        }
+      }
+    }
+    return v;
+};
+```
+
+Then before we send data from `req.body`, `req.params`, or `req.query` to a query we should use this function to sanitize.
+```javascript
+const cleanQuery = sanitize(req.query);
+const results = await getAllProducts(cleanQuery);
+```
+
+We will also add some validation later to make sure that when creating records in the database the data looks good.
+
+### **06** Deploy Backend
 
 We have already deployed our frontend...on Netlify. For Node that would not be the best choice. Instead we will deploy to a service called [Render](https://render.com/). The person who created the server repo in Github should complete this part.
 
