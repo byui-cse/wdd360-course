@@ -385,13 +385,34 @@ We are finally ready to build some more API endpoints. Last week we built a simp
 
 Update the `GET /products` endpoint to accept some query parameters. Check the documentation to see which ones. Remember that express places and query params sent with a request in `req.params`. You can find more information about this in the express documentation.
 
+You will need to provide a type in the `getAllProducts` function when you pass the query params in.  All of the properties are optional, but if they exist they will be strings. So you should probably add something like this to the `models/types.mts` file:
+```javascript
+  // create an generic interface for our query parameters. This will make it easier to type check and validate the data we receive from the client. If we end up using query parameters for other routes we can modify it to include other fields.
+// this works because they are all optional. But if for example a limit exists it will have to  be a string.
+export interface QueryParams {
+  category?: string;
+  q?:string;
+  limit?: string;
+  offset?: string;
+  fields?: string;
+}
+```
+
+Then the function declaration will look something like this:
+```javascript
+export async function getAllProducts(query:QueryParams): Promise<{totalCount: number; data: Product[] | null}> {
+    // all the codes
+}
+```
+Note the return type. It is an object wrapped in a Promise. The Promise wrapper happens because it is an `async` function. We will send back both the products and the total number of matches to any query that might be sent. This will be necessary to implement our pagination.
+
 Here is an outline you can follow to direct your efforts:
 
 1. Notice that the `find({})` method we are using in the `getAllProducts` method takes an object as an argument. If we check out the [MongoDB docs](https://docs.mongodb.com/manual/reference/method/db.collection.find/#mongodb-method-db.collection.find) You can see that we can pass in something like: `{name: "Some string"}` and it will filter on that.
 2. You should also poke around in those docs to see how limiting and offsetting work. 
 3. Start with the `q` search. For now we will search on the `name` and `descriptionHtmlSimple` fields. Check to see if you got a `q` param, if you do then build out a `find` variable that you will pass into the `find()` method later.
 4. Next check to see if a `category` was passed in. Treat it the same as `q`
-5. Make sure to update your mongodb query to use your find object, and limit and offset.
+5. Make sure to update your mongodb query to use your find object, and limit and offset. You should also add a second query to get the totalCount using the same    `find` object. (you can get the count of total records with `await collection.countDocuments({query object})`)
 
 >Notice that at the end of our query we call `toArray()` to convert our find object into an array. This is because the `find` method returns a cursor, which is a special type of object that allows you to iterate over all of the results in your collection. Most of the time we can just convert directly, but sometimes we may need to modify our results in some way before we use it. 
 >
@@ -400,7 +421,8 @@ Here is an outline you can follow to direct your efforts:
 8. Check to see if we have a `fields` param. If so convert your field string into an object that looks like this: `{name: 1, finalPrice: 1}`. This is something that we will probably need to do elsewhere so encapsulate this in a function called `formatFields(fields:string)` then create a files called `services/utils.mts`, place the function there and export it.
 9. Use the fields object to limit your results. (`cursor.project(fields))
 10. Call `toArray()` to convert your cursor into an array. 
-11. Format and return the data as a JSON object with `count`, `next` and `previous` fields, along with an array of objects that contain all of the product information. (you can get the count of total records with `await collection.countDocuments({query object})`)
+11. Return the totalCount and any products found.
+11. In the route method when you get the data back from the model function you should format and send the data as a JSON object with `count`, `next` and `previous` fields, along with an array of objects that contain all of the product information. 
 sults.
 
 If you look closely at the response for our Products endpoint you will notice that it should send back something like this:
@@ -443,33 +465,37 @@ interface Find {
 const find:Find = {};
 
 ```
-4. Building out the pagination wrapper is something that we will need to do more than once...so it makes sense to put it in a function that we cah re-use. Add this function to `utils.mts` as well and export it:
+4. Building out the pagination wrapper is something that we will need to do more than once...so it makes sense to put it in a function that we can re-use. Add this function to `utils.mts` as well and export it, then use it in your products route:
 ```javascript
-export function buildPaginationWrapper(totalCount:number, query:Record<string, any>) {
-    const {limit=20, offset=0} = query;
+// remember we created a QueryParams interface earlier in types.mts? Import it and use it here again
+export function buildPaginationWrapper(totalCount:number, query:QueryParams) {
+    // here we check to see if there is a limit...if yes convert it to a number, if no set it to the default of 20
+    const limit= query.limit? parseInt(query.limit) : 20;
+    const offset= query.offset? parseInt(query.offset) : 0;
     const totalPages = Math.ceil(totalCount / limit);
-    const currentPage = Math.ceil(offset / limit);
+    const currentPage = Math.ceil(offset / limit)+1;
     const hasPreviousPage = currentPage > 1;
+    console.log(currentPage, totalPages);
     const hasNextPage = currentPage < totalPages;
     let next, prev;
     // create a new URLSearchParams object from the query parameters. This will make it easy to modify the fields we need to, while passing all the others on.
-  const params = new URLSearchParams(query);
+    // This is a bit of a hack because we can't use the query object directly in our URLSearchParams constructor.
+    const params = new URLSearchParams(query as Record<string, any>);
   if (hasPreviousPage) {
     params.set("offset", (offset - limit).toString());
-    // query.offset = offset - limit;
     prev = `/?${params}`;
   }
   if (hasNextPage) {
-    params.set("offset", offset + limit);
+    params.set("offset", (offset + limit).toString());
     next = `/?${params}`;
   }
        
-    return {
+  return {
         count: totalCount, 
         prev: prev || null, 
         next: next || null, 
         results: [] as any
-    }
+  }
 }
 ```
 
