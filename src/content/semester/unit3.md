@@ -17,7 +17,7 @@ tags: [
 
 ## Ponder
 
-- [Svelte practice](https://byui-cit.github.io/learning-modules/modules/js/localStorage/ponder1)
+- [Svelte practice](../../ponder/svelte-1)
 - [SleepOutside](https://byui-cit.github.io/learning-modules/modules/design/progressive-enhancement/ponder1/)
 
 ## Prove

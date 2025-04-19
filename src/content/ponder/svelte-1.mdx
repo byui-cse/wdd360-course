@@ -1,0 +1,208 @@
+---
+title: Svelte Part 1
+description: This activity will give some practice with using Svelte to create components by creating a reusable dialog and user management menu
+time: 1 hours
+---
+import Details from '../../components/Details.astro'
+
+## Introduction
+
+A very popular way to build web apps currently is by creating re-usable components. These components have all of the markup, styling, and functionality packaged up in an easy to use form. The `productDetails` module we made earlier followed this form to some extent. all we had to do to get a product to display with
+it's details was to call a function.
+
+Our module works, but has a few drawbacks with performance and implementation. Because it can be fairly difficult to solve those problems, and because almost everyone writing web applications runs into them many libraries and frameworks have been built to help.
+
+Part of your reading for this week was a [tutorial on Svelte](https://learn.svelte.dev/tutorial/welcome-to-svelte). Svelte is a framework for creating modern web applications with components. We will be using it in our project starting with this week to help us build our re-usable components.
+
+One nice thing about Svelte components is that they are file based. One file for all the HTML markup, CSS, and Javascript. Another nice thing is that the templates are mostly just HTML...with some Svelte specific templating additions.
+
+## **01** Getting Started
+
+Visit the team's copy of the Trello board for the project. Add yourself to the "Add item to cart broken" task...then move it to "Doing" (if the card is already in "Doing" then just add yourself). Read the details of the card.
+
+Open up the frontend project that you and your team should have setup in the Team Activity 1. Make sure to `pull` any changes from GitHub before proceeding. Next create a new branch called `initials--week5-svelte`. So if the name name were John Doe the branch should be called `jd--week5-svelte`
+
+Each member of the team should complete this activity in their own branch, but at the end only *one* should merge their branch back into main.
+
+## **02** Install and configure Svelte
+
+We first need to add Svelte to our project. Because we are already using a package manager (npm) and a bundler (Vite) this is really easy.
+
+Open the terminal in VSCode and run the following command: `(p)npm i -save-dev svelte @sveltejs/vite-plugin-svelte`
+
+Svelte is a little different than many other frontend frameworks like React, Vue, or Angular. It is actually a compiler. When you write a React app for example you have to send the entire React codebase along with your code so that it can work. Svelte runs a compile process instead. When it is done you don't need the Svelte library anymore, so you end up sending less code to the browser.
+
+We need the compiler to run each time we make a change to our code however so we can see the effect of our changes. Luckily because of the way in which our project is already setup it is easy to make this happen. We will need to make a couple more small changes however.
+
+Add the following lines to your <kbd>vite.config.js</kbd> file first:
+
+```javascript
+import { svelte } from "@sveltejs/vite-plugin-svelte";
+
+export default defineConfig({
+plugins: [svelte()],
+//... the rest of the config here ...
+});
+```
+
+At the end your file should look something like below:
+
+```javascript
+import { resolve } from "path";
+import { defineConfig } from "vite";
+import { svelte } from "@sveltejs/vite-plugin-svelte";
+
+export default defineConfig({
+    plugins: [svelte()],
+    root: "src/",
+    build: {
+    outDir: "../dist",
+    rollupOptions: {
+        input: {
+        main: resolve(__dirname, "src/index.html"),
+        cart: resolve(__dirname, "src/cart/index.html"),
+        checkout: resolve(__dirname, "src/checkout/index.html"),
+        productDetail: resolve(__dirname, "src/product_pages/index.html"),
+        },
+    },
+    },
+});
+```
+              
+Then create a new file in the root of your project called `svelte.config.js`. Add the following to that file:
+              
+```javascript
+import { vitePreprocess } from '@sveltejs/vite-plugin-svelte'
+
+export default {
+    preprocess: vitePreprocess(),
+}
+```
+              
+The last change we need to make is to add the line `"type": "module",` into our `package.json` file. That's it. We can now use Svelte in our project!
+              
+>Once the changes from this team activity are merged back into the main branch, each member of the team should pull those changes and then run the command `npm install`. You should only have to do this once to grab the new tools into your local development environment.
+>
+>There is one more thing you will probably want to do to finish your setup. There is a very nice VS Code extension for Svelte that will make your life much easier. It's called "Svelte for VS Code". Each member of the team should install it.
+
+## **03** Create the UserMenu Component
+
+Often we want to show content that is not always visible on our page. This could be a menu, a tooltip (popover), or a dialog asking for settings or other information. A modal is a type of dialog that blocks access to other content on the page until it is dismissed. The current menu that pops up would be considered non-modal because it is not blocking access to other content on the page.
+
+On the other hand, if something like a login form shows up, we generally want the user to deal with it...either fill it out or dismiss it, before they continue with what they were doing. Modal dialogs are useful things that could show up in our application. We are going to create two components: a `UserMenu.svelte` component that will show up on every page and control the menu that show when the hiker is clicked, and a `Dialog.svelte` component that can be used as needed and create a modal dialog with customizable contents. 
+
+We will make the `UserMenu` first.
+
+1. Create a file called `src/js/components/UserMenu.svelte`. You will need to create the `components` folder.
+2. Copy the HTML from `/src/index.html` that makes makes the user menu. Basiclaly the contents of the `<div class="user-menu-container">` is what we want. Paste it into the component.
+3. Right now the javascript that enables the menu is found in `utils.mts`. We import the function into `main.ts` and run it. One nice thing about components is that we can embed functionality like that into them to make them easier to use. Copy the `openUserMenu` function into the component. You will need to add a `<script></script>` block at the top of the component. You will also need to import in the `setClick` function from utils.
+4. Add a `onclick={openUserMenu}` attribute on the HTML for the button that opens the menu.
+5. If you wanted you could also move the css that styles the menu into the component as well. Anything that is only used for the menu could be moved inside and become private to the component.
+6. Mount the component into the page. You will need to import the component and the mount function. `mount` takes two arguments: a component, and some options...the most importa of which is teh `target` element you want to mount the component into. The code to do this can be found below.
+<Details summary="Mounting the menu">
+```javascript
+import { mount } from "svelte";
+import UserMenu from './components/UserMenu.svelte';
+
+// get the element we want to put the component in
+const menuEl = document.querySelector('.user-menu-container');
+// check to make sure it exists
+if(menuEl) {
+    mount(UserMenu, {
+        target: menuEl
+    });
+}
+```
+</Details>
+7. Comment out or remove the code for the menu in `src/index.html`. Then check to make sure everything is still working
+
+
+## **04** Create the Dialog Component
+
+  We will create our reusable dialog next. A dialog needs to have some trigger...usually a button and a container that will hold the content of the dialog that is hidden by default. Part of that container must hold a way (usually another button) to close the dialog.  HTML actually has a `dialog` element that automatically is hidden by default. We will use that.
+
+  To open a `dialog` we get a reference to the element in Javascript then call its `.show()` or `.showModal()` method. To close it we call `.close()`.
+
+1. Create a file called `src/js/components/Dialog.svelte`.
+2. Add a `button` with text "Open", a `dialog`, and inside the dialog another `button` with an "X" and a headline with something in it. 
+3. Add some CSS to style it. It should be centered on the page. The "X" button should be moved to the top right corner.
+4. We are going to need a reference to our dialog in order to open and close it. We could just use a `document.querySelector` but with Svelte we have another option. We can bind a reference to any element easily. Create a variable called `dialogRef`. Bind it to our `dialog` element. `<dialog bind:this={dialogRef}>`
+5.  Create two functions in our component: `open` and `close`. They should both take no arguments.
+6. In our `open()` function, call `dialogRef.showModal()`. In our `close()` function, call `dialogRef.close()`.
+>We should also add an Accessibility thing that has been missing as well. It is good to let assitive technologies know what state our menu is in. We can do this with `aria-expanded`. We can set it to true or false depending on whether our menu is open or closed. In the `open` function set it to true and in our `close()` function set it to false.
+7. Finally set an `onclick` attribute on our `button` that calls our `open()` function.
+8. Add an `onclose` event listener to the button in our `dialog`. It should call our `close()` function.
+9. Test our component. Import the component into the `UserMenu` component. Then you can add it into the menu by treating it just like any other HTML element `<Dialog ></Dialog>` You will probably want to change how the button works. Check out the `link-style-button` class in the `styles.css` file.
+10. Test our component by opening it and closing it. 
+
+## **05** Passing content into components.
+
+In order to really have a reusable component we need to be able to pass content into it. We can do that by either using props, or children. We will have need of both. We will pass in the label for the opening button as a prop, and the main contents of the open dialog as children.
+
+1. Create a new file called `src/js/components/Login.svelte`. This will be our login form.
+2. Add labels and inputs for email and password. Then add a button with the text `Log In`. Add an `onclick` attribute to the button that calls a function called `loginHandler` that we will create later.
+3. Add a `script` element and create the `loginHandler` function. We will not implement this fully today, but will just make the button close the dialog when clicked.
+4. Part of the challenge with this task is that the `Login` component might not always be used in a dialog. So we need to figure out if it is in a `dialog` first. Then if it is we need a reference to the dialog to call `.close()` with. Hint. Remember that `element.closest(parent-element)` is a thing.
+5. Import our `Login` component into `UserMenu`. Add it inside of the `Dialog` we added earlier. While you are there also add an attribute called `label` It should look like this when done:
+```javascript
+<Dialog label="Log In">
+    <Login />
+</Dialog>
+```
+6. Open the `Dialog.svelte` file. When we added the attribute `label` it is called a "prop". We have to tell the component that we are expecting props. Towards the top of the `script` (below an imports) add the following: `let {label, children} = $props();`. `label` is the attribute. `children` is any contents that we add inside of the element. In this case it will be the login component.
+7. We can use the label prop in our template by just wrapping it in `{label}`. Replace the words in the button that is for opening the dialog ("Open") with `{label}`
+8. Finally we need to insert the children. We will use the `{@render}` command to do this. Inside the `<dialog>` element add `{@render children()}`. That should replace everything but the  "X" button.
+9. Style and Test.
+
+
+You can find all the templates below if you get lost.
+
+<Details summary="Dialog Template">
+```javascript
+<button class="link-style-button" onclick={open}>{label}</button>
+
+<dialog bind:this={dialog} class="modal">
+  <button onclick={close}>X</button>
+  {@render children()}
+</dialog>
+```
+</Details>
+
+<Details summary="Login Template">
+```javascript
+<form onsubmit={loginHandler}>
+  <label for="email">Email</label>
+  <input type="text" id="email" bind:value={email} />
+  <label for="password">Password</label>
+  <input type="password" id="password" bind:value={password} />
+  
+  <button>Login</button>
+</form>
+<button class="link-style-button">Register</button>
+
+```
+</Details>
+
+<Details summary="UserMenu Template">
+```javascript
+<div class="user">
+  <button
+    class="user__button"
+    aria-label="user management"
+    title="User Management"
+    popovertarget="userMenu"
+    onclick={() => openUserMenu(".user__button")}
+  >
+    <img src="/images/noun-hiker.svg" alt="user icon" />
+  </button>
+  <nav class="user__menu" id="userMenu">
+      <Dialog label="Login"><Login /></Dialog>
+      <a href="#">Profile</a>
+      <a href="#">Orders</a>
+  </nav>
+</div>
+```
+</Details>
+## **06** Submit
+
+When you have completed the task, make sure to commit and push, then submit a link to your branch in Github to ILearn. Also post a response to this prompt: "Now that the `openUserMenu` function is part of the `UserMenu` component, how could it be refactored and potentially optimized?"

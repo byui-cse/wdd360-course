@@ -15,18 +15,21 @@ There are many spots where code examples have been given. To get the most out of
 
 ## Core Requirements
 
+The driver should visit the team's copy of the Trello board for the project. Add each of the attending team members to the "Team4" task...then move it to 'Doing'. Read the details of the card together.  
+  
+The driver should make sure to `pull` any changes from GitHub before proceeding. Next they should create a new branch of the server and client repos called `initials--team4`. So if the driver's name were John Doe the branch should be called `jd--team4`.
 
-### **01** Finish `initDb.js`
+### **01** Server: Finish `initDb.js`
 
-We began created a script to setup our database, and seed the products table. This will allow us to reset our database anytime we need to easily. We are not done however. We need to add a few more things to our database setup script:
+We began creating a script last week to setup our database, and to seed the products table. This will allow us to reset our database anytime we need to easily. We are not done however. We need to add a few more things to our database setup script:
 
-- Drop/Add an `alerts` collection
-- Drop/Add an `orders` collection
-- Drop/Add a `users` collection.
-- Add a user to the users collection for testing
-- Add indexes on `products` and `users`
+1. Drop/Add an `alerts` collection
+2. Drop/Add an `orders` collection
+3. Drop/Add a `users` collection.
+4. Add a user to the users collection for testing
+5. Add indexes on `products` and `users`
 
-When we add the test user we will want to hash the password before storing it. Hashing is a process where we take a string of text (in this case our password) and turn it into something else. This is done so that we can store the password in a way that makes it difficult for someone to figure out what the original password was. We will use a library called `argon2` for this. You will need to install it into your project: `(p)npm install argon2` Then import it into the `init-db.js` file: `import * as argon2 from "argon2";`. To use it to hash a password you can do the following: `const hashedPassword = await argon2.hash("password");`. 
+When we add the test user we will want to hash the password before storing it. Hashing is a process where we take a string of text (in this case our password) and turn it into something else. This is done so that we can store the password in a way that makes it difficult for someone to figure out what the original password was. We will use a library called `argon2` for this. You will need to install it into your backend project: `(p)npm install argon2` Then import it into the `init-db.js` file: `import * as argon2 from "argon2";`. To use it to hash a password you can do the following: `const hashedPassword = await argon2.hash("password");`. 
 
 A user should have at least the following fields:
 
@@ -36,19 +39,19 @@ A user should have at least the following fields:
 - createdAt (date)
 - updatedAt (date)
 
->Indexes on database table are critical for good performance. Indexes allow us to quickly find data in a table without having to scan every row of the table. This is especially important for large tables with many rows and columns. You want indexes on columns that we will query on frequently. You can read more about indexes [here](https://www.mongodb.com/docs/manual/indexes/). 
+>Indexes on database tables are critical for good performance. Indexes allow us to quickly find data in a table without having to scan every row of the table. This is especially important for large tables with many rows and columns. You want indexes on columns that we will query on frequently. You can [read more about indexes](https://www.mongodb.com/docs/manual/indexes/). 
 
-We can easily add indexes in our setup script by using the `createIndex` method on our collection: `await productsCollection.createIndex({ name: 1 });`. Add indexes on the `products` collection on `name`, `description`, `category`, `id`. Add indexes on the `users` collection on `username`, `email`.
+We can easily add indexes in our setup script by using the `createIndex` method on our collection: `await productsCollection.createIndex({ name: 1 });`. Add indexes on the `products` collection on `name`, `description`, `category`, `id`. Add indexes on the `users` collection on `name`, `email`.
 
-Test your script when you are done to make sure there are no errors.
+Test your script when you are done to make sure there are no errors. (Run the script we added last week in the `package.json` 😁)
 
-### **02** Setup OpenApi docs
+### **02** Server: Setup OpenApi docs
 
-Unless you are following strict REST principles in the design of your API (under strict RESt APIS should be self documenting. Each call should give you guidance on what to do next) documentation is very important. Most APIS do not follow strict REST but are often referred to as "REST-ish". The API for SleepOutside is no exception. We can use OpenApi to document our API and make it self documenting. If you have a Swagger config file providing documentation for our API becomes very simple by using a node module called [swagger-ui-express](https://www.npmjs.com/package/swagger-ui-express). You should have generated part of the specification for our API in an activity earlier this week. But since you did not complete the specs for the whole API, a complete specification will be provided.
+Unless you are following strict REST principles in the design of your API (under strict REST APIS should be self documenting. Each call should give you guidance on what to do next) documentation is very important. Most APIS do not follow strict REST but are often referred to as "REST-ish". The API for SleepOutside is no exception. We can use OpenApi to document our API and make it self documenting. If you have a Swagger config file providing documentation for our API becomes very simple by using a node module called [swagger-ui-express](https://www.npmjs.com/package/swagger-ui-express). You should have generated part of the specification for our API in an activity earlier this week. But since you did not complete the specs for the whole API, a complete specification will be provided.
 
 Download this [swaggerDesign.json](/files/swaggerDesign.json) file and place it into the `src` folder on your server. To finish the setup do the following:
 
-1. Install swagger-ui-express and types for it.
+1. Install swagger-ui-express and types (`@types/swagger-ui-express`) for it.
 2. Create a `swaggerRoutes.mts` file in the routes folder.
 3. Import Router, swagger-ui-express, and swaggerDesign.json into our `swaggerRoutes.mts` file.
 4. Setup the Router object as we have done before.
@@ -60,7 +63,7 @@ Download this [swaggerDesign.json](/files/swaggerDesign.json) file and place it 
 >
 > You will also need to go into the `tsconfig.json` file and uncomment the line that looks like this: `"resolveJsonModule": true`
 
-### **03** Update types and JSONSchema files.
+### **03** Both: Update types and JSONSchema files.
 While we are at it. Our type and schema files in our projects are incomplete. We will update them now to contain the correct types and schemas. Copy/paste the following code into your `types.ts` file in both the backend and frontend codebase.
 
 <Details summary="types.ts">
@@ -68,7 +71,7 @@ While we are at it. Our type and schema files in our projects are incomplete. We
 import { ObjectId } from "mongodb";
 
 export interface Product {
-  _id: string;
+  _id: ObjectId;
   id: string;
   isClearance: boolean;
   category: string;
@@ -123,9 +126,9 @@ export interface User {
     email: string;
     password: string;
   name: string;
-  address: Address;
-  phoneNumbers: PhoneNumber[];
-  cart: CartItem[];
+  address?: Address;
+  phoneNumbers?: PhoneNumber[];
+  cart?: CartItem[];
   createdAt: Date;
   updatedAt: Date;
 }
@@ -155,7 +158,7 @@ export interface Address {
 };
 
   export interface Order {
-    _id: string;
+    _id: ObjectId;
     userId: string;
     totalAmount: number;
     status: "pending" | "processing" | "shipped" | "delivered";
@@ -170,7 +173,7 @@ export interface Address {
   }
 
   export interface Alert {
-    _id: string;
+    _id: ObjectId;
     title: string;
     type: 'promotion' | 'info' | 'warning';
     status: 'active' | 'inactive';
@@ -181,10 +184,131 @@ export interface Address {
 ```
 </Details>
 
+>When you paste this into the `types.mts` file on the frontend you need to make one change. The frontend does not know what an `ObjectId` is. As far as it is concerned the `_id`s will just be strings. Do a Find/Replace: `_id: ObjectId;` to `_id: string`. Then get rid of the `import` at the top of the file.
+
 Then create a file (if it does not already exist) in the server codebase in `src/database/json-schema.ts` with the following code:
 
 <Details summary="json-schema.ts">
 ```ts
+// Product schema
+export const ProductSchema = {
+  $schema: "http://json-schema.org/draft-07/schema#",
+  title: "Product",
+  description: "",
+  type: "object",
+  properties: {
+    _id: { type: "string" },
+    id: { type: "string" },
+    isClearance: { type: "boolean" },
+    category: {
+      type: "string",
+      enum: ["tents", "backpacks", "sleeping-bags", "hammocks"],
+      description:
+        "category of the product, should not be blank and should be either tents, backpacks, sleeping-bags or hammocks"
+    },
+    isNew: { type: "boolean" },
+    url: { type: "string" },
+    reviews: {
+      type: "object",
+      properties: {
+        reviewsUrl: { type: "string" },
+        reviewCount: { type: "number" },
+        averageRating: { type: "number" }
+      }
+    },
+    nameWithoutBrand: {
+      type: "string",
+      description:
+        "name of the product without the brand, should be a string and cannot be blank"
+    },
+    name: {
+      type: "string",
+      description:
+        "name of the product, including the brand, should be a string and cannot be blank"
+    },
+    images: {
+      type: "object",
+      properties: {
+        primarySmall: { type: "string" },
+        primaryMedium: { type: "string" },
+        primaryLarge: { type: "string" },
+        primaryExtraLarge: { type: "string" },
+        extraImages: {
+          type: "array",
+          items: {
+            type: "object",
+            properties: {
+              title: { type: "string" },
+              src: { type: "string" }
+            }
+          }
+        }
+      }
+    },
+    sizesAvailable: {
+      type: "object",
+      properties: {
+        zipper: { type: "array", items: { type: "string" } },
+        size: { type: "array", items: { type: "string" } }
+      }
+    },
+    colors: {
+      type: "array",
+      items: {
+        type: "object",
+        properties: {
+          colorCode: { type: "string" },
+          colorName: { type: "string" },
+          colorChipImageSrc: { type: "string" },
+          colorPreviewImageSrc: { type: "string" }
+        }
+      }
+    },
+    descriptionHtmlSimple: {
+      type: "string",
+      description:
+        "descriptionHtmlSimple provides a detailed description of the product as a string and cannot be blank"
+    },
+    suggestedRetailPrice: {
+      type: "number",
+      description: "Suggested Price from the manufacturer."
+    },
+    brand: {
+      type: "object",
+      properties: {
+        id: { type: "string" },
+        url: { type: "string" },
+        productsUrl: { type: "string" },
+        logoSrc: { type: "string" },
+        name: { type: "string" }
+      }
+    },
+    listPrice: {
+      type: "number",
+      description: "List Price from the manufacturer."
+    },
+    finalPrice: {
+      type: "number",
+      description:
+        "Final Price of the product after any discounts or promotions have been applied. This should be a number and cannot be blank"
+    }
+  },
+  required: [
+    "id",
+    "category",
+    "nameWithoutBrand",
+    "name",
+    "images",
+    "sizesAvailable",
+    "colors",
+    "descriptionHtmlSimple",
+    "suggestedRetailPrice",
+    "brand",
+    "listPrice",
+    "finalPrice"
+  ]
+};
+
 // User schema
 export const UserSchema = {
   $schema: "http://json-schema.org/draft-07/schema#",
@@ -333,53 +457,203 @@ export const UserSchema = {
         }
       }
     },
-    createdAt: { type: "date" },
-    modifiedAt: { type: "date" }
+    createdAt: { type: "string", format: "date-time" },
+    modifiedAt: { type: "string", format: "date-time" }
   },
   required: ["email", "password", "name", "createdAt", "modifiedAt"]
 };
 
-export const Alert = {
-  title: "Alert",
+// Order schema
+export const OrderSchema = {
+  $schema: "http://json-schema.org/draft-07/schema#",
+  title: "Order",
+  description: "",
   type: "object",
   properties: {
-    id: {
+    _id: { type: "string" },
+    userId: { type: "string" },
+    status: {
       type: "string",
-      description: "The ID of the alert"
+      enum: ["pending", "processing", "shipped", "delivered"],
+      description:
+        "The status of the order, must be one of: pending, processing, shipped or delivered"
     },
-    title: {
-      type: "string",
-      description: "The title of the alert, must not be blank"
+    paymentMethod: { type: "string" },
+    shippingAddress: {
+      type: "object",
+      properties: {
+        street: {
+          type: "string",
+          minLength: 10,
+          maxLength: 100,
+          description:
+            "The street address of the user, must not be blank and must be at least ten characters long and no more than one hundred characters long"
+        },
+        city: {
+          type: "string",
+          minLength: 5,
+          maxLength: 50,
+          description:
+            "The city of the user, must not be blank and must be at least five characters long and no more than fifty characters long"
+        },
+        state: {
+          type: "string",
+          enum: [
+            "AL",
+            "AK",
+            "AZ",
+            "AR",
+            "CA",
+            "CO",
+            "CT",
+            "DE",
+            "DC",
+            "FL",
+            "GA",
+            "HI",
+            "ID",
+            "IL",
+            "IN",
+            "IA",
+            "KS",
+            "KY",
+            "LA",
+            "ME",
+            "MD",
+            "MA",
+            "MI",
+            "MN",
+            "MS",
+            "MO",
+            "MT",
+            "NE",
+            "NV",
+            "NH",
+            "NJ",
+            "NM",
+            "NY",
+            "NC",
+            "ND",
+            "OH",
+            "OK",
+            "OR",
+            "PA",
+            "RI",
+            "SC",
+            "SD",
+            "TN",
+            "TX",
+            "UT",
+            "VT",
+            "VA",
+            "WA",
+            "WV",
+            "WI",
+            "WY"
+          ],
+          description:
+            "The state of the user, must not be blank and must be one of the following states: AL, AK, AZ, AR, CA, CO, CT, DE, DC, FL, GA, HI, ID, IL, IN, IA, KS, KY, LA, ME, MD, MA, MI, MN, MS, MO, MT, NE, NV, NH, NJ, NM, NY, NC, ND, OH, OK, OR, PA, RI, SC, SD, TN, TX, UT, VT, VA, WA, WV, WI, WY"
+        },
+        zipCode: {
+          type: "string",
+          minLength: 5,
+          maxLength: 10,
+          pattern: "^\\d{5}(-\\d{4})?$",
+          description:
+            "The zip code of the user, must not be blank and must be a valid zip code"
+        },
+        country: {
+          type: "string",
+          minLength: 2,
+          maxLength: 30,
+          pattern: "^\\w+$",
+          description:
+            "The country of the user, must not be blank and must be a valid country"
+        }
+      }
     },
-    description: {
-      type: "string",
-      description: "The description of the alert, must not be blank"
+    orderItems: {
+      type: "array",
+      items: {
+        type: "object",
+        properties: {
+          productId: { type: "string" },
+          productName: { type: "string" },
+          price: { type: "number" },
+          finalPrice: { type: "number" },
+          productImageSrc: { type: "string" },
+          productUrl: { type: "string" },
+          productCategory: { type: "string" },
+          productColor: {
+            type: "object",
+            properties: {
+              colorCode: { type: "string" }
+            }
+          },
+          productSize: { type: "string" }
+        }
+      }
     },
+    createdAt: { type: "string", format: "date-time" },
+    modifiedAt: { type: "string", format: "date-time" },
+    totalPrice: {
+      type: "number",
+      description: "The total price of the order, must be a number"
+    },
+    shippingCost: {
+      type: "number",
+      description: "The shipping cost of the order, must be a number"
+    },
+    taxAmount: {
+      type: "number",
+      description: "The tax amount of the order, must be a number"
+    }
+  },
+  required: [
+    "userId",
+    "status",
+    "paymentMethod",
+    "shippingAddress",
+    "orderItems",
+    "createdAt",
+    "modifiedAt",
+    "totalPrice",
+    "shippingCost",
+    "taxAmount"
+  ]
+};
+
+// Alert schema
+export const AlertSchema = {
+  $schema: "http://json-schema.org/draft-07/schema#",
+  title: "Alert",
+  description: "",
+  type: "object",
+  properties: {
+    _id: { type: "string" },
+    title: { type: "string" },
     type: {
       type: "string",
-      description: "The type of the alert"
+      enum: ["warning", "info", "promotion"],
+      description:
+        "The type of the alert, must be one of: warning, info or promotion"
     },
     status: {
       type: "string",
-      enum: ["open", "closed"],
-      description: "The status of the alert, must be one of open or closed"
+      enum: ["active", "inactive"],
+      description: "The status of the alert, must be one of: active or inactive"
     },
-    createdOn: {
-      type: "date",
-      description: "The date the alert was created"
-    },
-    modifiedOn: {
-      type: "date",
-      description: "The date the alert was last modified"
-    }
+    createdAt: { type: "string", format: "date-time" },
+    modifiedAt: { type: "string", format: "date-time" }
   },
-  required: ["id", "title", "description", "status"]
+  required: ["title", "type", "status", "createdAt", "modifiedAt"]
 };
+
 ```
 
 </Details>
 
-### **04** Build `GET /products` endpoint
+### **04** Server: Build `GET /products` endpoint
 
 We are finally ready to build some more API endpoints. Last week we built a simple `GET /products` endpoint. If you check the new API documentation we just setup for that endpoint you will see that the endpoint is supposed to accept a `query` parameter. This query parameter is supposed to be used for filtering the products that are returned by the endpoint. Ours does not do this yet.
 
@@ -501,7 +775,7 @@ export function buildPaginationWrapper(totalCount:number, query:QueryParams) {
 
 </Details>
 
-### **05** Sanitize
+### **05** Server: Sanitize
 
 We should take a moment and talk about the security of our app. Whenever you allow users to provide parts of queries you are making ot a database you need to worry about security. We should always sanitize our inputs, especially when we are dealing with user provided data.
 
@@ -543,7 +817,7 @@ We have already deployed our frontend...on Netlify. For Node that would not be t
 4. Verify the build command uses the correct package manager (npm or pnpm)
 5. Change the "Start Command" to `(p)npm run start`
 6. Set the environment variables. (You will need `MONGO_URI`, `PORT`, and `MONGO_DATABASE`)
-7. Save your setup, then once you can see the Dashboard for you project click on the "Connect" button. There will be a list of ip addresses. Copy them then login in the MongoDB Atlas account your team is using. On the left sidebar find the "Network Access" menu item. Add the IP addresses from Render to the list of allowed IPs.
+7. Save your setup, then once you can see the Dashboard for your project click on the "Connect" button. There will be a list of ip addresses. Copy them then login in the MongoDB Atlas account your team is using. On the left sidebar find the "Network Access" menu item. Add the IP addresses from Render to the list of allowed IPs.
 8. On the project Dashboard for render click on "Manual Deploy". Wait until it finishes, then try browsing to your app address.
 
 Once you have your server running on Render, we will need to make a change to our Netlify site to point it to our new backend server. The person who created the Netlify account should log in, then goto the correct project and select "Site Configuration". Goto the Environment Variables section. check to see if you have a `VITE_SERVER_URL` defined. If you do then update it to the URL for you render server. If you do not then create it and set it.

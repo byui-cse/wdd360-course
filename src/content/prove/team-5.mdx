@@ -1,31 +1,458 @@
 ---
-title: Team Project - part 5
-description: This activity outlines a recommended pace for your project to stay on track.
-time: 1 hour
+title: Sleepoutside - Team 5
+description: Add Authentication.
+time: 2 hours
 ---
+import Details from '../../components/Details.astro'
 
-## Requirements
+## Overview
+This activity will continue our work from the previous activity and setup authentication/authorization so that we can protect some of our routes and pages.
 
-This project will be completed in a team of 2 students. After forming your team you will be responsible to plan and complete a web application as a showcase that demonstrates your mastery of the topics taught during this course. Your web application can take many different forms, but there is a list of requirements that each app must include:
+## Instructions
+Complete the following assignment as a team. Designate one team member as the "main driver" and collaborate on their copy of the code. Everyone on the team should be actively engaged in writing the code and contributing to the solution. Once the solution is working, make sure that everyone on the team gets a copy of the code. Each week let someone else be the "main driver" of the coding.
 
-- At least one detailed, validated form
-- Local storage for persistence
-- Fetching data from an API or json file.
-- Drop-down menu
-- CSS Animation
-- Responsive design
-- Good user experience (UX) and accessibility
-- URL parameters (data that is passed from page to page in an app through the URL, for example https://example.com/page2.html?id=34 Send the `id` of `34` to the code running at `page2.html`)
-- Use of modules for organization
+There are many spots where code examples have been given. To get the most out of this activity, do not look at the examples until your group has given that section a try. Then after you look at the example, resist the temptation to copy/paste. Use the examples to get correction, or help you get unstuck...do not just use them to get it done.
 
-## Checkpoint
+## Core Requirements
 
-By the end of this unit (Unit 6) you should be wrapping things up. Hopefully the bulk of the code is written, and you can focus on details to improve the user experience and accessibility of your application.
+The driver should visit the team's copy of the Trello board for the project. Add each of the attending team members to the "Team5" task...then move it to 'Doing'. Read the details of the card together.  
+  
+>Make sure that someone on your team merged their code from the [../../ponder/svelte-1](Svelte 1) assignment before you proceed!
 
-If you have not yet done so you should also make sure to get some CSS animations added or some additional Javascript form validation to make sure that your users can't give you bad input, and to make let them know what is going on when something goes wrong.
+The driver should make sure to `pull` any changes from GitHub before proceeding. Next they should create a new branch of the server and client repos called `initials--team5`. So if the driver's name were John Doe the branch should be called `jd--team5`.
 
-Keep the requirements list above in mind as you code up your application. 
+### **01** Server: Token Based Authentication
 
-## Meet with the instructor
+Before we go much farther on creating the rest of the API routes we need to do some work on security. Some of our routes for example need to be protected so that only people we approve can use them. We don't want people to be able to just go in and mess with our data.
 
-Each unit your team should meet with the instructor to review progress and discuss potential problems. Your instructor will give you more details about how this is to happen. It is your responsibility to make sure this meeting does occur!
+We will be using JWT (JSON Web Tokens) as our method of authorization. We can generate these tokens on the server and then send them back to the client so they can use it in their requests. This way we don't have to worry about sending passwords or other sensitive information over the wire.
+
+Most of the work in generating the token will be handled by a module, [jsonwebtoken](https://www.npmjs.com/package/jsonwebtoken). To generate a token we need to do the following:
+
+1. Install jsonwebtoken as a dependency in package.json
+2. Add two new variables to the `.env`: `JWT_SECRET` and `JWT_EXPIRES_IN`.  The secret can be anything you want, let's set the expires in to 300s initially while testing. You will want to make it longer or shorter later depending on what you are testing.
+3. We can store information about the user in the token. For now let's create an object with the user `email` and `_id`.
+4. To create the token we inport in the library (`import jwt from 'jsonwebtoken'`) then call the `sign()` method on that object. The first argument will be our payload (the data we want to store in the token), and the second argument will be our secret, and finally any options like `expiresIn` (`jwt.sign(user, SECRET_KEY, { expiresIn: TOKEN_EXPIRATION_TIME })`)
+5. Create a few new files: `src/middleware/authentication.mts`, `src/routes/userRoutes.mts`, `src/models/userModels.mts`
+6. In `userRoutes.mts` create a `login` route. You can use the following as a template:
+```javascript
+router.post('/login', async (req, res) => {
+    /// get the email and password from the body of the request
+  
+  // Check if the user exists in the database. the user will be providing an email as identifier...so we will need a function in the model to retrieve a user by email
+      const user = await getUserByEmail(email);
+    // check to see if a user was found, ANd that the password provided matches the one returned from the database. Remeber that the password in the database is hashed and salted...so we need to use argon2 to verify it "argon2.verify(password, passwordHash)"
+    // Throw a 401 error if either is not true
+   // If they user exists and password matches...then generate a token using jsonwebtoken
+    // Send back the token and some user info in the response 
+    // { token, user: { _id: user._id, email: user.email, name: user.name } }
+});
+```
+7. Create the `getUserByEmail()` function in `userModels.mts`.
+8. Test!
+
+>You might be thinking "How can I test this? I have to make a POST request and send an email and password in the body of my request...". Luckily there are tools to help. Two popular ones are Postman and Thunder Client. Thunder Client is actually a VS Code extention. Let's use that one. Install the extention, then open it up. 
+>
+>Click "New Request". Change it to "POST", then enter the url for your server ie `http://localhost:3000/users/login`. Then click on the "Body" tab and add some json `{"email": "test@test.com", "password": "123456"}`  Then click on the "Send" button and it should return either a token or an error message. Check your `initDB.js` file if you don't remember what your test user email and password are.
+>
+>Make sure as well that you added your user routes into your `routes/index` file.
+
+### **02** Server: Registering a new user
+
+Next we need to make it possible to register new users.
+
+1. Add a new route: `POST /users/register` that takes in the email, password, and name from the body of your POST request. 
+2. Create a new function in the users model to create a new user in your database with the email, password, and name provided by the body of the POST request. You should probably check to see if the email already exists since those are supposed to be unique. Send back an error if they already exist. 
+3. Validate. We want to make sure that the correct information is provided when we create a user. If you take a look at the UserSchema in `json-schema.ts` you will see that we have some required fields and some optional ones. One of the reasons we wanted our schema in the JSONSchema format is that once there we can use it to validate input provided by our users.
+4. Install the `ajv` and `ajv-formats` packages and add them to your `package.json` file.
+5. Import them into the `userRoutes` file and do the initial setup.
+```javascript
+import Ajv from "ajv";
+import addFormats from "ajv-formats"
+import { UserSchema } from "../database/json-schema.ts";
+
+const ajv = new Ajv();
+addFormats(ajv);
+```
+6. Add validation for the user in `userRoutes` and use it to create a new user if everything is valid. 
+```javascript
+const newUser = {
+        email,
+        password: hashedPassword,
+        name,
+        createdAt: new Date().toISOString(),
+        modifiedAt: new Date().toISOString()
+    }
+    
+    const validate = ajv.compile(UserSchema)
+    // need to fix this. Our error is expecting a string for message...validate.errors comes back as an array of objects
+    if(!validate(newUser)) throw new EntityNotFoundError({message:validate.errors, statusCode:400 });
+```
+3. Test!
+
+>We are doing the minimum for authentication. We really should have ways to reset passwords if the use forgets and also have a way to delete an account. It's also common the validate email addresses to make sure they are real before enabling an account. All of these things and more are why people often look to pre-built solutions for identity management.
+>Not only that, but it is pretty common to give tokens short expiration times, but then refresh them each time they are used...so a user doesn't get 'logged out' while actively using a service...but if they stop using the service their token will expire. Look into "refresh tokens" if you want to learn more.
+
+### **03** Frontend: Logging In
+
+Now that we have the ability to get a token from the server we should update our frontend. We need to create the UI for a user to Login and Register. You have probably noticed the hiker icon on the header of the Sleepoutside site. If you click on it you will notice a Login link.  There are two options for implementing our login. First we could go to a dedicated `login.html` page that has the form on it. The other is that we could use a dialog to show the login form. We will go with the dialog approach for this team activity. Because this is a bit of user interface that we will re-use across the site it is a perfect option for a component.
+
+You should have a login form that was created in the [../../ponder/svelte-1](Svelte 1) assignment, but it doesn't do anything. In order to make it work we need to do the following:
+
+1. When the "login" button is clicked, grab the email and password that were entered and send them to the login endpoint of our server. (Make sure the server code is still running on the driver's machine.)
+2. If we provide a valid email/password, the server will send back a token and some user details in the response body. If the information is invalid we will get back an error response.
+3. If we get a token back from the server, store it in local storage so that we can use it for future requests. We also want to store the login state in a form that Svelte can read as well so that we can update parts of the UI to show that the user is logged in. We should show the user's name next to the hiker icon, and change the menu. If the user is not logged in...we should only show a login button. If they are logged in then we should show: Logout, Profile, and Orders.
+
+>How can we share information across different Svelte components? One common way would be to us a shared state variable. Remember that Svelte keeps track of changes to state variables and updates the view automatically for us.
+             
+### **04** Frontend: Finish the login component
+
+1. Create a file called `js/auth.svelte.ts` We will need three functions: `login(email, password)`, 'logout()', and `checkAuth()`.
+2. Create a $state variable called `userStore`. Initialize it to: `{isLoggedIn: false, user: {}, token: ""}`. this will keep track of the authentication state of our user.
+>You may have problems with Typescript and your state variable. We should probably create an interface to describe it. We need to make the `user` part of it optional since it will not be set if a user is not logged in.
+>
+>```javascript
+>interface UserStore {
+>  isLoggedIn:boolean,
+>  user?:{
+>      name:string
+>      email:string
+>      _id:string
+>  },
+>  token:string
+>}
+> export const userStore = $state( {isLoggedIn: false, user: {}, token: ""}) as UserStore;
+>```
+3. The `login` function should make a fetch call to our server with the email and password. The path will be the `users/login` endpoint we setup earlier. Once that is written import it into our `Login.svelte` component and use it in the `loginHandler` function. If we get back an error, show the error message in the `Login.svelte` component. Otherwise, update the `userStore` variable, then stash it into local storage so we can access it later on.  Update the UI to reflect that the user is logged in...put their name next to the hiker icon. (Remember svelte allows for conditional markup with the `{#if}` syntax).
+4. The `logout` function should remove the token from local storage, clear out `userStore`, update the UI to reflect that the user is not logged in, and clear out any other information about the user (such as their name).
+5. The `checkAuth` function should check to see if there is a token in local storage, and if so set `userStore` and update the UI to reflect that the user is logged in.
+
+If you get stuck you can refer to the code below. Don't just copy/paste it though. Figure out what is going wrong in your code and fix it!
+
+<Details summary="Login.svelte">
+```javascript
+<script lang="ts">
+  <script lang="ts">
+  import { login, userStore } from "../auth.svelte";
+  import { setLocalStorage } from "../utils.mts";
+  let { isDialog = true } = $props();
+  let email = "";
+  let password = "";
+  // this is a state rune because we need the UI to update if it changes.
+  let errorMessage = $state("");
+  async function loginHandler(e: SubmitEvent) {
+    e.preventDefault();
+    try {
+      const theForm = e.target as HTMLFormElement;
+      const results = await login(email, password);
+      userStore.user = results.user;
+      userStore.isLoggedIn = true;
+      userStore.token = results.token;
+      setLocalStorage("so-user", userStore);
+      // console.log(results);
+      if (e.target && isDialog) {
+        const inDialog = theForm.closest("dialog");
+        if (inDialog) inDialog.close();
+      }
+    } catch (error: any) {
+      console.log(error);
+      errorMessage = error.message;
+    }
+  }
+</script>
+
+<form onsubmit={loginHandler}>
+  <label for="email">Email</label>
+  <input type="text" id="email" bind:value={email} />
+  <label for="password">Password</label>
+  <input type="password" id="password" bind:value={password} />
+  <p class="error">{errorMessage}</p>
+  <button>Login</button>
+</form>
+<button class="link-style-button">Register</button>
+
+<style>
+  form {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    padding: 2em;
+    line-height: 1;
+  }
+  input {
+    padding: 0.5rem;
+    border-radius: 4px;
+
+    font-size: 20px;
+  }
+</style>
+
+```
+</Details>
+
+<Details summary="auth.svelte.ts">
+```javascript
+import { getLocalStorage, setLocalStorage } from "./utils.mts";
+const baseURL = import.meta.env.VITE_SERVER_URL;
+
+interface UserStore {
+  isLoggedIn:boolean,
+  user?:{
+      name:string
+      email:string
+      _id:string
+  },
+  token:string
+}
+export const userStore = $state( {isLoggedIn: false, user: {}, token: ""}) as UserStore;
+
+export async function login(email:string, password:string) {
+  const res = await fetch(`${baseURL}users/login`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ email, password }),
+  })
+  const data = await res.json();
+  if(res.ok) {
+    return data
+  } else {
+    throw new Error(data.error.message);
+  }
+  
+}
+
+export function logout() {
+  setLocalStorage('so-user', null);
+  userStore.user = undefined;
+  userStore.token = "";
+  userStore.isLoggedIn = false;
+  setLocalStorage('so-user', null);
+  // we should probably do something if they are on a protected page when they logout...
+}
+
+export function checkAuth() {
+  // really we are just initilizing our store with data from local storage. We aren't really checking to see if the token is still valid. That will happen the next time we try to use it.
+  // if we use it and get an error from the server, we should logout and clear our local storage. 
+    const userData = getLocalStorage("so-user");
+    // console.log(userData)
+    if(userData) {
+      userStore.user = userData.user
+      userStore.token = userData.token;
+      userStore.isLoggedIn = true;
+    } else {
+      userStore.isLoggedIn = false;
+      userStore.user = undefined;
+      userStore.token = "";
+    }
+    // the double bang !! turns a variable into a boolean this will return a true or false.
+    return !!userData;
+}
+
+```
+</Details>
+
+### **04** Both: Using the token for authorization
+
+Our last step is to use our authentication to protect access to certain pages and routes of our API. We have two parts here...one on the backend and one on the frontend. We will start with the server side.
+
+We will use middleware to check certain requests for a token. If the token exists and is valid...we forward the request. If it is missing or invalid we throw an error.
+
+1. Create a file called `middleware/authorize.mts`. Copy the following into that file. Look over the code and make sure you understand what it does. It will give us some clues as to what we need to do on the frontend to make the request.
+<Details summary="authorize.mts">
+```javascript
+import type { Request, Response, NextFunction  } from 'express';
+import jwt from 'jsonwebtoken';
+
+// Define constants for secret key and token expiration time
+const SECRET_KEY = process.env.SECRET_KEY || 'your-secret-key'; 
+
+// Create a middleware function to verify JWT tokens
+function authorize(req: Request, res: Response, next: NextFunction) {
+  // make sure there is an authorization header
+  const authHeader = req.headers['authorization'];
+  if (authHeader) {
+    // get the token from the header
+    const token = authHeader.split(' ')[1] || "";
+    // check for validity
+    jwt.verify(token, SECRET_KEY, (err, user) => {
+        if (err) {
+          //stop the request if the token is invalid
+            return res.status(403).json({ message: 'Forbidden' });
+        }
+        // set a copy of the user info from the token into locals so we can see it in the app.
+        res.locals.user = user;
+        next();
+     
+    } );
+  } else {
+    // stop the request if the token is missing
+    res.status(401).json({ message: 'Unauthorized' });
+  }
+}
+
+export default authorize;
+```
+</Details>
+2. Add a new route to Users: `GET /users/protected` We pass an id and it returns something...if a valid token is provided.
+```javascript
+// Protect a route with JWT authentication. Note the authorize middleware!
+router.get('/protected', authorize, (req: Request, res: Response) => {
+    console.log(res.locals.user)
+  res.json({ message: `Hello, ${res.locals.user.email}!` });
+});
+```
+3. Create three new files in your client code called `src/profile/index.html`, `src/js/profile.ts`, and `src/js/components/Profile.svelte` with the following content (you should review the code in `Profile.svelte` and read the comments!):
+<Details summary="profile/index.html">
+```javascript
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Sleep Outside | Profile</title>
+    <link rel="stylesheet" href="/css/style.css" />
+    <script type="module" src="/js/profile.js"></script>
+  </head>
+
+  <body>
+    <header class="divider">
+      <div class="logo">
+        <img src="/images/noun_Tent_2517.svg" alt="tent image for logo" />
+        <a href="index.html"> Sleep<span class="highlight">Outside</span></a>
+      </div>
+
+      <nav class="menu-right">
+        <div class="user-menu-container"></div>
+
+        <div class="cart">
+          <a href="/cart/index.html">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+              <path
+                d="M18.9 32.6c1.1 2.4 2.5 3.3 5.4 3.3 1.6 0 3.6-0.3 5.9-0.6 3.2-0.5 6.9-1 11.2-1 2.1 0 4.3 0.1 6.4 0.3 2.1 0.1 4.2 0.3 6.1 0.3 3.2 0 5.2-0.4 5.9-1.2 2.7-2.7 2.8-8.8 2.9-14.6 0.1-6.7 0.2-14.5 4.6-18.7 -0.5 0-1 0-1.6 0 -14.2 0-37.5 0-41.1 0C15.6 6.2 14.9 23.6 18.9 32.6z"
+              />
+              <path
+                d="M90.1 29.7c1-3.3 1.5-7.3 1.5-11.2 0-9-2.7-18.8-8.6-18.8 -0.1 0-0.2 0-0.3 0L77.8-0.1c-0.3 0.2-0.8 0.3-1.1 0.4 0 0 0 0 0 0 -0.2 0-0.3 0-0.4 0 -4.5 0.1-7 1.8-8.4 4.9l8.9-0.1c-1.6 3.6-2.4 8.7-2.4 13.5 0 4.9 0.8 9.9 2.5 13.6l-12.3 0c-0.2 0.4-0.4 0.8-0.6 1.2 -0.2 0.4-0.4 0.7-0.6 1.1 -0.1 0.1-0.1 0.2-0.2 0.3 -0.3 0.4-0.5 0.7-0.9 1.1 0 0 0 0 0 0 0 0-0.1 0.1-0.1 0.1 -0.1 0.1-0.2 0.2-0.4 0.3 -0.2 0.1-0.4 0.3-0.6 0.4 0 0 0 0 0 0 -0.4 0.2-0.9 0.4-1.4 0.6 -1.3 0.4-2.9 0.6-4.9 0.7 -0.5 1.5-1.1 4.1 0 5.5l3.1 3.9 0 0.8c0 2.8-2.3 4.8-2.8 5.2l-3-3.8c0.3-0.2 0.5-0.5 0.7-0.8l-1.8-2.3c-2.2-2.7-1.8-6.3-1.2-8.7 -0.7 0-1.4-0.1-2-0.1 -2.1-0.1-4.3-0.3-6.2-0.3 -4.1 0-7.7 0.5-10.8 1 -1 0.2-2 0.3-3 0.4 -0.5 1.5-1.2 4.4-0.1 5.9l3.1 4 0 0.8c0 2.8-2.3 4.8-2.8 5.2l-3.1-3.8c0.3-0.2 0.6-0.6 0.7-0.9l-1.8-2.4c-2.1-2.8-1.8-6.3-1.2-8.7 -1.6-0.2-2.9-0.8-4-1.7h0c-0.8-0.6-1.4-1.4-2-2.4 -0.1-0.1-0.2-0.3-0.2-0.5 -0.1-0.2-0.2-0.4-0.3-0.6 -0.3-0.6-0.5-1.2-0.7-1.8l-5.6 0c-1-0.3-3.5-4.8-3.5-13.2 0-8.1 3.7-13.1 4.9-13.2L16.4 5.6c0.9-1.9 2-3.7 3.4-5.2L11.2 0.5c-5.4 0-10.1 8.6-10.1 18.4 0 8.9 2.7 18.4 8.6 18.4h2.4c-1.8 10.7-6.6 43 0.4 56.5 0.7 1.4 4.3 3.4 12.2 4.6 20.2 3.1 49.8-0.5 54.6-5.3 0.7-0.7 1.3-1.7 1.8-2.9 2-0.3 8.2-1.7 12.4-8.4C100.1 71.5 98.9 53.9 90.1 29.7zM35.6 87.1c-2.6 2-10.5 2.1-12.1 2.1 0 0 0 0 0 0 -3.9 0-9-0.4-10.8-2.3 -2.6-2.7-1.5-13-0.6-19.1 -0.1-1.9 0-5.8 2.2-7.2 1.9-1.2 8.7-1.3 11.6-1.3 6.4 0 7.4 0.6 7.8 0.9 3 1.8 3.1 5.6 2.6 7.8C37.7 75.5 38.6 84.8 35.6 87.1zM70.1 87.5c-2.6 2-10.5 2.1-12.1 2.1 0 0 0 0 0 0 -3.9 0-9-0.4-10.8-2.3 -2.6-2.7-1.5-13-0.6-19.1 -0.1-1.9 0-5.8 2.2-7.2 1.9-1.2 8.7-1.3 11.6-1.3 6.4 0 7.4 0.6 7.8 0.9 3 1.8 3.1 5.6 2.6 7.8C72.2 76 73.1 85.3 70.1 87.5zM85.9 12.3c-0.6-1.3-1.3-2.2-1.9-2.5 -0.5-0.3-1-0.3-1.4 0 -1.7 1.1-3.2 12.2-0.6 17.9 0.4 0.9 0.9 1.1 1.3 1.1 0.1 0 0.2 0 0.3 0 1.8-0.5 2.1-6.2 1.7-8.6l-1.6 0.2c0.3 2.2 0 5.1-0.4 6.3 -2.1-5.3-0.8-14.1 0.1-15.5 0.8 0.6 2.2 3.5 3.1 8 -0.1 7.9-2.4 12.3-3.4 12.8 -1-0.5-3.4-5.2-3.4-13.5 0-8.3 2.4-13 3.4-13.5C83.7 5.4 85.1 7.9 85.9 12.3zM87.3 77.7c-1.4 2.3-3.1 3.6-4.6 4.3 1.2-12.2-1-31-3.5-44.7h3.3c0.1 0 0.3 0 0.4 0 0.6 0 1.2-0.1 1.8-0.4C92.8 60.7 90.7 72.2 87.3 77.7z"
+              />
+              <path
+                d="M24.7 71v5h-5.2v-5.4c-1.4-0.3-2.7-0.6-3.7-0.9 -0.9 6.8-1.1 13.3-0.3 14.5 0.4 0.3 2.9 1.1 8 1.1h0c5 0 8.8-0.7 9.7-1.3 0.8-1.3 0.6-7.7-0.4-14.4C30.7 70.1 27.5 70.8 24.7 71z"
+              />
+              <path
+                d="M58.8 68.9c2.9-0.1 6.4-0.9 8.3-1.4 0.1-0.8 0.3-2.8-0.7-3.5 -0.5-0.2-2.5-0.4-5.9-0.4 -4.9 0-8.6 0.4-9.5 0.7 -0.3 0.5-0.5 1.9-0.5 3.3C52.5 68.1 56 69 58.8 68.9z"
+              />
+              <path
+                d="M24.3 68.4c2.9-0.1 6.4-0.9 8.3-1.4 0.1-0.8 0.3-2.8-0.7-3.5 -0.5-0.2-2.5-0.4-5.9-0.4 -4.9 0-8.6 0.4-9.5 0.7 -0.3 0.5-0.5 1.9-0.5 3.3C18 67.7 21.5 68.6 24.3 68.4z"
+              />
+              <path
+                d="M60.1 71.4v3.3h-5.2v-3.4c-1.7-0.3-3.3-0.7-4.6-1 -0.9 6.8-1.1 13.3-0.3 14.5 0.4 0.3 2.9 1.1 8 1.1h0c5 0 8.8-0.7 9.7-1.3 0.8-1.3 0.6-7.7-0.4-14.4C65.5 70.5 62.7 71.1 60.1 71.4z"
+              />
+
+              <!-- <text x="0" y="115" fill="#000000" font-size="5px" font-weight="bold" font-family="'Helvetica Neue', Helvetica, Arial-Unicode, Arial, Sans-serif">Created by Natalia Woodroffe</text>
+            <text x="0" y="120" fill="#000000" font-size="5px" font-weight="bold" font-family="'Helvetica Neue', Helvetica, Arial-Unicode, Arial, Sans-serif">from the Noun Project</text> -->
+            </svg>
+          </a>
+        </div>
+      </nav>
+    </header>
+
+    <main class="divider">
+      <section class="content">
+        <h2>Profile</h2>
+      </section>
+    </main>
+
+    <footer>&copy;NOT a real business</footer>
+  </body>
+</html>
+
+```
+</Details>
+
+<Details summary="js/profile.ts">
+```javascript
+import { mount } from "svelte";
+import UserMenu from './components/UserMenu.svelte';
+import Profile from './components/Profile.svelte';
+
+
+const menuEl = document.querySelector('.user-menu-container');
+if(menuEl) {
+    mount(UserMenu, {
+        target: menuEl
+    });
+}
+
+const contentEl = document.querySelector('.content');
+
+if(contentEl) {
+    mount(Profile, {
+        target: contentEl
+    });
+}
+```
+</Details>
+
+<Details summary="js/components/Profile.svelte">
+```javascript
+<script lang="ts">
+  import { checkAuth, userStore, logout } from "../auth.svelte";
+  import { onMount } from "svelte";
+  const baseURL = import.meta.env.VITE_SERVER_URL;
+  let profile = $state("");
+
+  async function getProfile() {
+    const res = await fetch(`${baseURL}users/protected`, {
+      method: "GET",
+      headers: {
+        // This is how we pass our token to the server for protected routes.
+        Authorization: `Bearer ${userStore.token}`
+      }
+    });
+    if (res.ok) {
+      return res.json();
+    } else {
+      // if we get an error back...it means there is something wrong with our token and we should log the user out.
+      logout();
+    }
+  }
+  // the effect rune should run when there are changes to a state rune that is used inside of it.
+  $effect(async () => {
+    console.log("effect ran");
+    // if a change is happens to userStore.isLoggedIn, the effect will run again. If it is true it will get the profile
+    if (userStore.isLoggedIn) {
+      profile = await getProfile();
+    }
+  });
+  async function init() {
+    await checkAuth();
+  }
+  onMount(init);
+</script>
+
+{#if userStore.isLoggedIn}
+  <p>{profile.message}</p>
+{:else}
+  <p>You must login to see this page</p>
+{/if}
+
+```
+</Details>
+4. Update the link in `UserMenu.svelte` to our new profile page.
+5. Clear out `so-user` from localstorage, and browse to `/profile/index.html`. You are not logged in so you should see the message "You must login to see this page". Login and you should see the message automatically change.
+
+>Our authentication system is basic...but functional. There are many ways to improve this system, but for now it is good enough. We will be adding more features in the future.
+
+## Instructor's Solution
+
+As a part of this team activity, you are expected to look over a solution from the instructor to compare your approach to that one. One of the questions on the I-Learn submission will ask you to provide insights from this comparison.
+
+Please DO NOT open the solution until you have worked through this activity as a team for at least one hour. At the end of the hour, if you are still struggling with some of the core requirements, you are welcome to view the instructor's solution and use it to help you complete your own code. Even if you use the instructor's code to help you, you are welcome to report that you finished the core requirements, if you code them up yourself.
+
+After working with your team for the one hour activity, click here for the instructor's solution: [server](https://github.com/matkat99/sleepoutsideServer/tree/team-05/src) and [client](https://github.com/matkat99/sleepoutsideClient/tree/team-05/src).
+
+## Make a pull request.
+
+After you have completed what you can, reviewed the instructor's solution, and gotten your code working, the driver should commit and push their changes (don't forget to lint and format your code before committing!), then submit a pull request for this branch. Then review the pull request as a team, close it, and merge the branch back into Main. Finally, someone should move the Trello card to "Done".
+
+## Submission
+
+When you have finished this activity, please fill out the assessment in I-Learn. You are welcome to complete any additional parts of this activity by yourself or with others after your meeting before submitting the assessment.
