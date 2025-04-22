@@ -371,7 +371,16 @@
       "OrdersByUserResponse": {
         "type": "object",
         "properties": {
-          "orders": {
+          "count": {
+            "type": "number"
+          },
+          "next": {
+            "type": "string"
+          },
+          "previous": {
+            "type": "string"
+          },
+          "results": {
             "type": "array",
             "items": {
               "type": "object",
@@ -984,7 +993,7 @@
           {
             "name": "fields",
             "in": "query",
-            "description": "Comma separated list of fields to include, e.g. 'Name,FinalPrice'",
+            "description": "Comma separated list of fields to include, e.g. 'name,finalPrice'",
             "schema": {
               "type": "array",
               "items": {

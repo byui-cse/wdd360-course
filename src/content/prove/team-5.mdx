@@ -17,7 +17,7 @@ There are many spots where code examples have been given. To get the most out of
 
 The driver should visit the team's copy of the Trello board for the project. Add each of the attending team members to the "Team5" task...then move it to 'Doing'. Read the details of the card together.  
   
->Make sure that someone on your team merged their code from the [../../ponder/svelte-1](Svelte 1) assignment before you proceed!
+>Make sure that someone on your team merged their code from the [Svelte 1](../../ponder/svelte-1) assignment before you proceed!
 
 The driver should make sure to `pull` any changes from GitHub before proceeding. Next they should create a new branch of the server and client repos called `initials--team5`. So if the driver's name were John Doe the branch should be called `jd--team5`.
 
@@ -30,9 +30,9 @@ We will be using JWT (JSON Web Tokens) as our method of authorization. We can ge
 Most of the work in generating the token will be handled by a module, [jsonwebtoken](https://www.npmjs.com/package/jsonwebtoken). To generate a token we need to do the following:
 
 1. Install jsonwebtoken as a dependency in package.json
-2. Add two new variables to the `.env`: `JWT_SECRET` and `JWT_EXPIRES_IN`.  The secret can be anything you want, let's set the expires in to 300s initially while testing. You will want to make it longer or shorter later depending on what you are testing.
+2. Add two new variables to the `.env`: `JWT_SECRET` and `JWT_EXPIRES_IN`.  The secret can be anything you want, let's set the expires in to 300s initially while testing. You will want to make it longer or shorter later depending on what you are testing and how quickly you want the token to expire.
 3. We can store information about the user in the token. For now let's create an object with the user `email` and `_id`.
-4. To create the token we inport in the library (`import jwt from 'jsonwebtoken'`) then call the `sign()` method on that object. The first argument will be our payload (the data we want to store in the token), and the second argument will be our secret, and finally any options like `expiresIn` (`jwt.sign(user, SECRET_KEY, { expiresIn: TOKEN_EXPIRATION_TIME })`)
+4. To create the token we import in the library (`import jwt from 'jsonwebtoken'`) then call the `sign()` method on that object. The first argument will be our payload (the data we want to store in the token), and the second argument will be our secret, and finally any options like `expiresIn` (`jwt.sign(user, SECRET_KEY, { expiresIn: TOKEN_EXPIRATION_TIME })`)
 5. Create a few new files: `src/middleware/authentication.mts`, `src/routes/userRoutes.mts`, `src/models/userModels.mts`
 6. In `userRoutes.mts` create a `login` route. You can use the following as a template:
 ```javascript

@@ -1,0 +1,210 @@
+---
+title: SleepOutside - Team 6
+description: This week we will continue making our application dynamic by making the product listing generated.
+time: 2 hours
+---
+
+import Details from '../../components/Details.astro'
+import Figure from '../../components/Figure.astro'
+
+## Overview
+Many of the changes we have already made were to prepare the site to be able to scale up to as many products as we would like. In this activity we will add products organized from 4 categories: Tents, Sleeping Bags, Backpacks, and Hammocks. We will need to change the index page to show our four categories, and then build a dynamic product-list page that will pull the products from an API, and display them.
+
+## Instructions
+Complete the following assignment as a team. Designate one team member as the "main driver" and collaborate on their copy of the code. Everyone on the team should be actively engaged in writing the code and contributing to the solution. Once the solution is working, make sure that everyone on the team gets a copy of the code. Each week let someone else be the "main driver" of the coding.
+
+There are many spots where code examples have been given. To get the most out of this activity, do not look at the examples until your group has given that section a try. Then after you look at the example, resist the temptation to copy/paste. Use the examples to get correction, or help you get unstuck...do not just use them to get it done.
+
+## Core Requirements
+
+### **01** Begin
+
+The driver should visit the team's copy of the Trello board for the project. Add each of the attending team members to the "Team6: Dynamic product listing page" task...then move it to 'Doing'. Read the details of the card together.  
+  
+The driver should make sure to `pull` any changes from GitHub before proceeding. Next they should create a new branch called `initials--team6`. So if the driver's name were John Doe the branch should be called `jd--team6`.
+
+### **02** Refactor
+
+Create a new directory in `src` called `product-list`, and create an `index.html` file in it. Also create a `product-list.ts` file in the JS directory. Add the HTML to our new page to get the foundation up...header, footer, styles, etc. (Hint...you may just want to use src/index.html as a starting point. Then remove the banner and text.)
+
+> We just added a new page to the site. Remember to update your `vite.config.js` file to let Vite know about it or you will break the build!
+
+Add a grid of 4 boxes to the src/index.html page, one for each category. (But don't delete the list of product links yet...we will need that markup later) They should look something like this:
+
+<Figure src="../../images/product-categories-grid.png" alt="index product grid." />
+
+Here are links to the icons. The icons are being used with a Creative Commons license so we need to give credit to the creator. We will do that in this case by adding it to the alt attribute:
+
+  * [Tent](../../images/category-icons/noun_Tent_3544767.svg) (alt="Tent Icon from Noun Project: Mustofa Bayu")
+  * [Sleeping Bag](../../images/category-icons/noun_Sleeping_Bag_3544775.svg) (alt="Sleeping Bag Icon from Noun Project: Mustofa Bayu")
+  * [Backpack](../../images/category-icons/noun_carrier_bag_3544771.svg) (alt="Backpack Icon from Noun Project: Mustofa Bayu")
+  * [Hammock](../../images/category-icons/noun_Hammock_791143.svg) (alt="Hammock Icon from Noun Project: Paul Richard")
+
+Each of the category elements should link to `product-list/index.html`. Make sure to pass the correct category as part of the URL. (*tents, backpacks, sleeping-bags, hammocks*) as a search parameter.
+
+If you need a reminder of how to add a URL parameter to a link check out list of product links in `/index.html`. Hopefully you haven't deleted them yet!
+
+Finally, move the JS from the `main.ts` that is responsible to render our user menu to the new `product-list.ts` file. Open up `product-list/index.html` in the browser to make sure things the menu still works.
+
+> You will need to fix some paths to get everything working correctly...your page will not be able to find the CSS file or the new JS file we made until you do. 
+
+### **03** Pulling the correct Products
+
+You should be passing category in the URL to the `product-list` page. We need to retrieve it from the parameter in `product-list.ts`. Then send it into the `productList` module. Remember that we created a method in `utils.mts` earlier to grab parameters from a URL.
+
+Review `product.ts` if you need a review on how our utility function works.
+
+We have a function currently in `productData.mts` called `getData` but it is still pulling from a local json file. We have an endpoint in our API that will return products filtered by category. Update `getData` to use the endpoint. We should also take this opportunity to change the name. `getData` is not a very good name...let's call it `getProducts` instead. Make sure to pass the category name in when you call it.
+
+For now you can check in the Network tab in the developer tools, or `console.log` out the results to test. (`console.log(JSON.stringify(data)`). 
+
+### **04** Create a `ProductList` component
+
+We have the right data and now need to display it. Create a new file `js/components/ProductList.svelte` that we will use for the code to generate a list of product summary cards in HTML from an array. (It's common practice in most component based libraries to name components in this way. PascalCased...camelCased but capitalized).
+
+Add some initial HTML...something like `<h2>Products</h2>`, then add the code we need to mount the component to our `product-list` page. You have an example of that already in `product-list.ts`. We are mounting the `UserMenu` component already.
+
+Test to make sure you component works.
+
+Now that we have a basic component working, we can add the rest of the functionality we need. Begin creating your ProductList component by thinking about the information it will need to accomplish it's purpose.
+
+Eventually we will want to have more than one category of products, and list each out independently. We will need to pass in the category of products we want. In most component based frameworks this is done with [props](https://learn.svelte.dev/tutorial/declaring-props]
+
+Inside the component we will need to retrieve the product data using our new `getProducts` function.  Import that function into the component and use it to get the list of products from the category passed in as the prop. A common practice is to create an `init()` function where we will do everything that needs to happen to setup the component...like fetching data. Then you can use the `onMount` function provided by Svelte to run that function when the component mounts. 
+
+We can add Javascript to our component with a `<script>` element. Your code thus far might look like this:
+
+```svelte
+<script lang="ts">
+  import { onMount } from "svelte";
+  import { getProducts } from "../productData.mts";
+  import type { Product } from "../types.mts";
+
+  // this is how we make a prop in svelte
+  let { category } = $props();
+  let products = $state([]);
+
+  async function init() {
+    const data = await getProducts(category);
+    products = data.results as Product[];
+  }
+
+  onMount(() => {
+    init();
+  });
+</script>
+
+<p>Top products: {category}</p>
+```
+
+>Reminder: we can embed variables into our template using the curly braces. This is similar to what we have done before with template literal strings. We just don't need the $ in this case or the backticks.
+
+ To pass our prop into the component you will need to make a change in `product-list.ts`
+
+```javascript              
+const productList = mount(ProductList, {
+  target: document.querySelector(".products"),
+  props: { category: "tents" },
+});
+```
+
+### **05** Finish ProductList
+
+ As you think about how to build out our list it would be good to break it down into parts:
+
+- A title identifying the component
+- A list
+- A collection of product summary cards in the list...one for each product we want to display.
+
+We already have examples of all of this in the current index.html file. Begin by copy/pasting the code inside of the `.products` container into your `ProductList` component. Since one of our goals is to make the list dynamic as well we should get rid of all but one of the `li` elements.
+
+```svelte
+<script>
+<script lang="ts">
+  import { onMount } from "svelte";
+  import { getProducts } from "../productData.mts";
+  import type { Product } from "../types.mts";
+
+  // this is how we make a prop in svelte
+  let { category } = $props();
+  let products = $state([]);
+
+  async function init() {
+    const data = await getProducts(category);
+    products = data.results as Product[];
+  }
+
+  onMount(() => {
+    init();
+  });
+</script>
+
+<h2>Top products: {category}</h2>
+<ul class="product-list">
+
+<li class="product-card">
+    <a href="product_pages/index.html?product=880RR">
+        <img
+        src="images/tents/marmot-ajax-tent-3-person-3-season-in-pale-pumpkin-terracotta~p~880rr_01~320.jpg"
+        alt="Marmot Ajax tent"/>
+        <h3 class="card__brand">Marmot</h3>
+        <h2 class="card__name">Ajax Tent - 3-Person, 3-Season</h2>
+        <p class="product-card__price">$199.99</p></a>
+    </li>
+</ul>
+```
+
+We are getting closer, but our component is still very static, and we will only have one product listed instead of however many
+are returned from the data source. A good templating tool should help us with things like this. In fact, Svelte does have some
+nice tools to help us with [looping](https://learn.svelte.dev/tutorial/each-blocks) and even to handle [promises](https://learn.svelte.dev/tutorial/await-blocks).
+
+After reviewing the links above, update your template to use an `{#await}` block and an `{#each}` block. Check out the partial solution below if you get stuck.
+
+<Details summary="Partial solution">
+
+```svelte
+<h2>Top Products: {category}</h2>
+
+<ul class="product-list">
+{#each products as product}
+<li class="product-card">
+    <a href="product_pages/index.html?product=880RR">
+        <img
+        src="images/tents/marmot-ajax-tent-3-person-3-season-in-pale-pumpkin-terracotta~p~880rr_01~320.jpg"
+        alt="Marmot Ajax tent"/>
+        <h3 class="card__brand">Marmot</h3>
+        <h2 class="card__name">Ajax Tent - 3-Person, 3-Season</h2>
+        <p class="product-card__price">$199.99</p></a>
+    </li>
+{/each}
+</ul>  
+```
+</Details>
+
+At this point you should see a lot of copies of the same thing. We need to update our template to pull the information from our products list instead of having it hard coded like we currently do. Before we do that however...a product summary is somthing that we might want to use in other locations. We can create a new component to handle that and reuse it in other places. Let's do that now.
+
+### **06** Create a `ProductSummary.svelte` component
+
+Create a new file called `ProductSummary.svelte` in the components directory and refactor your code to make it work. You should pass the current product in as a prop.
+
+Update the `ProductSummary` component to insert the correct variables into your template. Then test again to make sure everything is displaying correctly. Remember to remove the hard coded products in the `/index.html` file so we don't have any duplicates. Don't forget to insert in the product.id into the href in the link!
+
+### **07** Check to make sure nothing broke!
+
+Go through your application and test each page to make sure nothing broke with our refactoring. If you find any broken links, images, or functionality fix it!
+
+## Instructor's Solution
+
+As a part of this team activity, you are expected to look over a solution from the instructor to compare your approach to that one. One of the questions on the I-Learn submission will ask you to provide insights from this comparison.
+
+Please DO NOT open the solution until you have worked through this activity as a team for at least one hour. At the end of the hour, if you are still struggling with some of the core requirements, you are welcome to view the instructor's solution and use it to help you complete your own code. Even if you use the instructor's code to help you, you are welcome to report that you finished the core requirements, if you code them up yourself.
+
+After working with your team for the one hour activity, [click here for the instructor's solution](https://github.com/matkat99/sleepoutsideClient/tree/team-06).
+
+## Make a pull request.
+
+After you have completed what you can, reviewed the instructor's solution, and gotten your code working, the driver should commit and push their changes (don't forget to lint and format your code before committing!), then submit a pull request for this branch. Then review the pull request as a team, close it, and merge the branch back into Main. Finally, someone should move the Trello card to "Done".
+
+## Submission
+
+When you have finished this activity, please fill out the assessment in I-Learn. You are welcome to complete any additional parts of this activity by yourself or with others after your meeting before submitting the assessment.
