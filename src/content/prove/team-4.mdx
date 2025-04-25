@@ -41,27 +41,28 @@ A user should have at least the following fields:
 
 >Indexes on database tables are critical for good performance. Indexes allow us to quickly find data in a table without having to scan every row of the table. This is especially important for large tables with many rows and columns. You want indexes on columns that we will query on frequently. You can [read more about indexes](https://www.mongodb.com/docs/manual/indexes/). 
 
-We can easily add indexes in our setup script by using the `createIndex` method on our collection: `await productsCollection.createIndex({ name: 1 });`. Add indexes on the `products` collection on `name`, `description`, `category`, `id`. Add indexes on the `users` collection on `name`, `email`.
+We can easily add indexes in our setup script by using the `createIndex` method on our collection: `await <some collection>.createIndex({ name: 1 });`. Add indexes on the `products` collection on `name`, `description`, `category`, `id`. Add indexes on the `users` collection on `name`, `email`.
 
 Test your script when you are done to make sure there are no errors. (Run the script we added last week in the `package.json` 😁)
 
 ### **02** Server: Setup OpenApi docs
 
-Unless you are following strict REST principles in the design of your API (under strict REST APIS should be self documenting. Each call should give you guidance on what to do next) documentation is very important. Most APIS do not follow strict REST but are often referred to as "REST-ish". The API for SleepOutside is no exception. We can use OpenApi to document our API and make it self documenting. If you have a Swagger config file providing documentation for our API becomes very simple by using a node module called [swagger-ui-express](https://www.npmjs.com/package/swagger-ui-express). You should have generated part of the specification for our API in an activity earlier this week. But since you did not complete the specs for the whole API, a complete specification will be provided.
+Unless you are following strict REST principles in the design of your API (under strict REST APIS should be self documenting. Each call should give you guidance on what to do next) documentation is very important. Most APIS do not follow strict REST but are often referred to as "REST-ish". The API for SleepOutside is no exception. We can use OpenApi to document our API and make it self documenting. If you have a Swagger config file, providing documentation for our API becomes very simple by using a node module called [swagger-ui-express](https://www.npmjs.com/package/swagger-ui-express). You should have generated part of the specification for our API in an activity earlier this week. But since you did not complete the specs for the whole API, a complete specification will be provided.
 
 Download this [swaggerDesign.json](/files/swaggerDesign.json) file and place it into the `src` folder on your server. To finish the setup do the following:
 
-1. Install swagger-ui-express and types (`@types/swagger-ui-express`) for it.
+1. Install swagger-ui-express and the types (`(p)npm install swagger-ui-express @types/swagger-ui-express`) for it.
 2. Create a `swaggerRoutes.mts` file in the routes folder.
 3. Import Router, swagger-ui-express, and swaggerDesign.json into our `swaggerRoutes.mts` file.
 4. Setup the Router object as we have done before.
 5. Setup the swagger-ui middleware: `router.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument));`
 6. Export your router.
-7. Import the swaggerRouter into `routes/index.mts` and add it as a dependency.
+7. Import the swaggerRouter into `routes/index.ts` and add it as a dependency.
+8. Make sure your server is running and browse to `http://localhost:3000/api-docs`. You should see the interactive API documentation! You will be referring back to this page for the next steps so leave it open :).
 
 >When importing our `swaggerDesign.json` file you will notice that Typescript will complain. If we check the [Node json-modules docs](https://nodejs.org/api/esm.html#json-modules) we can see that we can import JSON directly...but that we need to add `with {type: json}` to our import statement.
 >
-> You will also need to go into the `tsconfig.json` file and uncomment the line that looks like this: `"resolveJsonModule": true`
+> You will also need to go into the `tsconfig.json` file and double check that the following line is uncommented: `"resolveJsonModule": true`
 
 ### **03** Both: Update types and JSONSchema files.
 While we are at it. Our type and schema files in our projects are incomplete. We will update them now to contain the correct types and schemas. Copy/paste the following code into your `types.ts` file in both the backend and frontend codebase.
@@ -186,7 +187,7 @@ export interface Address {
 
 >When you paste this into the `types.mts` file on the frontend you need to make one change. The frontend does not know what an `ObjectId` is. As far as it is concerned the `_id`s will just be strings. Do a Find/Replace: `_id: ObjectId;` to `_id: string`. Then get rid of the `import` at the top of the file.
 
-Then create a file (if it does not already exist) in the server codebase in `src/database/json-schema.ts` with the following code:
+Then create a file in the server codebase in `src/database/json-schema.ts` with the following code:
 
 <Details summary="json-schema.ts">
 ```ts
@@ -655,13 +656,13 @@ export const AlertSchema = {
 
 ### **04** Server: Build `GET /products` endpoint
 
-We are finally ready to build some more API endpoints. Last week we built a simple `GET /products` endpoint. If you check the new API documentation we just setup for that endpoint you will see that the endpoint is supposed to accept a `query` parameter. This query parameter is supposed to be used for filtering the products that are returned by the endpoint. Ours does not do this yet.
+We are finally ready to build some more API endpoints. Last week we built a simple `GET /products` endpoint. If you check the new API documentation we just setup (`/api-docs`) for that endpoint you will see that the endpoint is supposed to accept a `query` parameter. This query parameter is supposed to be used for filtering the products that are returned by the endpoint. Ours does not do this yet.
 
-Update the `GET /products` endpoint to accept some query parameters. Check the documentation to see which ones. Remember that express places and query params sent with a request in `req.params`. You can find more information about this in the express documentation.
+Update the `GET /products` endpoint to accept some [URL parameters](https://www.semrush.com/blog/url-parameters/). Check the API documentation (`/api-docs/#/products`) to see which ones. Remember that express places URL params sent with a request in `req.query`. (Try `console.log(req.query)`  to see what you get in your terminal when you make a request.) You can find more information about this in the express documentation. You should pass these params on into the `getAllProducts` function.
 
-You will need to provide a type in the `getAllProducts` function when you pass the query params in.  All of the properties are optional, but if they exist they will be strings. So you should probably add something like this to the `models/types.mts` file:
+You will need to provide a type in the `getAllProducts` function when you pass the query params in.  All of the properties are optional, but if they exist they will be strings. So you should probably add something like this to the `models/types.mts` file on the server:
 ```javascript
-  // create an generic interface for our query parameters. This will make it easier to type check and validate the data we receive from the client. If we end up using query parameters for other routes we can modify it to include other fields.
+  // create an generic interface for our URL parameters. This will make it easier to type check and validate the data we receive from the client. If we end up using query parameters for other routes we can modify it to include other fields.
 // this works because they are all optional. But if for example a limit exists it will have to  be a string.
 export interface QueryParams {
   category?: string;
@@ -672,6 +673,9 @@ export interface QueryParams {
 }
 ```
 
+>Make sure to import your new type into the `productModel.mts` file.
+
+
 Then the function declaration will look something like this:
 ```javascript
 export async function getAllProducts(query:QueryParams): Promise<{totalCount: number; data: Product[] | null}> {
@@ -680,26 +684,26 @@ export async function getAllProducts(query:QueryParams): Promise<{totalCount: nu
 ```
 Note the return type. It is an object wrapped in a Promise. The Promise wrapper happens because it is an `async` function. We will send back both the products and the total number of matches to any query that might be sent. This will be necessary to implement our pagination.
 
-Here is an outline you can follow to direct your efforts:
+Here is an outline you can follow to direct your efforts in modifying our `getAllProducts` method:
 
 1. Notice that the `find({})` method we are using in the `getAllProducts` method takes an object as an argument. If we check out the [MongoDB docs](https://docs.mongodb.com/manual/reference/method/db.collection.find/#mongodb-method-db.collection.find) You can see that we can pass in something like: `{name: "Some string"}` and it will filter on that.
-2. You should also poke around in those docs to see how limiting and offsetting work. 
-3. Start with the `q` search. For now we will search on the `name` and `descriptionHtmlSimple` fields. Check to see if you got a `q` param, if you do then build out a `find` variable that you will pass into the `find()` method later.
-4. Next check to see if a `category` was passed in. Treat it the same as `q`
-5. Make sure to update your mongodb query to use your find object, and limit and offset. You should also add a second query to get the totalCount using the same    `find` object. (you can get the count of total records with `await collection.countDocuments({query object})`)
+2. You should also poke around in those docs to see how [limiting](https://www.mongodb.com/docs/manual/reference/method/cursor.limit/) and [offsetting](https://www.mongodb.com/docs/manual/reference/method/cursor.skip/) work. You could also go back and review the section on [reading multiple rows](https://www.mongodb.com/developer/languages/javascript/node-crud-tutorial/#read) from the tutorial in the exploration for week 3.
+3. Start with the `q` search. (The `q` parameter would contain, for example the words you might type into a search box) For now we will search for the terms in `q` on the `name` and `descriptionHtmlSimple` fields. Check to see if you got a `q` param, if you did then build out a `find` object that you will pass into the `find()` method of our query later.
+4. Next check to see if a `category` was passed in. You will follow a similar process but this time you will be comparing to the `category` field. Note that you could get both `q` and `category` in the same request!
+5. Make sure to update your mongodb query to use your find object, and limit and offset. You should also add a second query to get the totalCount using the same `find` object. (you can get the count of total records with `await collection.countDocuments({query object})`)
 
 >Notice that at the end of our query we call `toArray()` to convert our find object into an array. This is because the `find` method returns a cursor, which is a special type of object that allows you to iterate over all of the results in your collection. Most of the time we can just convert directly, but sometimes we may need to modify our results in some way before we use it. 
 >
 >For example the last query we need to implement is the ability to restrict the results sent back to a specific list of fields. It would look something like this: `?fields=name,finalPrice` which would return only the `name` and `finalPrice` fields. The projection param specifies which fields to return in MongoDB. You can find more information on how to do this in the [MongoDB projection](https://www.mongodb.com/docs/manual/reference/method/db.collection.find/#projections) 
 6. Remove the `toArray()` from the end of our query.
 8. Check to see if we have a `fields` param. If so convert your field string into an object that looks like this: `{name: 1, finalPrice: 1}`. This is something that we will probably need to do elsewhere so encapsulate this in a function called `formatFields(fields:string)` then create a files called `services/utils.mts`, place the function there and export it.
-9. Use the fields object to limit your results. (`cursor.project(fields))
+9. Use the fields object to limit your results. (`cursor.project(fields)`)
 10. Call `toArray()` to convert your cursor into an array. 
 11. Return the totalCount and any products found.
 11. In the route method when you get the data back from the model function you should format and send the data as a JSON object with `count`, `next` and `previous` fields, along with an array of objects that contain all of the product information. 
 sults.
 
-If you look closely at the response for our Products endpoint you will notice that it should send back something like this:
+If you look closely at the response for our Products endpoint in our API docs, you will notice that it should send back something like this:
 
 ```javascript
 {
@@ -714,32 +718,7 @@ If you look closely at the response for our Products endpoint you will notice th
 }
 ```
 
-<Details summary="Hints">
-
-1. After making most of the changes above your initial query should look like this:
-```javascript
-const cursor = await mongodb.getDb().collection<Product>("products").find(find).skip(offset).limit(limit);
-```
-2. Then after you have converted your field filter into the correct format you would do this to finish off:
-```javascript
-if(fieldFilters) {
-        cursor.project(fieldFilters);
-    }
-    const data = await cursor.toArray();
-    return data;
-```
-3. If Typescript complains about your `find` object, you may want to define an interface for it:
-```javascript
-interface Find {
-    name?:string,
-    descriptionHtmlSimple?:string,
-    category?:string,
-}
-... later when you declare your find variable
-const find:Find = {};
-
-```
-4. Building out the pagination wrapper is something that we will need to do more than once...so it makes sense to put it in a function that we can re-use. Add this function to `utils.mts` as well and export it, then use it in your products route:
+Building out the pagination wrapper is something that we will need to do more than once...so it makes sense to put it in a function that we can re-use. Add this function to `utils.mts` as well and export it, then use it in your products route:
 ```javascript
 // remember we created a QueryParams interface earlier in types.mts? Import it and use it here again
 export function buildPaginationWrapper(totalCount:number, query:QueryParams) {
@@ -772,6 +751,33 @@ export function buildPaginationWrapper(totalCount:number, query:QueryParams) {
   }
 }
 ```
+
+<Details summary="Hints">
+
+1. After making most of the changes above your initial query should look like this:
+```javascript
+const cursor = await mongodb.getDb().collection<Product>("products").find(find).skip(offset).limit(limit);
+```
+2. Then after you have converted your field filter into the correct format you would do this to finish off:
+```javascript
+if(fieldFilters) {
+        cursor.project(fieldFilters);
+    }
+    const data = await cursor.toArray();
+    return data;
+```
+3. If Typescript complains about your `find` object, you may want to define an interface for it:
+```javascript
+interface Find {
+    name?:string,
+    descriptionHtmlSimple?:string,
+    category?:string,
+}
+//... later when you declare your find variable
+const find:Find = {};
+
+```
+
 
 </Details>
 
