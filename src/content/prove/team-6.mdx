@@ -56,6 +56,12 @@ Review `product.ts` if you need a review on how our utility function works.
 
 We have a function currently in `productData.mts` called `getData` but it is still pulling from a local json file. We have an endpoint in our API that will return products filtered by category. Update `getData` to use the endpoint. We should also take this opportunity to change the name. `getData` is not a very good name...let's call it `getProducts` instead. Make sure to pass the category name in when you call it.
 
+>If you panicked a bit when you read that you are paying attention. Renaming something that you have already used in multiple places is not something to do lightly, but sometimes it is necessary. Because of this, good development tools will have built-in ways to help you. VS Code is a good tool.
+
+1. Commit and push your changes before proceeding. That will make it easy to revert if something goes wrong :)
+2. Open <kbd>productData.mts</kbd> and select the word <code>getData</code> in the function definition. Right click on it and select "Rename symbol" in the menu.
+3. Enter 'getProducts' and hold down the shift key while hitting enter/return. This will preview the changes. It should open up a new panel in the editor where it will show you everywhere it found the name that you want to change. If you left-click on one of the lines it will open the file side by side with how it was before the changes and how it will be after. Review each change. If the changes looks good then right-click on the same line in the Preview panel and select 'apply Refactoring'. Then go File->Save All.
+
 For now you can check in the Network tab in the developer tools, or `console.log` out the results to test. (`console.log(JSON.stringify(data)`). 
 
 ### **04** Create a `ProductList` component

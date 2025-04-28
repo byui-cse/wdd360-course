@@ -1,0 +1,335 @@
+---
+title: SleepOutside - Team 7
+description: This week we will continue making our application dynamic by making the product listing generated.
+time: 2 hours
+---
+
+import Details from '../../components/Details.astro'
+import Figure from '../../components/Figure.astro'
+
+## Overview
+The next step for our site is to build out the checkout process.
+
+## Instructions
+Complete the following assignment as a team. Designate one team member as the "main driver" and collaborate on their copy of the code. Everyone on the team should be actively engaged in writing the code and contributing to the solution. Once the solution is working, make sure that everyone on the team gets a copy of the code. Each week let someone else be the "main driver" of the coding.
+
+There are many spots where code examples have been given. To get the most out of this activity, do not look at the examples until your group has given that section a try. Then after you look at the example, resist the temptation to copy/paste. Use the examples to get correction, or help you get unstuck...do not just use them to get it done.
+
+## Core Requirements
+
+### **01** Begin
+
+The driver should visit the team's copy of the Trello board for the project. Add each of the attending team members to the "Team6: Checkout" task...then move it to 'Doing'. Read the details of the card together.
+
+The driver should make sure to `pull` any changes from Github before proceeding. Next they should create a new branch called `initials--team6`. So if the driver's name were John Doe the branch should be called `jd--team6`
+
+
+### **02** The Cart
+
+Check your cart page to make sure that it is correctly displaying a total. If it is not then someone in your group should really complete that card in Trello. :)
+
+Add a `Checkout` button/link that will take us to the checkout page.
+
+### **03** Checkout page
+
+Next we need to build a component on the checkout page with a form to gather the required information from our users. We will need the following:
+
+- Customer Name
+- Address (we will assume billing and shipping are the same)
+- Credit card number, expiration date, and security code.
+- Submit button
+
+The form should not submit unless all of the fields are filled out. You should also show an order summary on this page. An example of what this page could look like is below.
+
+<Figure src="../../images/sleepoutside-checkout-form.png" alt="checkout form." />
+
+Create a new component: `CheckoutForm.svelte` and build the form. Each time you get to a value that will be calculated, create a variable and insert it into the HTML template (ie we will need to calculate tax so make a variable...and insert it into the template in the right place `{tax}`
+
+```javacript
+<script>
+  let tax = 0;
+</script>
+...
+<fieldset class="checkout-summary">
+  <legend>Order Summary</legend>
+  ...
+  <p>${tax}</p>
+  ...
+</fieldset>
+```
+
+You should add `name` attributes to each of your form inputs, and it will save you time if those names match whatever the server is expecting. Go look at the type definition for an `Order` in the `types.mts` file for an example of the data we will send to the server.
+
+Notice that the last section is just displaying that information, but not in inputs. We need that information to be sent to the server, but we don't want the users to be able to edit that themselves! In the function that prepares the data to send to the server that we will write we will need to add those totals back in.
+
+In a real site the server should verify the totals as well to make sure that the user doesn't try anything funny.
+
+Once you have the form built add it to the <kbd>checkout/index.html</kbd> page and make sure it shows up.
+
+
+### **04** Order Summary
+
+We need to fill in the information in the summary section. The Item Subtotal will come from the items in the cart, and then we need to add Tax and shipping costs and calculate the order total. Once the user supplies a zip code you should calculate both shipping and tax and display it in the order summary to the user.
+
+>Normally tax and shipping would be calculated according to the destination address. There would be a look up process that would figure out the right values to use. To keep ours simple we will use the same formulas for all orders.
+
+- Tax: Use 6% for sales tax.
+- Shipping: Use $10 for the first item plus $2 for each additional item for shipping.
+
+1. Add a couple of new functions to your CheckoutForm component: `init()` and `calculateItemSummary()`.
+2. The `init` function will be responsible to do all of your setup tasks...we have two in this case: get the list of items in the cart from localStorage, and then calculate the subtotal from that list. This means that we will need to know the key we should use in localstorage. Add that as a prop to the component and pass it in.
+3. The `calculateItemSummary()` function should loop over our list of cart items and calculate a subtotal. If your team has completed the card which added item quantity to your cart you should take that into account!
+4. Then create another function to calculate and display shipping, tax, and order total. This method should get called after the user fills in the Zip code.
+
+Below is an example of what the script portion of your `CheckoutForm` component might look like at this point
+
+<Details summary="CheckoutForm.svelte">
+```javascript
+import { getLocalStorage } from "../utils.mjs";
+import { onMount } from "svelte";
+
+// props
+  let { key = "" } = $props();
+
+  // state vars
+  let list = $state([]);
+  let itemTotal = $state(0);
+  let shipping = $state(0);
+  let tax = $state(0);
+  let orderTotal = $state(0);
+
+// initial setup
+const init = function () {
+  list = getLocalStorage(key);
+  calculateItemSummary();
+};
+// calculate order subtotal from the cart items
+const calculateItemSummary = function () {
+  // calculate the total of all the items in the cart
+  
+};
+// calculate the shipping, tax, and orderTotal
+const calculateOrdertotal = function () {
+  
+};
+
+// initial setup
+onMount(init); 
+```
+</Details>
+
+### **05** Refactor
+
+We will need to make another call to our API to actually complete our order. Where should we put it? If we are not careful we will end up with random fetch calls scattered throughout our code. This is not very maintainable. Already we have two. If you look back at the code from the last team activity we created a file called `auth.svelte.ts`. In it we added this code:
+
+```javascript
+export async function login(email:string, password:string) {
+  const res = await fetch(`${baseURL}users/login`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ email, password }),
+  })
+  const data = await res.json();
+  if(res.ok) {
+    return data
+  } else {
+    throw new Error(data.error.message);
+  }
+}
+```
+
+We also have the code in `productData.mts`:
+
+```javascript
+function convertToJson(res:Response) {
+  if (res.ok) {
+    return res.json();
+  } else {
+    throw new Error("Bad Response");
+  }
+}
+
+export async function getProducts(category:string = "tents") {
+  const response = await fetch(baseURL + `products?category=${category}`);
+    const products = await convertToJson(response);
+    console.log(products)
+    return products;
+}
+```
+
+Notice how much overlap there is between this code. We can refactor it to make it more maintainable.
+
+Let's begin by making a shared function to make a fetch call. Ideally this function will handle our error handling as well as just retrieving the response and converting it to JSON. The code from the `login` function looks like a good starting point. If we think about what parts of that function need to be unique to each instance of using it, and which could be reused...we get a list like the following:
+
+1. The URL to make the request to need to be unique to each instance of using it.
+2. The headers need to be unique to each instance of using it.
+3. The Method should be changable as well.
+4. The body needs to be unique to each instance of using it, and in fact is not always necessary.
+5. The response needs to always be converted to JSON.
+6. Error checking always needs to happen.
+7. The JSON should be returned unless there is an error.
+
+If we put that all together we might get something like this:
+
+```javascript
+// Function will return an object {error: string | null, data: any}
+export async function getJSONData(url:string, method:string = "GET", headers:Headers = new Headers(), body?:any) {
+  const baseURL = import.meta.env.VITE_SERVER_URL;
+  // set both data and error to null initially. One of them will be set and the other should stay null.
+   let error:string|null = null;
+  let data = null;
+  const res = await fetch(`${baseURL}${url}`, {
+    method,
+    headers,
+    body: body? JSON.stringify(body): null,
+  })
+
+  if (!res.ok) { //something went wrong
+    try {
+      // Attempt to parse the error message from the response as JSON
+      // hopefully there is something in the response that will help us understand the error that occurred
+      const errorMessage = await res.json();
+      error = errorMessage.error.message;
+    } catch (err) {
+      // If parsing fails, use the statusText and OK flag for better debugging information
+      error = `${res.statusText} (${res.status})`;
+    }
+  } else {
+    // set the data to be whatever we got back from the server
+    data = await res.json()
+  }
+    return {error, data};
+ }
+```
+
+The next question though is where should we put this function? We could create a new module for it, but where there is just one function for now maybe we can just place it in the `utils.mts` module. Add the function above to that file. Then refactor the `productDetails.mts` and `auth.svelte.ts` files to use our new function instead of the local versions.
+
+>In software development, a *service* is a self-contained piece of functionality that performs a specific task or set of tasks. It's typically designed to be reusable and accessible across different parts of an application or system.
+
+Finally we should create a new module that we will use for working with the orders API endpoints. Call it `ordersService.mts`.  Just to keep things consistent lets also rename `productData.mts` to `productService.mts`.
+
+1. Commit and push your changes before proceeding. That will make it easy to revert if something goes wrong :)
+2. Next we need to adjust the filename of the module so that it reflects the change. If you right-click on the file in the
+file explorer in VS Code and select rename there...you should get a pop-up message that asks if you want to rename the imports as well. Say yes! File->Save All again
+3. Finally just to make sure nothing was missed...on the side of your VsCode window click on the magnifying glass icon (ctrl/cmd + shift + F). Type `productData` and if there are any more instances change them.
+4.Test the product list and product detail pages to make sure they still work!
+
+### **06** Begin `ordersService.mts`
+
+We can't fully complete these functions currently as we have not built the `orders` routes in our API yet. But we can stub out a few functions that we know we will need. We know that we need to be able to submit an order. If you go and check out our API documentation we can see that there is an `orders` route with a POST method. We also know we need to be able to get all orders for a specific user, and get an order by id. Create the following functions: `submitOrder` and `getOrdersForUser`, and `getOrderById`. You can use the following stubs for now:
+
+```javascript
+import {getJSONData} from './utils.mts'
+import {Order} from './types.mts';
+import {getLocalStorage, setLocalStorage} from './utils.mts';
+
+export async function submitOrder(order:Order) {
+    // to submit an order we must be logged in. Check for a token
+
+    //if there is a token we can proceed to build the headers. We can send the token with the `Authorization` header.
+    const headers = new Headers({
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer <your token>`
+    })
+  return await getJSONData('/orders', 'POST', headers, order);
+}
+export async function getOrdersForUser(userId: string) {
+    // to get an order we must be logged in. Check for a token
+
+    //if there is a token we can proceed to build the headers. We can send the token with the `Authorization` header.
+    const headers = new Headers({
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer <your token>`
+    })
+  return await getJSONData(`/orders/user/${userId}`, 'GET', headers);
+}   
+export async function getOrderById(orderId: string) {
+    // to get an order we must be logged in. Check for a token
+
+    //if there is a token we can proceed to build the headers. We can send the token with the `Authorization` header.
+    const headers = new Headers({
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer <your token>`
+    })
+  return await getJSONData(`/orders/${orderId}`, 'GET', headers);
+}
+```
+
+We will get errors back from these since the API endpoints have not been completed yet...and that is ok. We do however need to finish our `CheckoutForm` component.
+
+### **07** Finish `CheckoutForm.svelte`
+
+Add one more function called `handleSubmit` in `CheckoutForm.svelte`. This function should be called when the user clicks on the "Place Order" button (when the form is submitted). It will take care of all the steps to complete an order, including:
+  - Get the user id from localStorage.
+  - Get all of the order items from localStorage.
+  - Create an order object using the form fields, user id, and all of the items in localStorage. The `order` object should look like this:
+  ```javascript
+{ 
+  createdOn: '2021-01-27T18:18:26.095Z',
+  userId: "1234",
+  name: "John Doe",
+  address: {
+    street: "123 Main",
+    city: "Rexburg",
+    state: "ID",
+    zipCode: "83440"
+    country: "USA"
+    },
+  cardNumber: "1234123412341234",
+  expiration: "8/21",
+  code: "123",
+  items: [{
+    productId: "20CXG"
+    price: 39.99,
+    quantity: 1
+  }, {
+    productId: "14GVF",
+    price: 229.99,
+    quantity: 1
+  }],
+  
+}
+```
+
+>Note that the keys in your object MUST match the keys shown above. You cannot send "card_num". It has to be "cardNumber". That is what the server will be expecting. Check your names in the html form if you have differences. It will be MUCH less work for you to generate this object if your <code>name</code> attributes in the form match the keys above!
+
+
+>You have a couple of choices for pulling all the info out of your form. You could bind the form inputs to Svelte variables and build the whole object out by hand, or you can take advantage of the fact that the browser will package the form up into a `formData` object when it is submitted. If you go that route check out the function below to convert your form into an object. `utils.mjs` would be a good place for something like this function.
+
+
+<Details summary="HINT">
+
+```javascript
+// takes a form element and returns an object where the key is the "name" of the form input.
+function formDataToJSON(formElement) {
+const formData = new FormData(formElement),
+convertedJSON = {};
+
+formData.forEach(function (value, key) {
+convertedJSON[key] = value;
+});
+
+return convertedJSON;
+}
+```
+</Details>
+
+You can consider this activity completed when you send a correctly formatted object to the server and receive a response. It will be an error, but that is ok. The next activity will have us continue this by creating the API endpoints and by handling the success and failure responses appropriately. Check in the Developer tools: Network to see your request. Then check the payload to make sure you see the correct object sent. Below you can see what this would look like in Chrome
+
+<Figure src="../../images/team07-submit-order-network-tab.webp" alt="network tab in developer tools" />
+
+## Instructor's Solution
+
+As a part of this team activity, you are expected to look over a solution from the instructor to compare your approach to that one. One of the questions on the I-Learn submission will ask you to provide insights from this comparison.
+
+Please DO NOT open the solution until you have worked through this activity as a team for at least one hour. At the end of the hour, if you are still struggling with some of the core requirements, you are welcome to view the instructor's solution and use it to help you complete your own code. Even if you use the instructor's code to help you, you are welcome to report that you finished the core requirements, if you code them up yourself.
+
+After working with your team for the one hour activity, [click here for the instructor's solution](https://github.com/matkat99/sleepoutsideClient/tree/team-06).
+
+## Make a pull request.
+
+After you have completed what you can, reviewed the instructor's solution, and gotten your code working, the driver should commit and push their changes (don't forget to lint and format your code before committing!), then submit a pull request for this branch. Then review the pull request as a team, close it, and merge the branch back into Main. Finally, someone should move the Trello card to "Done".
+
+## Submission
+
+When you have finished this activity, please fill out the assessment in I-Learn. You are welcome to complete any additional parts of this activity by yourself or with others after your meeting before submitting the assessment.
