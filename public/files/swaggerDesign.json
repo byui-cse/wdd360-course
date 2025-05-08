@@ -278,9 +278,17 @@
             "enum":["pending", "processing", "shipped", "delivered"],
             "description": "The status of the order, must be one of pending, processing, shipped or delivered"
           },
-          "paymentMethod": {
+          "cardNumber": {
             "type": "string",
-            "description": "The payment method used for the order, must be one of credit card or paypal"
+            "description": "A 12 digit credit card number"
+          },
+          "cardExpiration": {
+            "type": "string",
+            "description": "The expiration date of the card in mm/yy format"
+          },
+          "cardCode": {
+            "type": "string",
+            "description": "The three digit security code for the card"
           },
           "totalPrice": {
             "type": "number"

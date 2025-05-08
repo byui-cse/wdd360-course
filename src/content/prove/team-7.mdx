@@ -45,7 +45,7 @@ The form should not submit unless all of the fields are filled out. You should a
 
 Create a new component: `CheckoutForm.svelte` and build the form. Each time you get to a value that will be calculated, create a variable and insert it into the HTML template (ie we will need to calculate tax so make a variable...and insert it into the template in the right place `{tax}`
 
-```javacript
+```javascript
 <script>
   let tax = 0;
 </script>
@@ -260,7 +260,7 @@ We will get errors back from these since the API endpoints have not been complet
 ### **07** Finish `CheckoutForm.svelte`
 
 Add one more function called `handleSubmit` in `CheckoutForm.svelte`. This function should be called when the user clicks on the "Place Order" button (when the form is submitted). It will take care of all the steps to complete an order, including:
-  - Get the user id from localStorage.
+  - Get the user id from our userStore. (This implies that you need to be logged in to order...)
   - Get all of the order items from localStorage.
   - Create an order object using the form fields, user id, and all of the items in localStorage. The `order` object should look like this:
   ```javascript
@@ -276,8 +276,8 @@ Add one more function called `handleSubmit` in `CheckoutForm.svelte`. This funct
     country: "USA"
     },
   cardNumber: "1234123412341234",
-  expiration: "8/21",
-  code: "123",
+  cardExpiration: "8/21",
+  cardCode: "123",
   items: [{
     productId: "20CXG"
     price: 39.99,
@@ -324,7 +324,7 @@ As a part of this team activity, you are expected to look over a solution from t
 
 Please DO NOT open the solution until you have worked through this activity as a team for at least one hour. At the end of the hour, if you are still struggling with some of the core requirements, you are welcome to view the instructor's solution and use it to help you complete your own code. Even if you use the instructor's code to help you, you are welcome to report that you finished the core requirements, if you code them up yourself.
 
-After working with your team for the one hour activity, [click here for the instructor's solution](https://github.com/matkat99/sleepoutsideClient/tree/team-06).
+After working with your team for the one hour activity, [click here for the instructor's solution](https://github.com/matkat99/sleepoutsideClient/tree/team-07).
 
 ## Make a pull request.
 

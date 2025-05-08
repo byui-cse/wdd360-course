@@ -1,0 +1,197 @@
+---
+title: SleepOutside - Team 8
+description: This week we will finish the checkout process.
+time: 2 hours
+---
+
+import Details from '../../components/Details.astro'
+import Figure from '../../components/Figure.astro'
+
+## Overview
+In the last activity we got our checkout working...kindof. We sent an order request to the server, but we don't have the endpoint setup yet. We also need to harden up our code and add error handling and better validation.
+
+## Instructions
+Complete the following assignment as a team. Designate one team member as the "main driver" and collaborate on their copy of the code. Everyone on the team should be actively engaged in writing the code and contributing to the solution. Once the solution is working, make sure that everyone on the team gets a copy of the code. Each week let someone else be the "main driver" of the coding.
+
+There are many spots where code examples have been given. To get the most out of this activity, do not look at the examples until your group has given that section a try. Then after you look at the example, resist the temptation to copy/paste. Use the examples to get correction, or help you get unstuck...do not just use them to get it done.
+
+## Core Requirements
+
+### **01** Begin
+
+The driver should visit the team's copy of the Trello board for the project. Add each of the attending team members to the "Team8: Error handling and Validation" task...then move it to 'Doing'. Read the details of the card together.
+
+The driver should make sure to `pull` any changes from Github before proceeding. Next they should create a new branch called `initials--team8`. So if the driver's name were John Doe the branch should be called `jd--team8`
+
+
+### **02** Server: Create `POST orders/`
+
+Open up the server repo and create a couple of new files: `routes/orderRoutes.mts` and `models/orderModel.mts`. In the `orderRoutes.mts` file add an endpoint for creating a new order. Here is a list to help you organize your thoughts:
+
+1. Create an new endpoint for `POST /orders/` in the `orderRoutes.mts` file. Remember to import your orders routes into `routes/index.ts`. 
+2. Get the body of the request.
+3. We should not trust the totals sent from the client. We need to do some calculations on them and add those back into the order object before sending it to the server. 
+4. Create a new `Order` model with the following fields: `_id`, `userId`, `totalAmount`, `status`, `paymentMethod`. The `totalAmount` should be calculated from the items in the cart.
+5. Add validation for the body of the request using [ajv](https://github.com/epoberezkin/ajv) and a JSON schema. You can find an example of how to do this in the `POST user/` endpoint.
+6. The validation from ajv will check things like required and length, but there are other checks that should really be made. We ask the user to enter a card number, expiration date, and cvv on the checkout form, those values should be validated before we proceed, but credit card validation requires a third party service to make sure that the number given is valid. We are not going to worry about that right now. Basically we will accept any number. 
+>If you would like to implement validation here look at something like [Stripe](https://stripe.com/docs/). It has a pretty painless integration, but we are not going to do that as part of this activity. Note that there is a Trello card for this task if you are interested.
+7. If everything checks out with the validation we should insert our Order into the database. Create a function in `models/orderModel.mts` called `createOrder()` that takes an order object and inserts it into the database. 
+
+>You could actually use the function from `POST user/` as a starting point for this. It uses data from the body of the request and validates it. We need both of those things.
+
+```javascript
+import type {Request, Response} from "express";
+import {Router} from "express";
+import Ajv from "ajv";
+import addFormats from "ajv-formats"
+import { OrderSchema } from "../database/json-schema.ts";
+import EntityNotFoundError from "../errors/EntityNotFoundError.mts";
+
+// @ts-ignore
+const ajv = new Ajv();
+// @ts-ignore
+addFormats(ajv);
+
+const router: Router = Router();
+
+router.post("/", async (req: Request, res: Response) => {
+    // get the body of the request
+    const body = req.body as Order;
+    
+        // we shouldn't trust that the amounts sent in the body are correct. They are too easy to change clientside. So we should calculate our own totals here. You can probably re-use some of the code from the client...
+        // You can map over body.orderItems...for each item you need to do a lookup in the database, then insert the values for price, and finalPrice into the item. Then make a function to calculate tax, shipping, and total.
+        // You will need to make the callback in your map async because we are making calls to the database. This means that you will get an array of promises back from map. You can use Promise.all() to wait for all of them to resolve before we continue.
+        
+        // build out a new order object
+    const newOrder:Order = {
+        ...req.body,
+        // the rest of the stuff we need to update like orderTotal, tax, shipping, etc
+    }
+        console.log(newOrder)
+        const validate = ajv.compile(OrderSchema)
+        if(!validate(newOrder)) {
+            if(validate.errors) {
+                // validate.errors is an array.  I've never seen more than one error come back...but just in case we can map over it and pull out the message(s)
+                // We need to do this because our errorHandler is expecting a string...not an array of objects.
+                const message = validate.errors.map((error:any)=> error.instancePath+" "+error.message).join(", ");
+                throw new EntityNotFoundError({message:message, statusCode:400 });
+            }
+        }
+        //  use a model function to actually create our order in the database
+         
+    res.status(201).json({message : 'Order Created'});
+});
+```                               
+
+### **03** Client: Catching our error.
+
+The server should be sending back detailed feedback about what went wrong to our client. In the `getJSONData` function we wrote we take the response from the server and in the case of an error...we `throw` it. Throwing an error when something goes wrong does little good if we don't `catch` it somewhere and deal with it.
+
+In this case there are a couple of options for where to place our `catch`. We could place it in the
+`submitOrder` method that we wrote in the `ordersService` module, or we could place it in the `handleSubmit` method of the `CheckoutForm.svelte` module. Discuss with your group for a few minutes the pros and cons of putting it in each place.
+
+Handling an error close to where it happened is usually a good thing, but we need to let the user know what they did wrong in this case. The form and form handling is in the `CheckoutForm` component, and so in this case it makes sense to catch the error there.
+
+Add a `try { } catch(err) { }` block in `handleSubmit`. The part of the code that we are worried about breaking should go inside `try { // code here }`, and whatever you want to happen if the code in the try blows up should go in the `catch(err) { }`
+
+### **04** Client: Form validation
+
+One of the things that the server will complain about is if any of the fields are missing information. HTML can actually do a really nice job of checking for that. All we need to do is add `required` as an attribute of an `input` element. If you did not do that in the last activity, add required to all of our form inputs. Then click the submit button.
+
+Depending on how you are listening for the form submission your HTML validation may or may not be working. If you attached a `click` listener on the button we will need to trigger the validation ourselves, if you listened for the `submit` event on the form the validation should automatically be working. Previously, we determined that since we were submitting our form through AJAX, we did not want the form to do what it normally would do if submitted. In the listener for the form button you have added `preventDefault`.
+
+>If your HTML form validation is not working...do the following in your listener handler function:
+>
+>1. Get the form from the DOM.
+>2. Forms have a method called `checkValidity` that will return false if it finds anything in the form data that goes against our validation rules. Call it and store the result.
+>3. We can also manually trigger the messages that the browser will add to the page when something is wrong. That is done with `myForm.reportValidity()`
+>4. Finally, if our validity test came back false, we do not want to continue...so wrap the checkout process in an if statement.
+>
+>Your final code should look something like this:
+>```javascript
+>function handleSubmit(e) {
+>   e.preventDefault();
+>   const myForm = document.forms[0];
+>   const chk_status = myForm.checkValidity();
+>   myForm.reportValidity();
+>   if(chk_status) 
+>   // ...checkout code here.  Might make sense to pull this out into another function
+>});
+>```
+
+By leveraging the built in HTML validation that the browser can do, we dramatically reduced the amount of error handling we will need to do on our end!
+
+Thinking back to the reading from earlier ([MDN: Client side form validation](https://developer.mozilla.org/en-US/docs/Learn/Forms/Form_validation)), what else should we add to our HTML validation to help our users to give us good input? Discuss this with your team and add those things you think appropriate.
+
+### **05** Client: Handling the Unhappy Path :(
+
+ The next thing we need to do is to handle the errors the user might get. We want to stay on the checkout form page so the user does not lose what they have already entered...and so they can know what went wrong and fix it if possible. So a popup message would be appropriate here.
+
+>When I say 'popup' here I am not referring to an `alert`. We want something much less intrusive that will not hijack the UI.
+
+Creating custom alert messages is something that could be useful outside of errors, so a new function in our utilities module sounds appropriate. Create and export a function called `alertMessage(message, scroll=true)` in `utils.js`. Create an alert component that matches the screenshot below. Insert your alert *before* the `main` element. Since the checkout form is longer than will fit on the screen of a mobile device, your alertMessage should have the option to scroll the page back to the top to make sure the user sees the error messages.
+
+<Figure src="../../images/sleepoutside-checkout-alerts.png" alt="example of an alert message." />
+
+
+>Make sure to consider Accessibility when making your Alert. If you were using a screen reader and trying to complete this form, how would you know about the alert in the case something went wrong?
+>
+>This is something that [ARIA roles](https://developer.mozilla.org/en-US/docs/Web/Accessibility/ARIA/Roles) can help us with. In this case there is actually an
+[Alert role](https://developer.mozilla.org/en-US/docs/Web/Accessibility/ARIA/Roles/alert_role). Go read about it and return and finish.
+>
+>...oh and don't forget to consider Accessibility for the close button (X) as well.
+
+
+<Details summary="Click for example">
+```javascript
+export function alertMessage(message, scroll = true, duration = 3000) {
+const alert = mount(AlertMessage,{
+target: document.querySelector("body"),
+anchor: document.querySelector("main"),
+props: {
+message,
+},
+});
+// make sure they see the alert by scrolling to the top of the window
+//we may not always want to do this...so default to scroll=true, but allow it to be passed in and overridden.
+if (scroll) window.scrollTo(0, 0);
+
+// left this here to show how you could remove the alert automatically after a certain amount of time.
+// setTimeout(function () {
+//   alert.$destroy();
+// }, duration);
+}
+```
+</Details>
+
+### **06** Client: Handling the Happy Path :)
+
+Currently our application does not give any feedback to the user about whether the order succeeded or failed. Let's start by responding to a successful order. We should probably do the following:
+
+1. Give the user a success message
+2. Clear out the cart.
+3. ???
+
+This is not a very long list. The main decision to be made is how do we want to message the user? We could either pop something up in the current page, or take the user to a new page with a success message. Leaving them on the page with the form does not make a lot of sense...so let's move to a success page.
+
+Inside of the `checkout` directory create a new file: `success.html`. Add our base formatting including header and footer, and then add a success message for the user. Then add the code to your checkout process to take the user to this page upon a successful checkout. Make sure to also clear out our cart contents in localStorage.
+
+### **07** Client Add an alert to Product detail
+
+When you add a product to the cart there is a good chance that the action gives no feedback to the user. If you have already fixed this and yours does give feedback...kudos! If not, we can use our alert to quickly send the user a message that the item was successfully added.
+
+## Instructor's Solution
+
+As a part of this team activity, you are expected to look over a solution from the instructor to compare your approach to that one. One of the questions on the I-Learn submission will ask you to provide insights from this comparison.
+
+Please DO NOT open the solution until you have worked through this activity as a team for at least one hour. At the end of the hour, if you are still struggling with some of the core requirements, you are welcome to view the instructor's solution and use it to help you complete your own code. Even if you use the instructor's code to help you, you are welcome to report that you finished the core requirements, if you code them up yourself.
+
+After working with your team for the one hour activity, [click here for the instructor's solution](https://github.com/matkat99/sleepoutsideClient/tree/team-08).
+
+## Make a pull request.
+
+After you have completed what you can, reviewed the instructor's solution, and gotten your code working, the driver should commit and push their changes (don't forget to lint and format your code before committing!), then submit a pull request for this branch. Then review the pull request as a team, close it, and merge the branch back into Main. Finally, someone should move the Trello card to "Done".
+
+## Submission
+
+When you have finished this activity, please fill out the assessment in I-Learn. You are welcome to complete any additional parts of this activity by yourself or with others after your meeting before submitting the assessment.

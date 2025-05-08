@@ -1,8 +1,9 @@
 openapi: 3.0.0
 info:
-  title: Alerts, Orders, and Users API
+  title: SleepOutside API
   version: v1
-
+servers:
+  - url: http://localhost:3001/
 components:
   schemas:
     Product:
@@ -642,60 +643,15 @@ paths:
               schema:
                 $ref: "#/components/schemas/Product"
         "400":
-          description: Bad Request
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  message:
-                    type: string
-                required:
-                  - message
+          $ref: "#/components/responses/BadRequest"
         "401":
-          description: Unauthorized
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  message:
-                    type: string
-                required:
-                  - message
+          $ref: "#/components/responses/Unauthorized"
         "403":
-          description: Forbidden
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  message:
-                    type: string
-                required:
-                  - message
+          $ref: "#/components/responses/Forbidden"
         "404":
-          description: Product not found
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  message:
-                    type: string
-                required:
-                  - message
+          $ref: "#/components/responses/NotFound"
         "500":
-          description: Internal Server Error
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  message:
-                    type: string
-                required:
-                  - message
+          $ref: "#/components/responses/InternalServerError"
 
   /products/:
     get:
@@ -730,11 +686,13 @@ paths:
           description: Limit the number of results returned
           schema:
             type: integer
+            default: 20
         - name: offset
           in: query
           description: Offset for pagination
           schema:
             type: integer
+            default: 0
       responses:
         "200":
           description: List of products retrieved successfully
@@ -754,60 +712,15 @@ paths:
                     items:
                       $ref: "#/components/schemas/Product"
         "400":
-          description: Bad Request
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  message:
-                    type: string
-                required:
-                  - message
+          $ref: "#/components/responses/BadRequest"
         "401":
-          description: Unauthorized
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  message:
-                    type: string
-                required:
-                  - message
+          $ref: "#/components/responses/Unauthorized"
         "403":
-          description: Forbidden
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  message:
-                    type: string
-                required:
-                  - message
+          $ref: "#/components/responses/Forbidden"
         "404":
-          description: Product not found
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  message:
-                    type: string
-                required:
-                  - message
+          $ref: "#/components/responses/NotFound"
         "500":
-          description: Internal Server Error
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  message:
-                    type: string
-                required:
-                  - message
+          $ref: "#/components/responses/InternalServerError"
   /alerts/{id}:
     get:
       tags:
@@ -1035,7 +948,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/OrderCreateRequest"
+              $ref: "#/components/schemas/Order"
       responses:
         "201":
           $ref: "#/components/responses/OrderCreated"

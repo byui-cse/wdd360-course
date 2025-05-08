@@ -150,8 +150,11 @@ export interface CartItem {
 export interface Order {
   _id: string;
   userId: string;
+  name: string,
   status: "pending" | "processing" | "shipped" | "delivered";
-  paymentMethod: string;
+  cardNumber: string;
+    cardExpiration: string;
+    cardCode: number;
   shippingAddress: Address;
   orderItems: CartItem[];
   createdAt: Date;
