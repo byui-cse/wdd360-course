@@ -20,5 +20,5 @@ tags: [planning,
 
 ## Prove
 
-- [Project Proposal](../../prove/project-proposal)
-- [Project Final](../../prove/project-final)
+- [Project Proposal](../../prove/team-project-proposal)
+- [Project Final](../../prove/team-project-final)
