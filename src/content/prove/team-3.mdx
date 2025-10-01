@@ -51,7 +51,7 @@ Take a few minutes with your team to review the code you were given. Here are a 
 If the structure looks familiar, it should. It's based heavily on the structure used in CSE 340. It is using an MVC (Model, View, Controller) approach, but the `routes` are doing double duty as the controllers as well.
 
 ### **03** Connect to MongoDB Atlas
-One member of the team should connect to [MongoDB Atlas](https://www.mongodb.com/products/platform/atlas-database/getting-started) and create a new database for this project. You can call the database `sleepoutside`. On the Clusters screen click on 'Connect', then "View Full Insstructions", then select "Drivers" and make sure "Node.js" is selected. It will show you some code that will look something like this (You may have to switch from "String" to "Sample Code"):
+One member of the team should connect to [MongoDB Atlas](https://www.mongodb.com/products/platform/atlas-database/getting-started) and create a new database for this project. You can call the database `sleepoutside`. On the Clusters screen click on 'Connect', then "View Full Instructions", then select "Drivers" and make sure "Node.js" is selected. It will show you some code that will look something like this (You may have to switch from "String" to "Sample Code"):
 ```javascript
 
 const { MongoClient, ServerApiVersion } = require('mongodb');
@@ -89,16 +89,7 @@ Save the `.env.sample` file as `.env`, and add your database user information an
 
 We will use the code above as a starting point to see how we can connect to Atlas, and run some commands to make sure the database is setup and provisioned correctly.
 
-1. Create a new file called `init-db.js` in the `database` folder. and import in the modules we need from mongodb: `MongoClient` and `ServerApiVersion`. We will also need to import the products data from our `products.js` file. This is a simple array of objects that we can use to seed our database with some initial data.
-2. Create a variable called `uri` and set it to the value of your database URI, including your username and password. It should be in the format `mongodb+srv://username:password@MongoUri`. You can find your username, password, and URI in the `.env` file you created earlier. Remember that the variables in the `.env` file can be found in `process.env`.
-3. Create a variable called `client` and set it equal to a new instance of `MongoClient`. Pass in the `uri` you created above as an argument. Also, pass in an object with the key `serverApi`, and set its value to `{ version: ServerApiVersion.v1, strict: true, deprecationErrors: true }`. See the code example above for help with the exact syntax for this step. This client object will allow us to connect to our database.
-4. Create a function called `init` that will be called when we run our `init-db.js` file. Inside this function:
-5. In a try/catch block, call the `.connect()` method on the client variable you created above.
-6. Create a variable called `db` and set it equal to the `.db(<database>)` method on the client variable you created above. Use the actual name of the database that your team created. We also put that in an environment variable.
-7. We will end up with several collections in our project and will use this script to set them all up. Initially we will start with the first one: `products`. Do some research if needed to find out how to create a collection through the Node.js client. Since we will be running this initialization more than once, it would be a good practice to drop and re-create the collection each time before we insert the data to avoid duplication. Create a function called `seedProducts` and pass in the `db` object as an argument. Add the code to drop and add a new collection called `products` in that function. Then call that function in `init`.
-8. This would be a good time to test our current code to make sure we can connect to the database successfully. Add a new script to our `package.json` file to allow us to run our setup script. Add the following: `"init-db": "node --env-file=.env src/database/init-db.js"` and save the file. Then run that script (`(p)npm run init-db`) and make sure you see the message "Connected to MongoDB" in your terminal.
-
-There are a lot of moving parts for this file. To help you stay on track here is some code to compare your solution to:
+>Because there are a lot of moving parts in this activity, if you look below you will see a "Hint" section. Normally you should not look at that until *after* you have worked the problem for a while. In this case you have permission to look at it now. Feel free to copy/paste the code from the "Hint" section into your `init-db.js` file to use as a starting point then continue following the instructions.
 
 <Details summary="Hint">
 ```javascript
@@ -184,13 +175,20 @@ init();
 ```
 </Details>
 
-
-8. We have been given some data to seed our products table with, but it is not quite in the correct format. If you look in `products.js`, inside of a product look at `Reviews.ReviewsUrl`. You will see something like this: `/reviewsbyproduct/14gvf/` This is not how we will be creating our route to pull our reviews. We need to change that to this: `/products/<productId>/reviews/` where `<productId>` is the Id of our product. Transform the data from `products.js` to make this change.
-9. While we are at it...the provided data is in PascalCase. Let's take this opportunity to change the keys to use camelCase instead. Take a look at the provided `lowerCaseKeys` function in the "Hint" above.
-10. Call the `.insertMany()` method on the product collection you created above and pass in the updated `products` array that we imported earlier as an argument.
-11. Once our work is complete, call the `.close()` method on the client object to close our connection to the database.
-12. Add a new script to our `package.json` file to allow us to run our script. Add the following: `"init-db": "node --env-file=.env src/database/init-db.js"` and save the file.
-13. Run the script and then login to Atlas to check to make sure the collection exists with the products in it.
+1. Create a new file called `init-db.js` in the `database` folder. and import in the modules we need from mongodb: `MongoClient` and `ServerApiVersion`. We will also need to import the products data from our `products.js` file. This is a simple array of objects that we can use to seed our database with some initial data.
+2. Create a variable called `uri` and set it to the value of your database URI, including your username and password. It should be in the format `mongodb+srv://username:password@MongoUri`. You can find your username, password, and URI in the `.env` file you created earlier. Remember that the variables in the `.env` file can be found in `process.env`.
+3. Create a variable called `client` and set it equal to a new instance of `MongoClient`. Pass in the `uri` you created above as an argument. Also, pass in an object with the key `serverApi`, and set its value to `{ version: ServerApiVersion.v1, strict: true, deprecationErrors: true }`. See the code example above for help with the exact syntax for this step. This client object will allow us to connect to our database.
+4. Create a function called `init` that will be called when we run our `init-db.js` file. Inside this function:
+5. In a try/catch block, call the `.connect()` method on the client variable you created above.
+6. Create a variable called `db` and set it equal to the `.db(<database>)` method on the client variable you created above. Use the actual name of the database that your team created. We also put that in an environment variable.
+7. We will end up with several collections in our project and will use this script to set them all up. Initially we will start with the first one: `products`. Do some research if needed to find out how to create a collection through the Node.js client. Since we will be running this initialization more than once, it would be a good practice to drop and re-create the collection each time before we insert the data to avoid duplication. Create a function called `seedProducts` and pass in the `db` object as an argument. Add the code to drop and add a new collection called `products` in that function. Then call that function in `init`.
+8. This would be a good time to test our current code to make sure we can connect to the database successfully. Add a new script to our `package.json` file to allow us to run our setup script. Add the following: `"init-db": "node --env-file=.env src/database/init-db.js"` and save the file. Then run that script (`(p)npm run init-db`) and make sure you see the message "Connected to MongoDB" in your terminal.
+9. We have been given some data to seed our products table with, but it is not quite in the correct format. If you look in `products.js`, inside of a product look at `Reviews.ReviewsUrl`. You will see something like this: `/reviewsbyproduct/14gvf/` This is not how we will be creating our route to pull our reviews. We need to change that to this: `/products/<productId>/reviews/` where `<productId>` is the Id of our product. Transform the data from `products.js` to make this change.
+10. While we are at it...the provided data is in PascalCase. Let's take this opportunity to change the keys to use camelCase instead. Take a look at the provided `lowerCaseKeys` function in the "Hint" above.
+11. Call the `.insertMany()` method on the product collection you created above and pass in the updated `products` array that we imported earlier as an argument.
+12. Once our work is complete, call the `.close()` method on the client object to close our connection to the database.
+13. Add a new script to our `package.json` file to allow us to run our script. Add the following: `"init-db": "node --env-file=.env src/database/init-db.js"` and save the file.
+14. Run the script and then login to Atlas to check to make sure the collection exists with the products in it.
 
 Once done we will be able to reset and rebuild our database at any time.
 

@@ -157,7 +157,7 @@ Here are a few more examples of common array methods that use callbacks. Do a bi
 
 ## **04** Fetch and Promises
 
-When we need to retrieve information from an external source for our web page after it has loaded we use `Fetch`. There is a potential problem however. Requesting data from an external source is can take a while. The Javascript engine is singel threaded, which means it can only do one thing at a time, so making our fetch call has the potential to "lock the thread" meaning that once it starts nothing else will happen until it finishes if it stays on the stack. Not good.
+When we need to retrieve information from an external source for our web page after it has loaded we use `Fetch`. There is a potential problem however. Requesting data from an external source is can take a while. The Javascript engine is single threaded, which means it can only do one thing at a time, so making our fetch call has the potential to "lock the thread" meaning that once it starts nothing else will happen until it finishes if it stays on the stack. Not good.
 
 To deal with this the browser adds the fetch call to the stack to kick it off, then removes it and stashes it to the side until it finishes.  Once it finishes we usually will want to do something with the stuff we fetched...so the function gets put back on the stack to finish it up. We need to have a way of letting the browser know what to do when it is done and back on the call stack. This is done through [Promises](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise).
 
@@ -302,7 +302,7 @@ addButton.addEventListener.('click', addHandler);
 
 Let's finish up the review with an activity to pull all these concepts together. 
 
-1. Fetch a list of pokemon from the pokeapi.
+1. Fetch a list of pokemon from the [pokeapi](https://pokeapi.co).
 2. Transform the list of data objects into a list of HTML strings
 3. Insert the HTML strings into the page.
 4. Add an event listener to the list so that when a user clicks on a pokemon, it
