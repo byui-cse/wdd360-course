@@ -18,7 +18,9 @@ One nice thing about Svelte components is that they are file based. One file for
 
 ## **01** Getting Started
 
-Visit the team's copy of the Trello board for the project. Add yourself to the "Add item to cart broken" task...then move it to "Doing" (if the card is already in "Doing" then just add yourself). Read the details of the card.
+The base site you were given has a user menu that pops up when you click on the hiker icon in the header. This is a good candidate for a component. We will be converting it to a Svelte component. We will also create a reusable dialog component that we can use to show the login form.
+
+If you visit the team's copy of the Trello board for the project. You will notice that there is not a card for this work. Have someone in the team add it.Then each team member you add themselves to the new card...and one person should then move it to "Doing" (if the card is already in "Doing" then just add yourself).
 
 Open up the frontend project that you and your team should have setup in the Team Activity 1. Make sure to `pull` any changes from GitHub before proceeding. Next create a new branch called `initials--week5-svelte`. So if the name name were John Doe the branch should be called `jd--week5-svelte`
 
@@ -94,11 +96,11 @@ On the other hand, if something like a login form shows up, we generally want th
 We will make the `UserMenu` first.
 
 1. Create a file called `src/js/components/UserMenu.svelte`. You will need to create the `components` folder.
-2. Copy the HTML from `/src/index.html` that makes makes the user menu. Basiclaly the contents of the `<div class="user-menu-container">` is what we want. Paste it into the component.
+2. Copy the HTML from `/src/index.html` that makes makes the user menu. Basically the contents of the `<div class="user-menu-container">` is what we want. Paste it into the component.
 3. Right now the javascript that enables the menu is found in `utils.mts`. We import the function into `main.ts` and run it. One nice thing about components is that we can embed functionality like that into them to make them easier to use. Copy the `openUserMenu` function into the component. You will need to add a `<script></script>` block at the top of the component. You will also need to import in the `setClick` function from utils.
 4. Add a `onclick={openUserMenu}` attribute on the HTML for the button that opens the menu.
 5. If you wanted you could also move the css that styles the menu into the component as well. Anything that is only used for the menu could be moved inside and become private to the component.
-6. Mount the component into the page. You will need to import the component and the mount function. `mount` takes two arguments: a component, and some options...the most importa of which is teh `target` element you want to mount the component into. The code to do this can be found below.
+6. Mount the component into the page. You will need to import the component and the mount function. `mount` takes two arguments: a component, and some options...the most important of which is the `target` element you want to mount the component into. The code to do this can be found below.
 <Details summary="Mounting the menu">
 ```javascript
 import { mount } from "svelte";
