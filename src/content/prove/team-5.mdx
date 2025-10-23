@@ -73,6 +73,7 @@ import addFormats from "ajv-formats"
 import { UserSchema } from "../database/json-schema.ts";
 
 const ajv = new Ajv();
+
 addFormats(ajv);
 ```
 6. Add validation for the user in `userRoutes` and use it to create a new user if everything is valid. 
