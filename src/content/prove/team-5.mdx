@@ -31,25 +31,26 @@ Most of the work in generating the token will be handled by a module, [jsonwebto
 
 1. Install jsonwebtoken as a dependency in package.json
 2. Add two new variables to the `.env`: `JWT_SECRET` and `JWT_EXPIRES_IN`.  The secret can be anything you want, let's set the expires in to 300s initially while testing. You will want to make it longer or shorter later depending on what you are testing and how quickly you want the token to expire.
-3. We can store information about the user in the token. For now let's create an object with the user `email` and `_id`.
+3. We can store information about the user in the token. For now we will just use the users `email` and `_id`.
 4. To create the token we import in the library (`import jwt from 'jsonwebtoken'`) then call the `sign()` method on that object. The first argument will be our payload (the data we want to store in the token), and the second argument will be our secret, and finally any options like `expiresIn` (`jwt.sign(user, SECRET_KEY, { expiresIn: TOKEN_EXPIRATION_TIME })`)
-5. Create a few new files: `src/middleware/authentication.mts`, `src/routes/userRoutes.mts`, `src/models/userModels.mts`
-6. In `userRoutes.mts` create a `login` route. You can use the following as a template:
+5. Create a few new files: `src/routes/userRoutes.mts`, `src/models/userModels.mts`
+6. Create the `getUserByEmail()` function in `userModels.mts`. This function should make a call to mongoDB to retrieve a user by their email address. You can use the `findOne()` method on the collection to do this.
+7. We need a function to do the actual work of generating a token. Create a function called `generateToken(user)` in `utils.mts` that takes in an object with the user id and email and returns a token. The jsonwebtoken library will do most of the work for us. Check out the `sign()` method in the `jsonwebtoken` documentation for more details. Also note that for `sign()` we need to provide a secret key and an expiration time. Since we will need that secret in other places later...let's store it in the `.env` file and read it in here. You can use `process.env.JWT_SECRET` to get the value. Make sure to also read in the expiration time as well.
+8. In `userRoutes.mts` create a `login` route. You can use the following as a template:
 ```javascript
 router.post('/login', async (req, res) => {
     /// get the email and password from the body of the request
   
   // Check if the user exists in the database. the user will be providing an email as identifier...so we will need a function in the model to retrieve a user by email
       const user = await getUserByEmail(email);
-    // check to see if a user was found, ANd that the password provided matches the one returned from the database. Remeber that the password in the database is hashed and salted...so we need to use argon2 to verify it "argon2.verify(password, passwordHash)"
+    // check to see if a user was found, ANd that the password provided matches the one returned from the database. Remember that the password in the database is hashed and salted...so we need to use argon2 to verify it "argon2.verify(password, passwordHash)"
     // Throw a 401 error if either is not true
-   // If they user exists and password matches...then generate a token using jsonwebtoken
+   // If the user exists and password matches...then generate a token using jsonwebtoken
     // Send back the token and some user info in the response 
     // { token, user: { _id: user._id, email: user.email, name: user.name } }
 });
 ```
-7. Create the `getUserByEmail()` function in `userModels.mts`.
-8. Test!
+9. Test!
 
 >You might be thinking "How can I test this? I have to make a POST request and send an email and password in the body of my request...". Luckily there are tools to help. Two popular ones are Postman and Thunder Client. Thunder Client is actually a VS Code extention. Let's use that one. Install the extention, then open it up. 
 >
@@ -108,7 +109,7 @@ You should have a login form that was created in the [Svelte Practice](../../pon
 ### **04** Frontend: Finish the login component
 
 1. Create a file called `js/auth.svelte.ts` We will need three functions: `login(email, password)`, 'logout()', and `checkAuth()`.
-2. Create a $state variable called `userStore`. Initialize it to: `{isLoggedIn: false, user: {}, token: ""}`. this will keep track of the authentication state of our user.
+2. Create a $state variable called `userStore`. Initialize it to: `{isLoggedIn: false, user: {}, token: ""}`. this will keep track of the authentication state of our user. Export this variable.
 >You may have problems with Typescript and your state variable. We should probably create an interface to describe it. We need to make the `user` part of it optional since it will not be set if a user is not logged in.
 >
 >```javascript
