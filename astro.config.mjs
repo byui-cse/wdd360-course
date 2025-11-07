@@ -7,5 +7,13 @@ import sitemap from "@astrojs/sitemap";
 export default defineConfig({
   site: "https://wdd360.netlify.app",
   base: "/",
-  integrations: [mdx(), sitemap()]
+  integrations: [mdx(), sitemap()],
+  markdown: {
+    shikiConfig: {
+      themes: {
+        light: "rose-pine-dawn",
+        dark: "github-dark"
+      }
+    }
+  }
 });
