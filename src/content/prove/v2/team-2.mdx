@@ -28,18 +28,18 @@ Additionally as our code becomes more complex we will be well served by organizi
 
 1. Move the site over to Astro as our Static Site Generator.
 2. Organize our code using templates and components.
-3. Make our product details page scalable so that we do not need to create a new HTML file for each product.
+3. Make our product details page scalable so that we do not need to manually create a new HTML file for each product.
 
 ### **03** Setup Astro Project
 
-Open up your terminal and make sure you are in the root of your project (ie `sleepoutsideClient/`). Execute the following command to initialize a new Astro project in the current directory :
+Open up your terminal and make sure you are in the root of your project (ie `sleepoutsideClient/`). Execute the following command to initialize a new Astro project in the current directory:
 
 ```bash
 (p)npm create astro@latest
 ```
 
 When prompted, use `sleepAstro` as the project name and choose the "Basic, helpful starter project" template. This will set up a basic Astro project with just a few pages to use as a reference. Respond "no" when asked about initializing a new git repository. And you can go ahead and have the script install your dependencies while you are at it.
-Once the setup is complete, you should see a new `astro.config.mjs` file in your project root along with some new directories like `src` and `public`. The `src` directory will contain your Astro components, pages, and layouts, while the `public` directory is where you can place static assets like images.
+Once the setup is complete, you should see a new `astro.config.mjs` file in your `sleepAstro` project folder along with some new directories like `src` and `public`. The `src` directory will contain your Astro components, pages, and layouts, while the `public` directory is where you can place static assets like images.
 
 You should see this folder structure:
 
@@ -84,13 +84,13 @@ Astro files are made up of three parts:
 
 Astro is very template and component focused. You can create reusable components and layouts to keep your code organized and maintainable. You can see that we are importing a `Layout` component that comes from `src/layouts/Layout.astro`. Open that file next.
 
-Here you should see something that looks more familiar. In this file we will setup the main template for our site. Open up `sleepoutsideClient/src/index.html`. Most of it's contents will go into the `Layout.astro` file, but not the content in `main`. That content changes with each page so it will go into the individual page files. Copy/paste the entire contents of the `main` element from `index.html` into the `pages/index.astro` file, replacing the existing `<Welcome />` component. Leave the `main` element tags in place.
-Next copy/paste everything else from `index.html` into the `Layout.astro` file, replacing everything that is there. You will need to make a few changes:
+Here you should see something that looks more familiar: HTML. In this file we will setup the main template for our site. Open up `sleepoutsideClient/src/index.html`. Most of it's contents will go into the `Layout.astro` file, but not the content in `main`. That content changes with each page so it will go into the individual page files. Copy/paste the entire contents of the `main` element from `index.html` into the `pages/index.astro` file, replacing the existing `<Welcome />` component. Leave the `main` element tags in place.
+Next copy/paste everything else from `sleepoutsideClient/src/index.html` into the `sleepAstro/src/layouts/Layout.astro` file, replacing everything that is there. You will need to make a few changes:
 1. Remove the contents of the `<main>` element and replace it with `<slot />`. That will be provided by the individual page files.
 2. Remove the `<script>` tags that reference local JavaScript files. Remember that we only want to include things in the template that will be the same on every page. The JavaScript files will change on different pages.
 3. Update the paths in the header to the links that point to the home page and to the cart page. They will break on child pages if we leave them as relative paths. 
 4. Open 'pages/index.astro'. We will add the script tags for the JavaScript files we need for that page here. Add `<script src="../../js/main.ts"></script>` inside the `<Layout>` tags but before the `</Layout>` closing tag. Notice that we removed the `type="module"` attribute. Astro automatically adds that for us when it builds the site.
-5. We don't want all of our pages to have the same title. Currently the title is hardcoded in the `Layout.astro` file. We can make that dynamic by using a prop. In the frontmatter section of `Layout.astro` add the following line:
+5. We don't want all of our pages to have the same title. Currently the title is hardcoded in the `Layout.astro` file. We can make that dynamic by using a [prop](https://docs.astro.build/en/basics/astro-components/#component-props). In the frontmatter section of `Layout.astro` add the following line:
 
 ```astro
 let {title: string} = Astro.props;
@@ -99,13 +99,14 @@ Then change the contents of the `<title>` tag to be `<title>Sleep Outside | {tit
 
 ```astro
 ---
+import Layout from "../layouts/Layout.astro";
 const title = "Home";
 ---
 <Layout title={title}>
 ...rest of the page...
 </Layout>
 ```
-6. Fix the CSS. We could do this in a few different ways. The easiest way would be to just change the link tag to point to the CSS file in `src/css` like this: `<link rel="stylesheet" href="/src/css/styles.css" />`. Another way would be to import the CSS file directly into the Layout.astro file using an `import` statement in the frontmatter section. You can read about that [here](https://docs.astro.build/en/guides/styling/#importing-css). One big advantage about using the import is that Astro will optimize our CSS when we build the site for production. Let's go ahead and use that method. So remove the `<link>` tag and add the following line to the frontmatter section of `Layout.astro`:
+6. Fix the CSS. We could do this in a few different ways. One way would be to just change the link tag to point to the CSS file in `src/css` like this: `<link rel="stylesheet" href="css/styles.css" />`, but you might find that figuring out the right path can be tricky. Another way would be to import the CSS file directly into the Layout.astro file using an `import` statement in the frontmatter section. You can read about that [here](https://docs.astro.build/en/guides/styling/#importing-css). One big advantage about using the import is that Astro will optimize our CSS when we build the site for production. Let's go ahead and use that method. So remove the `<link>` tag and add the following line to the frontmatter section of `Layout.astro`:
 
 ```javascript
 import '../css/styles.css';
@@ -119,7 +120,6 @@ We have a few last steps before we can call this part done. We need to move the 
 ```astro
 ---
 import Layout from "../../layouts/Layout.astro";
-
 const title = "Cart";
 ---
 
@@ -134,7 +134,7 @@ Check the site in the browser again to make sure everything is working.
 
 We only have one more part of the original site to move over...the product details page. This one is a little more complicated because we need to make it scalable.
 
-Instead of having an HTML file per product like we do currently, for scalability it would be nice if a page could be dynamically generated. Lucky for us, Astro can do this using [collections](https://docs.astro.build/en/guides/content-collections/). We need to first create a content collection that will hold our products, then we can create a dynamic route that will generate a page for each product in that collection.
+Instead of having a hand built HTML file per product like we do currently, for scalability it would be nice if a page could be dynamically generated. Lucky for us, Astro can do this using [collections](https://docs.astro.build/en/guides/content-collections/). We need to first create a content collection that will hold our products, then we can create a dynamic route that will generate a page for each product in that collection.
 
 1. Create a new file: `src/content.config.mjs` with the following code:
 
@@ -142,10 +142,11 @@ Instead of having an HTML file per product like we do currently, for scalability
 import { defineCollection } from "astro:content";
 import { glob, file } from "astro/loaders"; // Not available with legacy API
 
-// we can also create collections that load from markdown files...this is an example of how to do that.
+// we can also create collections that load from markdown files in a directory...this is an example of how to do that.
 // const posts = defineCollection({
 //   loader: glob({ pattern: "**/*.md", base: "./src/content/blog" })
 // });
+
 // load our product info from the tents.json file
 const products = defineCollection({
   loader: file("public/json/tents.json")
@@ -162,6 +163,7 @@ export const collections = { products };
 import Layout from "../../layouts/Layout.astro";
 import { type CollectionEntry, getCollection } from "astro:content";
 
+// map though all products to create a page for each one
 export async function getStaticPaths() {
   const products = await getCollection("products");
 
@@ -172,7 +174,7 @@ export async function getStaticPaths() {
 }
 type Props = CollectionEntry<"products">;
 
-// const { product } = Astro.props;
+// get the product data from the props to use in the template below. The actual data is in product.data
 const product = Astro.props;
 ---
 <Layout>
@@ -182,7 +184,7 @@ const product = Astro.props;
   
 </Layout>
 ```
-5. Open up the `sleepoutsideClient/src/product-pages/marmot-ajax-3.html` file. We will use the contents of the `main` element as a guide for what needs to go into our product details page. Copy/paste the contents of the `main` element into the `<section class="product-detail">` element in `[id].astro`. Then replace all of the hardcoded product details with dynamic values from the `product` object. ie `{product.data.name}`. 
+5. Open up the `sleepoutsideClient/src/product-pages/marmot-ajax-3.html` file. We will use the contents of the `main` element as a guide for what needs to go into our product details page. Copy/paste the contents of the `main` element into `[id].astro`. Then replace all of the hardcoded product details with dynamic values from the `product` object. ie `{product.data.name}`. 
 >Why `product.data.name`? If you look at the `getStaticPaths` function you will see that we are returning the entire product object as props. That object has a `data` property that contains all of the fields from the JSON file.
 >
 >Also, why no `$` before the curly braces? In Astro files you do not need to use the `$` like you do in normal template literals in JavaScript. 
