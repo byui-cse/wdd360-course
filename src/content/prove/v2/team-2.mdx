@@ -32,10 +32,10 @@ Additionally as our code becomes more complex we will be well served by organizi
 
 ### **03** Setup Astro Project
 
-Open up your terminal and navigate to the root of your project. Execute the following command to initialize a new Astro project in the current directory (ie `sleepoutsideClient`):
+Open up your terminal and make sure you are in the root of your project (ie `sleepoutsideClient/`). Execute the following command to initialize a new Astro project in the current directory :
 
 ```bash
-(p)npm create astro@latest .
+(p)npm create astro@latest
 ```
 
 When prompted, use `sleepAstro` as the project name and choose the "Basic, helpful starter project" template. This will set up a basic Astro project with just a few pages to use as a reference. Respond "no" when asked about initializing a new git repository. And you can go ahead and have the script install your dependencies while you are at it.
@@ -60,9 +60,9 @@ sleepAstro/
 
 ```
 
-We need to move some of our existing code into this new structure. Start by moving the contents of the `images` directory into the `public` directory. Next move the contents of the `js` directory into a new directory called `src/js`. Then move the contents of the `css` directory into a new directory called `src/css`. Oh and we will need the files in the `json` directory as well. Move those into a new directory called `public/json`. Finally move the contents of the original `sleepoutsideClient/src/public` directory into the `public` directory in the new Astro project.
+We need to move some of our existing code into this new structure. Start by moving the contents of the `sleepoutsideClient/src/images` directory into the `sleepoutsideClient/sleepAstro/public` directory. Next move the contents of the `sleepoutsideClient/src/js` directory into a new directory called `sleepAstro/src/js`. Then move the contents of the `sleepoutsideClient/src/css` directory into a new directory called `sleepAstro/src/css`. Oh and we will need the files in the `json` directory as well. Move those into a new directory called `sleepAstro/public/json`. Finally move the contents of the original `sleepoutsideClient/src/public` directory into the `public` directory in the new Astro project.
 
-The `pages/index.astro` file is the main entry point for your website. In Astro, each `.astro` file in the `pages` directory corresponds to a route on your website. So `index.astro` will be served at the root URL (`/`).  If you open it up you might be surprised at how small it is.
+The `sleepAstro/pages/index.astro` file is the main entry point for your website. In Astro, each `.astro` file in the `pages` directory corresponds to a route on your website. So `index.astro` will be served at the root URL (`/`).  If you open it up you might be surprised at how small it is.
 
 ```astro
 ---
@@ -279,9 +279,11 @@ Check out the site in the browser again to make sure everything is working as ex
 
 Stop your dev server if it is still running.
 
-Now that we have everything working, let's clean up a few things. First delete 'sleepoutsideClient/node_modules`, 'sleepoutsideClient/dist` and `sleepoutsideClient/package-lock.json` (or `pnpm-lock.yaml`). Then create a folder called 'old-site-backup' in the root of the repository. Move the everything but the new `sleepAstro` folder and the `eslint.config.js` file into the `old-site-backup` folder. We will eventually delete that folder, but for now we will keep it around just in case we need to reference something from the old site.
+Now that we have everything working, let's clean up a few things. First delete `sleepoutsideClient/node_modules`, `sleepoutsideClient/dist` and `sleepoutsideClient/package-lock.json` (or `pnpm-lock.yaml`). Then create a folder called 'old-site-backup' in the root of the repository. Move the everything but the new `sleepAstro` folder and the `eslint.config.js` file into the `old-site-backup` folder. We will eventually delete that folder, but for now we will keep it around just in case we need to reference something from the old site.
 
 Then take everything in the `sleepAstro` folder and move it up one level to be in the root of the repository. Finally delete the now empty `sleepAstro` folder. 
+
+>Files that start with a dot (.) such as `.gitignore` may be hidden by your file explorer. VSCode will show them by default, but if you are using another file explorer you may need to enable hidden files to see them.
 
 Do one more round of testing to make sure we didn't break anything during the cleanup.
 
