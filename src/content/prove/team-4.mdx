@@ -65,7 +65,7 @@ Download this [swaggerDesign.json](/files/swaggerDesign.json) file and place it 
 > You will also need to go into the `tsconfig.json` file and double check that the following line is uncommented: `"resolveJsonModule": true`
 
 ### **03** Both: Update types and JSONSchema files.
-While we are at it. Our type and schema files in our projects are incomplete. We will update them now to contain the correct types and schemas. Copy/paste the following code into your `types.ts` file in both the backend and frontend codebase.
+While we are at it. Our type and schema files in our projects are incomplete. We will update them now to contain the correct types and schemas. Copy/paste the following code into your `types.ts` file in the backend codebase.
 
 <Details summary="types.ts">
 ```ts
@@ -248,8 +248,6 @@ export interface Alert {
    
 ```
 </Details>
-
->When you paste this into the `types.mts` file on the frontend you need to make one change. The frontend does not know what an `ObjectId` is. As far as it is concerned the `_id`s will just be strings. Do a Find/Replace: `_id: ObjectId;` to `_id: string`. Then get rid of the `import` at the top of the file.
 
 Then create a file in the server codebase in `src/database/json-schema.ts` with the following code:
 

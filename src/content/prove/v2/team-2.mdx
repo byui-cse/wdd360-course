@@ -1,0 +1,303 @@
+---
+title: SleepOutside - Team 2
+description: This activity will review the tools introduced last week, and begin the process of making our application scalable moving to a SSG platform - Astro
+time: 2 hours
+---
+
+## Overview
+Once an application begins to grow in size and complexity it becomes increasingly important to think about scalability and maintainability. This is where Static Site Generators (SSGs) like Astro come into play. By moving to an SSG platform, we can pre-render our pages at build time, resulting in faster load times and a better user experience. Additionally, SSGs often come with built-in features that help manage assets, templating, routing, and other common web development tasks, allowing developers to focus more on building features rather than managing infrastructure.
+
+## Instructions
+Complete the following assignment as a team. Designate one team member as the "main driver" and collaborate on their copy of the code. Everyone on the team should be actively engaged in writing the code and contributing to the solution. Once the solution is working, make sure that everyone on the team gets a copy of the code. Each week let someone else be the "main driver" of the coding.
+
+There are many spots where code examples have been given. To get the most out of this activity, do not look at the examples until your group has given that section a try. Then after you look at the example, resist the temptation to copy/paste. Use the examples to get correction, or help you get unstuck...do not just use them to get it done.
+
+## Core Requirements
+
+### **01** Begin
+
+The driver should visit the team's copy of the Trello board for the project. Add each of the attending team members to the "Team2: Move to Astro" task...then move it to 'Doing'. Read the details of the card together.  
+  
+The driver should make sure to `pull` any changes from GitHub before proceeding. Next they should create a new branch called `initials--team2`. So if the driver's name were John Doe the branch should be called `jd--team2`.
+
+### **02** Plan
+
+Our current project structure is not very scalable. We currently have one HTML file for each product we offer. This works okay when there are only 4 products, but we have plans to expand our inventory. We cannot continue with this model. Also as we add more pages to the site changing shared portions of the page such as the header and footer becomes tedious and error prone. We need a better way.
+
+Additionally as our code becomes more complex we will be well served by organizing it using templates and components. In this activity we have the following goals:
+
+1. Move the site over to Astro as our Static Site Generator.
+2. Organize our code using templates and components.
+3. Make our product details page scalable so that we do not need to create a new HTML file for each product.
+
+### **03** Setup Astro Project
+
+Open up your terminal and navigate to the root of your project. Execute the following command to initialize a new Astro project in the current directory (ie `sleepoutsideClient`):
+
+```bash
+(p)npm create astro@latest .
+```
+
+When prompted, use `sleepAstro` as the project name and choose the "Basic, helpful starter project" template. This will set up a basic Astro project with just a few pages to use as a reference. Respond "no" when asked about initializing a new git repository. And you can go ahead and have the script install your dependencies while you are at it.
+Once the setup is complete, you should see a new `astro.config.mjs` file in your project root along with some new directories like `src` and `public`. The `src` directory will contain your Astro components, pages, and layouts, while the `public` directory is where you can place static assets like images.
+
+You should see this folder structure:
+
+```text
+sleepAstro/
+├── public/
+├── src/
+│   ├── assets/
+│   ├── components/
+│   │   └── Welcome.astro
+│   ├── layouts/
+│   │   └── Layout.astro
+│   └── pages/
+│       └── index.astro
+├── .gitignore
+├── astro.config.mjs
+└── package.json
+
+```
+
+We need to move some of our existing code into this new structure. Start by moving the contents of the `images` directory into the `public` directory. Next move the contents of the `js` directory into a new directory called `src/js`. Then move the contents of the `css` directory into a new directory called `src/css`. Oh and we will need the files in the `json` directory as well. Move those into a new directory called `public/json`. Finally move the contents of the original `sleepoutsideClient/src/public` directory into the `public` directory in the new Astro project.
+
+The `pages/index.astro` file is the main entry point for your website. In Astro, each `.astro` file in the `pages` directory corresponds to a route on your website. So `index.astro` will be served at the root URL (`/`).  If you open it up you might be surprised at how small it is.
+
+```astro
+---
+import Welcome from '../components/Welcome.astro';
+import Layout from '../layouts/Layout.astro';
+
+// Welcome to Astro! Wondering what to do next? Check out the Astro documentation at https://docs.astro.build
+// Don't want to use any of this? Delete everything in this file, the `assets`, `components`, and `layouts` directories, and start fresh.
+---
+
+<Layout>
+	<Welcome />
+</Layout>
+```
+Astro files are made up of three parts:
+1. The frontmatter section (between the `---` lines) is where you can import other components, define variables, and write JavaScript/TypeScript code.
+2. The markup section (after the frontmatter) is where you write your HTML-like markup. You can also use components here.
+3. The style section (optional) is where you can write CSS specific to this component
+
+Astro is very template and component focused. You can create reusable components and layouts to keep your code organized and maintainable. You can see that we are importing a `Layout` component that comes from `src/layouts/Layout.astro`. Open that file next.
+
+Here you should see something that looks more familiar. In this file we will setup the main template for our site. Open up `sleepoutsideClient/src/index.html`. Most of it's contents will go into the `Layout.astro` file, but not the content in `main`. That content changes with each page so it will go into the individual page files. Copy/paste the entire contents of the `main` element from `index.html` into the `pages/index.astro` file, replacing the existing `<Welcome />` component. Leave the `main` element tags in place.
+Next copy/paste everything else from `index.html` into the `Layout.astro` file, replacing everything that is there. You will need to make a few changes:
+1. Remove the contents of the `<main>` element and replace it with `<slot />`. That will be provided by the individual page files.
+2. Remove the `<script>` tags that reference local JavaScript files. Remember that we only want to include things in the template that will be the same on every page. The JavaScript files will change on different pages.
+3. Update the paths in the header to the links that point to the home page and to the cart page. They will break on child pages if we leave them as relative paths. 
+4. Open 'pages/index.astro'. We will add the script tags for the JavaScript files we need for that page here. Add `<script src="../../js/main.ts"></script>` inside the `<Layout>` tags but before the `</Layout>` closing tag. Notice that we removed the `type="module"` attribute. Astro automatically adds that for us when it builds the site.
+5. We don't want all of our pages to have the same title. Currently the title is hardcoded in the `Layout.astro` file. We can make that dynamic by using a prop. In the frontmatter section of `Layout.astro` add the following line:
+
+```astro
+let {title: string} = Astro.props;
+```
+Then change the contents of the `<title>` tag to be `<title>Sleep Outside | {title}</title>` Then open up `pages/index.astro` again and add a frontmatter section for the title prop, then use that prop in the `<Layout>` tag like this:
+
+```astro
+---
+const title = "Home";
+---
+<Layout title={title}>
+...rest of the page...
+</Layout>
+```
+6. Fix the CSS. We could do this in a few different ways. The easiest way would be to just change the link tag to point to the CSS file in `src/css` like this: `<link rel="stylesheet" href="/src/css/styles.css" />`. Another way would be to import the CSS file directly into the Layout.astro file using an `import` statement in the frontmatter section. You can read about that [here](https://docs.astro.build/en/guides/styling/#importing-css). One big advantage about using the import is that Astro will optimize our CSS when we build the site for production. Let's go ahead and use that method. So remove the `<link>` tag and add the following line to the frontmatter section of `Layout.astro`:
+
+```javascript
+import '../css/styles.css';
+```
+
+Fire up your site by running `(p)npm run dev` in the terminal. You should see your site looking just like before, but now using Astro!
+
+We have a few last steps before we can call this part done. We need to move the rest of our pages over.
+
+1. Create a new file in `src/pages/cart/index.astro` and another in `src/pages/checkout/index.astro`. They will both share a common structure with `pages/index.astro` as we will be using our layout. You can use the code below as a template:
+```astro
+---
+import Layout from "../../layouts/Layout.astro";
+
+const title = "Cart";
+---
+
+<Layout title={title}></Layout>
+```
+2. Open up `sleepoutsideClient/src/cart/index.html` and copy/paste the contents of the `main` element into the new `cart/index.astro` file...inside of the `Layout` component. Remember to change the `title` variable to reflect the page we are on, and to add the script tag for `cart.ts` 
+3. Do the same for the checkout page. (Though we don't have any JavaScript for that page yet so you can skip that step for now.)
+
+Check the site in the browser again to make sure everything is working.
+
+### **04** Create Scalable Product Details Page
+
+We only have one more part of the original site to move over...the product details page. This one is a little more complicated because we need to make it scalable.
+
+Instead of having an HTML file per product like we do currently, for scalability it would be nice if a page could be dynamically generated. Lucky for us, Astro can do this using [collections](https://docs.astro.build/en/guides/content-collections/). We need to first create a content collection that will hold our products, then we can create a dynamic route that will generate a page for each product in that collection.
+
+1. Create a new file: `src/content.config.mjs` with the following code:
+
+```javascript
+import { defineCollection } from "astro:content";
+import { glob, file } from "astro/loaders"; // Not available with legacy API
+
+// we can also create collections that load from markdown files...this is an example of how to do that.
+// const posts = defineCollection({
+//   loader: glob({ pattern: "**/*.md", base: "./src/content/blog" })
+// });
+// load our product info from the tents.json file
+const products = defineCollection({
+  loader: file("public/json/tents.json")
+});
+
+export const collections = { products };
+```
+2. Restart your dev server so that Astro can pick up the new content config file.
+3. Next we need to create a dynamic route for our product details page. Create a new file: `src/pages/products/[id].astro`. The `[id]` part indicates that this is a dynamic route. The value in the brackets will be available to us in the page so that we can use it to look up the correct product. The product with the id of "880RR" for example would be available at the URL: `/products/880RR`.
+4. Open up the new `[id].astro` file. Use the following code as a starting point:
+
+```astro
+---
+import Layout from "../../layouts/Layout.astro";
+import { type CollectionEntry, getCollection } from "astro:content";
+
+export async function getStaticPaths() {
+  const products = await getCollection("products");
+
+  return products.map((product) => ({
+    params: { id: product.id },
+    props: product
+  }));
+}
+type Props = CollectionEntry<"products">;
+
+// const { product } = Astro.props;
+const product = Astro.props;
+---
+<Layout>
+  <script src="../../js/product.ts"></script>
+  
+    <!-- Product details will go here -->
+  
+</Layout>
+```
+5. Open up the `sleepoutsideClient/src/product-pages/marmot-ajax-3.html` file. We will use the contents of the `main` element as a guide for what needs to go into our product details page. Copy/paste the contents of the `main` element into the `<section class="product-detail">` element in `[id].astro`. Then replace all of the hardcoded product details with dynamic values from the `product` object. ie `{product.data.name}`. 
+>Why `product.data.name`? If you look at the `getStaticPaths` function you will see that we are returning the entire product object as props. That object has a `data` property that contains all of the fields from the JSON file.
+>
+>Also, why no `$` before the curly braces? In Astro files you do not need to use the `$` like you do in normal template literals in JavaScript. 
+6. Update the title variable in the frontmatter section to use the product name: `const title = product.data.Name;
+7. Finally we need to update the links on the main page to point to our new dynamic product pages. Open up `src/pages/index.astro` and update the hrefs for each product link to point to the new dynamic route. For example, change this:
+
+```html
+<a href="product_pages/marmot-ajax-3.html">
+```
+to this:
+```html 
+<a href="/products/880RR/">
+```
+8. Repeat for each product, using the correct id from the JSON file. Then test!
+> The ids for the products can be found in `tents.json`, they are:
+>- Marmot Ajax 3: 880RR
+>- North Face Talus 4: 985RF
+>- North Face Alpine 3: 985PR
+>- Rimrock Cedar Ridge 2: 344YJ
+
+
+### **04** Review `productData.mts`
+  
+Open up the `productData.mts` module file. Note a few things:
+
+import Details from '../../../components/Details.astro'
+
+<Details summary="Click for example code (productData.mts)">
+ 
+```javascript
+function convertToJson(res:Response) {
+  if (res.ok) {
+    return res.json();
+  } else {
+    throw new Error("Bad Response");
+  }
+}
+
+export function getData(category = "tents") {
+  return fetch(`../json/${category}.json`)
+    .then(convertToJson)
+    .then((data) => data);
+}
+
+export async function findProductById(id:string) {
+  const products = await getData();
+  return products.find((item:Product) => item.Id === id);
+}
+
+```
+</Details>
+
+  1. Right now this module is quite small. Sometimes we will need to get a list of all the data, sometimes we will only need the data for one product. Keeping those functions separate lets us only bring in what we need when we need it. Note that the `convertToJson` function is NOT exported. We really don't have a need to run that outside of the module/file.
+  2. We will eventually want to use these functions for more than just tents. We can do that by passing in the name of the category of products we want to pull from into the `getData` function. Note that it defaults to `tents`, so if we pass in nothing when we use it, we will automatically get tents.
+  3. Notice on `findProductById` the argument is written like this: `id:string`. This is Typescript. The project uses it and you will be expected to use it in additions as well. 
+  4. Notice the `getData()` function compared to the `findProductById()` function. One uses just promises and `.then()`, the other uses [async/await](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/async_function). Many find the async/await syntax to be easier to read (and write) than the typical `.then()` based promise handling.
+  5. If the syntax on line 13 `(data) => data` is confusing you may want to spend more time reading about arrow functions in JavaScript. You could re-write that short callback function like this using a more traditional anonymous function declaration:
+
+    ```javascript
+    function(data) { return data; }
+    ```
+
+  6. The callback on line 18 is similar...`(item:Product) => item.Id === id`. Another way to write that could be:
+
+    ```javascript
+    function(item:Product) { return item.Id === id; }
+    ```
+
+    It is very common to see short functions that just return some value or expression written using the arrow function syntax.
+
+  7. If you open up the `product.ts` file you will see how the `productData.mts` module is used. First note that we have to import the function we need, then we can use that function just like if it were declared locally in that file.
+
+    >Remember that to use ESModules in JavaScript we have to tell the browser we want to use modules...normally we do that with `type="module"` in the script tag in the HTML. Astro will automatically add that for us when it builds the site.
+
+###  **05** Run a build
+Now that we have everything working in development mode, let's run a production build to make sure everything is working as expected. In the terminal run:
+
+```bash
+(p)npm run build
+```
+This will create an optimized production build of your site in the `dist` directory. You can preview the production build locally by running:
+
+```bash
+(p)npm run preview
+```
+
+>How often do we need to run a build? It is recommended to run a build whenever you are ready to deploy your site to production...essentially after you have finished the work on a feature and are ready to make a pull request. This ensures that if there are any build problems you catch them before they break the production build. 
+>
+>Remember that to see the results of the build you need to run the preview command above. It is not unusual for things to work in development mode but then break in production mode due to differences in how the two modes handle things (paths!). Always test your production build before deploying!
+
+Check out the site in the browser again to make sure everything is working as expected. Then look the `dist/products` directory. You should see a file for each of your products! The pages got pre-built at build time! There is one thing to keep in mind though...if we add more products to our inventory we will need to re-build the site to get those new products added. This is a trade-off we make when using a Static Site Generator. The upside is that the pages load very quickly because they are pre-built. The downside is that we have to re-build the site to get new content added. For many applications this is an acceptable trade-off.
+
+### **06** Cleanup
+
+Stop your dev server if it is still running.
+
+Now that we have everything working, let's clean up a few things. First delete 'sleepoutsideClient/node_modules`, 'sleepoutsideClient/dist` and `sleepoutsideClient/package-lock.json` (or `pnpm-lock.yaml`). Then create a folder called 'old-site-backup' in the root of the repository. Move the everything but the new `sleepAstro` folder and the `eslint.config.js` file into the `old-site-backup` folder. We will eventually delete that folder, but for now we will keep it around just in case we need to reference something from the old site.
+
+Then take everything in the `sleepAstro` folder and move it up one level to be in the root of the repository. Finally delete the now empty `sleepAstro` folder. 
+
+Do one more round of testing to make sure we didn't break anything during the cleanup.
+
+
+## Instructor's Solution
+
+As a part of this team activity, you are expected to look over a solution from the instructor to compare your approach to that one. One of the questions on the I-Learn submission will ask you to provide insights from this comparison.
+
+Please DO NOT open the solution until you have worked through this activity as a team for at least one hour. At the end of the hour, if you are still struggling with some of the core requirements, you are welcome to view the instructor's solution and use it to help you complete your own code. Even if you use the instructor's code to help you, you are welcome to report that you finished the core requirements, if you code them up yourself.
+
+After working with your team for the one hour activity, [click here for the instructor's solution](https://github.com/matkat99/sleepoutsideClient/tree/v2-team-2).
+
+## Make a pull request.
+
+After you have completed what you can, reviewed the instructor's solution, and gotten your code working, the driver should commit and push their changes (don't forget to lint and format your code before committing!), then submit a pull request for this branch. Then review the pull request as a team, close it, and merge the branch back into Main. Finally, someone should move the Trello card to "Done".
+
+## Submission
+
+When you have finished this activity, please fill out the assessment in I-Learn. You are welcome to complete any additional parts of this activity by yourself or with others after your meeting before submitting the assessment.
