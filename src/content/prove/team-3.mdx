@@ -6,7 +6,7 @@ time: 2 hours
 import Details from '../../components/Details.astro'
 
 ## Overview
-This activity will review the tools introduced last week, and begin the process of making our application scalable by adding dynamically generated product detail pages, and more organization using ESModules.
+This activity will review the tools introduced last week, and begin the process of setting up our backend server and database for our SleepOutside application.
 
 ## Instructions
 Complete the following assignment as a team. Designate one team member as the "main driver" and collaborate on their copy of the code. Everyone on the team should be actively engaged in writing the code and contributing to the solution. Once the solution is working, make sure that everyone on the team gets a copy of the code. Each week let someone else be the "main driver" of the coding.
@@ -48,7 +48,7 @@ Take a few minutes with your team to review the code you were given. Here are a 
 6. What is the purpose of `models/types.mts`?
 7. Where do you find the database connection information?
 
-If the structure looks familiar, it should. It's based heavily on the structure used in CSE 340. It is using an MVC (Model, View, Controller) approach, but the `routes` are doing double duty as the controllers as well.
+The structure uses an MVC (Model, View, Controller) approach, but we don't have views in this project since it is just an API server. also you may notice that there is not a `controllers` folder, but instead is a `services` folder. We have combined our routes and controllers into one place, and instead have chosen to move the logic out of the controller and into services. This will make our code easier to test later.
 
 ### **03** Connect to MongoDB Atlas
 One member of the team should connect to [MongoDB Atlas](https://www.mongodb.com/products/platform/atlas-database/getting-started) and create a new database for this project. You can call the database `sleepoutside`. On the Clusters screen click on 'Connect', then "View Full Instructions", then select "Drivers" and make sure "Node.js" is selected. It will show you some code that will look something like this (You may have to switch from "String" to "Sample Code"):
@@ -310,39 +310,61 @@ We pass a callback function into `initDb`. If the database connects correctly th
 
 Go ahead and run `npm run dev` and make sure your server is running. If you see the message `Server is listening on port ...` then your server has started up successfully.
 
-You should be able to enter the URL `http://localhost:3000/products` in your browser and see the list of products that we imported earlier. If you do, then you are ready to move on! 
+You should be able to enter the URL `http://localhost:3000/api/v1/products` in your browser and see the list of products that we imported earlier. If you do, then you are ready to move on! 
 
 ### **05** `getProductsById`
 
-Now that we are connected to Atlas and have some data in a collection, we need to start pulling data. The work to query the database will happen in `model` files, which will then be used in `routes`. Create a model and route to pull the product with the provided `id` from the database.
+Now that we are connected to Atlas and have some data in a collection, we need to start pulling data. The work to query the database will happen in `model` files, which will then be used in the product route/controller, finally you will need to create a new service to be used in the route/controller. Create a model, service, and route to pull the product with the provided `id` from the database.
+
+>As you implement the Model and Service you might find that they are very simple and similar. You might be thinking "This seems like extra work to create a service AND a model, why don't I just use the model function directly in my route?" There isn't much logic to be applied for this route. Later we will see more complex service functions. It will become more apparent why we broke them up.
 
 <Details summary="getProductsById">
 
-```javascript
-// model/productModel.ts
-export async function getProductById(id: string): Promise<Product | null> {
+```js
+// models/product.model.mts
+async function getProductById(id: string): Promise<Product | null> {
     const product = await mongodb.getDb().collection<Product>("products").findOne({id: id});
     return product;
 }
+
+// don't forget to export the function
+export default {
+  getProducts,
+  getProductById
+}
 ```
 
-```javascript
-// routes/productRoutes.ts
+```js
+// routes/product.routes.mts
 // GET /products/:id
-router.get("/:id", async (req:Request, res:Response) => {
+router.get("/:id", async (req, res, next) => {
   
     const {id} = req.params;
     if (!id)  {
-      throw new EntityNotFoundError({message : 'Id required',code: 'ERR_VALID', statusCode : 400})
+      return next(new EntityNotFoundError({message : 'Id required',code: 'ERR_VALID', statusCode : 400}))
     }
-    const product = await getProductById(id);
+    const product = await productService.getProductById(id);
     if (!product) {
-      throw new EntityNotFoundError({message : `Product ${id} Not Found`,code: 'ERR_NF',
-        statusCode : 404})
+      return next(new EntityNotFoundError({message : `Product ${id} Not Found`,code: 'ERR_NF',
+        statusCode : 404}))
     }
     res.status(200).json(product);
   
 });
+```
+
+```js
+// services/product.service.mts
+
+// existing code...
+
+const getProductById = async (id: string) => {
+  return await productModel.getProductById(id);
+};
+export default {
+  getAllProducts,
+  getProductById
+};
 ```
 </Details>
 
@@ -352,8 +374,8 @@ Open the Frontend code in a new editor window, and start up the development serv
 
 The first thing we need to do is to identify the URL for our API. We could hardcode this...but this value will usually change between development and production environments. Just like we used environment files in our server, they can be useful on the frontend as well. Vite will actually load and make our environment variables available to us. We can use the `process.env` object to access them.
 
-1. Create a file called `.env` in the `src` directory. Add the following: VITE_SERVER_URL=http://localhost:3000/
-2. Open the `productData.mts` file up and add a variable towards the top. This will pull the URL from the .env file and make it available to use. We will need to do this slightly differently from on our server however. On the server the environment variables are found in `process.env`.  With Vite they are found in `import.meta.env`. So our variable declaration will look like this: `const baseURL = import.meta.env.VITE_SERVER_URL;`
+1. Create a file called `/.env` in the 'root' directory. Add the following: `PUBLIC_SERVER_URL=http://localhost:3000/api/v1/`
+2. Open the `productData.mts` file up and add a variable towards the top. This will pull the URL from the .env file and make it available to use. We will need to do this slightly differently from on our server however. On the server the environment variables are found in `process.env`.  With Vite they are found in `import.meta.env`. So our variable declaration will look like this: `const baseURL = import.meta.env.PUBLIC_SERVER_URL;`
 3. Modify the `findProductById` function to fetch from the API with our new URL. Remember the path will be baseUrl + "products/productId"
 
 <Details summary="productData.mts changes">
@@ -368,7 +390,7 @@ export async function findProductById(id:string) {
 
 </Details>
 
-Try going to one of the product detail pages. You will find that nothing is showing! If you open up the Developer tools and go to the Network tab we can inspect the request. (If you don't see the request, refresh the page with the Network tab open) Find the line for our request. It should be red. This means that our request failed! Depending on which browser you are in the error will show up differently, but all of them should mention something called CORS.
+Try going to one of the product detail pages. Then click on the "Add to Cart" button. This should make a call to our api. Check the console to see if your product showed up. You will find that nothing is showing! If you open up the Developer tools and go to the Network tab we can inspect the request. (If you don't see the request, refresh the page with the Network tab open) Find the line for our request. It should be red. This means that our request failed! Depending on which browser you are in the error will show up differently, but all of them should mention something called CORS.
 
 We are making a request from frontend Javascript from one origin (localhost:5173) to another origin (localhost:3000). This is called CORS, or Cross-Origin Resource Sharing.  CORS is governed by a security feature in browsers that prevents websites from making requests to other domains unless they have been explicitly allowed to do so. We have not allowed this on the server.
 
@@ -378,11 +400,11 @@ Go back to the server project. We need to add some code to our server so it can 
 
 1. Make sure your server is shut down by typing `ctrl-c` in the terminal in which it was running.
 2. Install the cors module: `(p)npm install cors @types/cors`
-3. Add `import cors from 'cors';` at the top of server.ts.
+3. Add `import cors from 'cors';` at the top of app.ts.
 4. Just before you add your routes, enable the cors middleware: `app.use(cors());`
 5. Save and restart the server: `(p)npm run dev`
 
-Go back to your frontend application and try hitting a product details page again. You should see the data show now, but may notice that the image isn't showing. Turns out the data structure for a product that we have been using locally is different from the one coming from the server. The server should win in this case, so we need to make one more change.
+Go back to your frontend application and try adding a product to cart again. You should see the data show now, but may notice that the image isn't showing. Turns out the data structure for a product that we have been using locally is different from the one coming from the server. The server should win in this case, so we need to make one more change.
 
 Go to `models/types.mts` in your server code and copy the contents. Paste them into `js/types.mts` in your frontend code. Replace what was in there.
 
@@ -399,7 +421,7 @@ As a part of this team activity, you are expected to look over a solution from t
 
 Please DO NOT open the solution until you have worked through this activity as a team for at least one hour. At the end of the hour, if you are still struggling with some of the core requirements, you are welcome to view the instructor's solution and use it to help you complete your own code. Even if you use the instructor's code to help you, you are welcome to report that you finished the core requirements, if you code them up yourself.
 
-After working with your team for the one hour activity, click here for the instructor's solution: [server](https://github.com/matkat99/sleepoutsideServer/tree/team-03/src) and [client](https://github.com/matkat99/sleepoutsideClient/tree/team-03/src).
+After working with your team for the one hour activity, click here for the instructor's solution: [server](https://github.com/matkat99/sleepoutsideServer/tree/team-03/src) and [client](https://github.com/matkat99/sleepoutsideClient/tree/v2-team-03/src).
 
 ## Make a pull request.
 

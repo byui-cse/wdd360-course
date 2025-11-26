@@ -1,0 +1,372 @@
+---
+title: SleepOutside - Team 5
+description: This week we will continue making our application dynamic by making the product listing generated.
+time: 2 hours
+---
+
+import Details from '../../../components/Details.astro'
+import Figure from '../../../components/Figure.astro'
+
+## Overview
+Many of the changes we have already made were to prepare the site to be able to scale up to as many products as we would like. In this activity we will add products organized from 4 categories: Tents, Sleeping Bags, Backpacks, and Hammocks. We will need to change the index page to show our four categories, and then build a dynamic product-list page that will pull the products from an API, and display them.
+
+## Instructions
+Complete the following assignment as a team. Designate one team member as the "main driver" and collaborate on their copy of the code. Everyone on the team should be actively engaged in writing the code and contributing to the solution. Once the solution is working, make sure that everyone on the team gets a copy of the code. Each week let someone else be the "main driver" of the coding.
+
+There are many spots where code examples have been given. To get the most out of this activity, do not look at the examples until your group has given that section a try. Then after you look at the example, resist the temptation to copy/paste. Use the examples to get correction, or help you get unstuck...do not just use them to get it done.
+
+## Core Requirements
+
+### **01** Begin
+
+The driver should visit the team's copy of the Trello board for the project. Add each of the attending team members to the "Team5: Dynamic product listing page" task...then move it to 'Doing'. Read the details of the card together.  
+  
+The driver should make sure to `pull` any changes from GitHub before proceeding. Next they should create a new branch called `initials--team5`. So if the driver's name were John Doe the branch should be called `jd--team5`.
+
+### **02** Refactor
+
+Create a new directory in `src/pages` called `product-list`, and create an `index.astro` file in it. Add the Layout to our new page to get the foundation up...header, footer, styles, etc. 
+
+Go back to the Home page (`src/pages/index.astro`) and add a grid of 4 boxes, one for each category. (But don't delete the list of product links yet...we will need that markup later) They should look something like this:
+
+<Figure src="../../images/product-categories-grid.png" alt="index product grid." />
+
+Here are links to the icons. The icons are being used with a Creative Commons license so we need to give credit to the creator. We will do that in this case by adding it to the alt attribute:
+
+  * [Tent](../../images/category-icons/noun_Tent_3544767.svg) (alt="Tent Icon from Noun Project: Mustofa Bayu")
+  * [Sleeping Bag](../../images/category-icons/noun_Sleeping_Bag_3544775.svg) (alt="Sleeping Bag Icon from Noun Project: Mustofa Bayu")
+  * [Backpack](../../images/category-icons/noun_carrier_bag_3544771.svg) (alt="Backpack Icon from Noun Project: Mustofa Bayu")
+  * [Hammock](../../images/category-icons/noun_Hammock_791143.svg) (alt="Hammock Icon from Noun Project: Paul Richard")
+
+Each of the category elements should link to `product-list/`. Make sure to pass the correct category as part of the URL. (*tents, backpacks, sleeping-bags, hammocks*)
+
+We need to have some way of passing in the products that we want to show. A common way to do this is through a [URL Parameter](https://www.sitepoint.com/get-url-parameters-with-javascript/). If we create a link like this: `<a href="product-list/index.html?category=tents">`, we have embedded the category of products we want to see into the link. When the page loads it will have access to that information. If you read through that article it suggests the following lines of code to retrieve it:
+
+```javascript
+const queryString = window.location.search;
+const urlParams = new URLSearchParams(queryString);
+const value = urlParams.get('product')
+```
+
+Use those lines to create a new function in the utils.mts file called `getParam(param)` that we can use to get a parameter from the URL when we need to. (Don't forget to return the value!). Why are we passing in `param`? We might not always be looking for a URL parameter called `product`, so we need to be able to pass in any parameter name.
+
+>When you create that function you will need to specify a type for the argument: `param`. What type of data will be be passing in?
+
+### **03** Pulling the correct Products
+
+We have a function currently in `productData.mts` called `getData` but it is still pulling from a local json file. We have an endpoint in our API that will return products filtered by category. We need to make two changes to our ` getdata` function:
+
+1. Update `getData` to use the api endpoint instead of pulling from the local json file. (While you are at it, update the `findProductById` function to use the appropriate api endpoint as well if that has not been done.)
+2. We should also take this opportunity to change the name. `getData` is not a very good name...let's call it `getProducts` instead. Make sure to pass the category name in when you call it.
+
+>If you panicked a bit when you read that you are paying attention. Renaming something that you have already used in multiple places is not something to do lightly, but sometimes it is necessary. Because of this, good development tools will have built-in ways to help you. VS Code is a good tool.
+
+1. Commit and push your changes before proceeding. That will make it easy to revert if something goes wrong :)
+2. Open <kbd>productData.mts</kbd> and select the word <code>getData</code> in the function definition. Right click on it and select "Rename symbol" in the menu.
+3. Enter 'getProducts' and hold down the shift key while hitting enter/return. This will preview the changes. It should open up a new panel in the editor where it will show you everywhere it found the name that you want to change. If you left-click on one of the lines it will open the file side by side with how it was before the changes and how it will be after. Review each change. If the changes looks good then right-click on the same line in the Preview panel and select 'apply Refactoring'. Then go File->Save All.
+
+For now you can check in the Network tab in the developer tools, or `console.log` out the results to test. (`console.log(JSON.stringify(data)`). 
+
+>Last week in the [Team4 activity](team-4/) we updated the types and JSON schemas for our product data on the backend. We should do the same on the frontend to keep things consistent. Copy/paste the code from the `types.ts` file in the backend codebase into your `types.mts` file in the frontend codebase (or you can grab it from the Team 4 link above).
+>When you paste this into the `types.mts` file on the frontend you need to make one change. The frontend does not know what an `ObjectId` is. As far as it is concerned the `_id`s will just be strings. Do a Find/Replace: `_id: ObjectId;` to `_id: string`. Then get rid of the `import` at the top of the file.
+
+## **04** Install and configure a Frontend Framework
+
+Over the course of this project we will have the opportunity to work with three frontend frameworks: React, Svelte, and Vue. We will start with Svelte this week.
+
+Astro makes it pretty easy to add any of these. To add the ability to use Svelte components in our app run the following command:
+
+```sh
+pnpm astro add svelte
+```
+...and that's pretty much it. We are now ready to add Svelte components.
+
+>Once the changes from this team activity are merged back into the main branch, each member of the team should pull those changes and then run the command `(p)npm install`. You should only have to do this once to grab the new tools into your local development environment.
+>
+>There is one more thing you will probably want to do to finish your setup. There is a very nice VS Code extension for some of these components that will make your life much easier. Install the VS Code extension: "Svelte for VS Code"
+
+### **05** Add our first component
+
+We do need to finish up the work we started with the product listing page, but first let's just make sure we can get a Svelte component working in our project.
+
+On the Home page of our site, if you click on the hiker icon it will display a menu. This is a great candidate for a component. This needs to be on every page, and if we need to make changes to the menu it would be much nicer to make the change in one place and have it automatically update everywhere we use it. Below you will find the code for a Svelte component to create the User Menu. Create a new file in `js/components` called `UserMenu.svelte` and add the following code to it:
+
+<Details summary="UserMenu.svelte">
+
+```svelte
+<script lang="ts">
+  import { onMount } from "svelte";
+
+  let visible = $state(false);
+
+  function openUserMenu(e: MouseEvent) {
+    // Stop the click from reaching the window listener immediately
+    e.stopPropagation();
+    visible = !visible;
+  }
+
+  // Named function required for removal
+  function closeMenu() {
+    visible = false;
+  }
+
+  // Named function required for removal
+  function handleKeydown(e: KeyboardEvent) {
+    if (e.key === "Escape") {
+      closeMenu();
+    }
+  }
+
+  onMount(() => {
+    // 1. Add Listeners
+    // if the user clicks outside the menu, scrolls the page, or hits the `esc` key close the menu.
+    window.addEventListener("click", closeMenu);
+    window.addEventListener("scroll", closeMenu);
+    window.addEventListener("keydown", handleKeydown);
+
+    // 2. Return Cleanup Function
+    // Svelte runs this function automatically when the component unmounts
+    return () => {
+      window.removeEventListener("click", closeMenu);
+      window.removeEventListener("scroll", closeMenu);
+      window.removeEventListener("keydown", handleKeydown);
+    };
+  });
+</script>
+
+<div class="user">
+  <button
+    class="user__button"
+    aria-label="user management"
+    title="User Management"
+    onclick={openUserMenu}
+  >
+    <img src="/images/noun-hiker.svg" alt="user icon" />
+  </button>
+  
+  <nav class="user__menu" class:open={visible}>
+    <a href="#">Login</a>
+    <a href="#">Profile</a>
+    <a href="#">Orders</a>
+  </nav>
+</div>
+
+<style>
+  .user {
+    display: flex;
+    align-items: flex-end;
+  }
+  span {
+    margin-right: 0.5em;
+  }
+</style>
+```
+</Details>
+
+
+Spend a few minutes reviewing the code above. Note how we can add an event listener directly to the button with the `onclick` attribute. Also note how we can use Svelte's built-in reactivity to make the menu show and hide based on the value of the `visible` variable.
+
+>Check out the opening Nav element: `<nav class="user__menu" class:open={visible}>` The way the class directive works is if the expression after the `=` evaluates to true then the class after the `:` is added to the element. If it evaluates to false then the class is removed. This is a great way to toggle classes based on state.
+
+Open up `src/layouts/Layout.astro` and remove the existing user menu. Make sure to *leave* the container div: `<div class="user-menu-container"></div>`. Import your `UserMenu` component and insert it into that spot. (`<UserMenu />`)
+
+Check that the menu shows and opens on the home page. Because we added this to the Layout, it will update the user menu on all our pages. It should work everywhere without any other changes...but if you check on the cart page for example you will find that the menu does not work when clicked!  What is going on?
+
+If you look at `/pages/index.astro` you will see that we add a script to that page: `js/main.ts`. Go open that file. Notice that we are running some code to make the menu open and close. If we comment out that code then the menu will stop working on the home page as well. Do that. The component we built with Svelte was supposed to contain all the code necessary to make the component work, but something is wrong.
+
+Astro by default runs in static generation mode. Meaning that for any components it finds whether they are `.astro` components or `.svelte` it will compile the component down to just plain HTML and CSS. We can add a `<script src="">` element in our HTML to get around this as we did with `main.ts`, but in this csse we really just need our Svelte component to work normally. It needs to be hydrated.
+
+>Hydration is a term that is used to describe the process of sending down a component from a Framework like Svelte or React that has been pre built on a server or statically generated like Astro does, and then adding the the interactivity back in with Javascript once it gets to the browser. If our pre-built components aren't hydrated in the browser then they will not be interactive. They will remain static HTML.
+>
+>Astro components cannot be hydrated.
+
+One really nice feature of Astro is that components can be selectively hydrated. To instruct Astro to do this we just need to add an attribute to the component when we use it. Like this: `<UserMenu client:load />`. That's it. Add that and check your page in the browser again. It should work on all pages now.
+
+### **05** Create a `ProductList` component
+
+Now that we can get the right data for our products, and have verified that Svelte is installed and working, we need to display them. Create a new file `js/components/ProductList.svelte` that we will use for the code to generate a list of product summary cards in HTML from an array. (It's common practice in most component based libraries to name components in this way. PascalCased...camelCased but capitalized).
+
+Add some initial HTML...something like `<h2>Products</h2>`, then add the code we need to mount the component to our `product-list/index.astro` page. You will do this just like we used the UserMenu component above.
+
+Test to make sure your component works.
+
+Now that we have a basic component working, we can add the rest of the functionality we need. Begin creating your ProductList component by thinking about the information it will need to accomplish it's purpose.
+
+We updated the home page with 4 links that the user will click on to see the products in that category. We will need to pass in the category of products we want to our ProductList component. In most component based frameworks this is done with [props](https://learn.svelte.dev/tutorial/declaring-props]. Let's try that.
+
+In the frontmatter section of `pages/product-list/index.html` try importing the `getParam` function we created earlier in `utils.mts`. Add the following lines:
+```js
+import { getParam } from "../../js/utils.mjs";
+const category = getParam("category");
+```
+Check the page in the browser. It's broken! You should see an error like this: "window is not defined". What what? How is the `window` variable not defined? Well if you read further on that error page you will find: "Browser APIs are not available on the server." Turns out that all the code we write in the frontmatter section of an Astro component gets run in a Node server environment. `window` does not exist there. So we will have to make sure we run our `getParam` in a place that does run in the browser. We have two choices. First we could put that code into a normal javascript file (ie `js/product-list.ts`) and add it to the page as a script...or if you remember what we learned above about hydration...we can run that code inside of our Svelte component. Since we are asking for that to be hydrated the code inside our component will make it to the browser. Let's do that instead.
+
+Make sure to remove the `getParam` call from `pages/product-list/index.html`.
+
+Inside the component we will need to retrieve the category using the `getParam` function and then get the correct product data using our new `getProducts` function.  Import those functions into the component and use it to get the list of products from the category passed in as the prop. A common practice is to create an `init()` function where we will do everything that needs to happen to setup the component...like fetching data. Then you can use the `onMount` function provided by Svelte to run that function when the component mounts. 
+
+We can add Javascript to our component with a `<script>` element. Your code thus far might look like this:
+
+```svelte
+<script lang="ts">
+  import { onMount } from "svelte";
+  import { getProducts } from "../productData.mts";
+  import type { Product } from "../types.mts";
+  import { getParam } from "../js/utils.mjs";
+
+// declare these out here as state so we can us it in our template below
+  let category = $state(""); 
+  let products:Product[] = $state([]);
+
+  async function init() {
+    category = getParam("category") || ""
+    const data = await getProducts(category);
+    products = data.results;
+  }
+
+  onMount(init);
+</script>
+
+<h2>Top products: {category}</h2>
+```
+
+>Reminder: we can embed variables into our template using the curly braces. This is similar to what we have done before with template literal strings. We just don't need the $ in this case or the backticks.
+
+
+### **06** Finish ProductList
+
+ As you think about how to build out our list it would be good to break it down into parts:
+
+- A title identifying the component
+- A list
+- A collection of product summary cards in the list...one for each product we want to display.
+
+We already have examples of all of this in the current `pages/index.astro` file. Begin by copy/pasting the code inside of the `.products` container into your `ProductList` component. Since one of our goals is to make the list dynamic as well we should get rid of all but one of the `li` elements. (Once you have done this you can delete the list of products from the home page.)
+
+```svelte
+<script lang="ts">
+  import { onMount } from "svelte";
+  import { getProducts } from "../productData.mts";
+  import type { Product } from "../types.mts";
+  import { getParam } from "../js/utils.mjs";
+
+// declare these out here as state so we can us it in our template below
+  let category = $state(""); 
+  let products:Product[] = $state([]);
+
+  async function init() {
+    category = getParam("category") || ""
+    const data = await getProducts(category);
+    products = data.results;
+  }
+
+  onMount(init);
+</script>
+
+<h2>Top products: {category}</h2>
+<ul class="product-list">
+      <li class="product-card">
+        <a href="products/880RR/">
+          <img
+            src="images/tents/marmot-ajax-tent-3-person-3-season-in-pale-pumpkin-terracotta~p~880rr_01~320.jpg"
+            alt="Marmot Ajax tent"
+          />
+          <h3 class="card__brand">Marmot</h3>
+          <h2 class="card__name">Ajax Tent - 3-Person, 3-Season</h2>
+          <p class="product-card__price">$199.99</p></a
+        >
+      </li>
+</ul>
+```
+
+We are getting closer, but our component is still very static, and we will only have one product listed instead of however many
+are returned from the data source. A good templating tool should help us with things like this. In fact, Svelte does have some
+nice tools to help us with [looping](https://learn.svelte.dev/tutorial/each-blocks) and even to handle [promises](https://learn.svelte.dev/tutorial/await-blocks).
+
+After reviewing the links above, update your template to use an `{#each}` block. Check out the partial solution below if you get stuck.
+
+<Details summary="Partial solution">
+
+```svelte
+<h2>Top Products: {category}</h2>
+
+<ul class="product-list">
+{#each products as product}
+<li class="product-card">
+        <a href="products/880RR/">
+          <img
+            src="images/tents/marmot-ajax-tent-3-person-3-season-in-pale-pumpkin-terracotta~p~880rr_01~320.jpg"
+            alt="Marmot Ajax tent"
+          />
+          <h3 class="card__brand">Marmot</h3>
+          <h2 class="card__name">Ajax Tent - 3-Person, 3-Season</h2>
+          <p class="product-card__price">$199.99</p></a
+        >
+      </li>
+{/each}
+</ul>  
+```
+</Details>
+
+At this point you should see a lot of copies of the same thing. We need to update our template to pull the information from our products list instead of having it hard coded like we currently do. Before we do that however...a product summary is something that we might want to use in other locations. We can create a new component to handle that and reuse it in other places. Let's do that now.
+
+### **07** Create a `ProductSummary.svelte` component
+
+Create a new file called `ProductSummary.svelte` in the components directory and refactor your code to make it work. You should pass the current product in as a prop.
+
+>Before you do the next step it would be really helpful to fix your typescript so that you get autocomplete for your product fields. You may not have seen this before, but when rerieving your props you can provide types like this:
+>```js
+><script lang="ts">
+>    import type { Product } from "../js/types.mts";
+>    let { product }:{ product:Product } = $props();
+></script>
+>```
+
+Update the `ProductSummary` component to insert the correct variables into your template. Then test again to make sure everything is displaying correctly. Remember to remove the hard coded products in the `/index.html` file so we don't have any duplicates. Don't forget to insert in the product.id into the href in the link!
+
+### **09** Update the Astro collection
+
+Once you finish the product list page, if you try and click on most of the links they will be broken! There are two things going on. First click on on of the product links and look carefully at the URL...
+
+Second, If you think back to when we updated the product detail pages we set up a collection in Astro to provide a list of products. We based our collection of of a small json file of tents. That is not going to cut it moving forward. We really need to have our collection based off of our API. Let's make that change.
+
+Open `src/content.config.js` We defined our collection like this before:
+```js
+const products = defineCollection({
+  loader: file("public/json/tents.json"),
+});
+```
+
+We need to change this to pull from our API...like this:
+```js
+const products = defineCollection({
+  loader: async () => {
+    const response = await fetch(
+      import.meta.env.PUBLIC_SERVER_URL + "products?limit=200"
+    );
+    const data = await response.json();
+    // Must return an array of entries with an id property, or an object with IDs as keys and entries as values
+    return data.results
+  },
+});
+```
+
+### **08** Check to make sure nothing broke!
+
+Go through your application and test each page to make sure nothing broke with our refactoring. If you find any broken links, images, or functionality fix it!
+
+## Instructor's Solution
+
+As a part of this team activity, you are expected to look over a solution from the instructor to compare your approach to that one. One of the questions on the I-Learn submission will ask you to provide insights from this comparison.
+
+Please DO NOT open the solution until you have worked through this activity as a team for at least one hour. At the end of the hour, if you are still struggling with some of the core requirements, you are welcome to view the instructor's solution and use it to help you complete your own code. Even if you use the instructor's code to help you, you are welcome to report that you finished the core requirements, if you code them up yourself.
+
+After working with your team for the one hour activity, [click here for the instructor's solution](https://github.com/matkat99/sleepoutsideClient/tree/v2-team-05).
+
+## Make a pull request.
+
+After you have completed what you can, reviewed the instructor's solution, and gotten your code working, the driver should commit and push their changes (don't forget to lint and format your code before committing!), then submit a pull request for this branch. Then review the pull request as a team, close it, and merge the branch back into Main. Finally, someone should move the Trello card to "Done".
+
+## Submission
+
+When you have finished this activity, please fill out the assessment in I-Learn. You are welcome to complete any additional parts of this activity by yourself or with others after your meeting before submitting the assessment.
