@@ -52,13 +52,13 @@ Unless you are following strict REST principles in the design of your API (under
 Download this [swaggerDesign.json](/files/swaggerDesign.json) file and place it into the `src` folder on your server. To finish the setup do the following:
 
 1. Install swagger-ui-express and the types (`(p)npm install swagger-ui-express @types/swagger-ui-express`) for it.
-2. Create a `swaggerRoutes.mts` file in the routes folder.
-3. Import Router, swagger-ui-express, and swaggerDesign.json into our `swaggerRoutes.mts` file.
+2. Create a `swagger.routes.mts` file in the routes folder.
+3. Import Router, swagger-ui-express, and swaggerDesign.json into our `swagger.routes.mts` file.
 4. Setup the Router object as we have done before.
 5. Setup the swagger-ui middleware: `router.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument));`
 6. Export your router.
 7. Import the swaggerRouter into `routes/index.ts` and add it as a dependency.
-8. Make sure your server is running and browse to `http://localhost:3000/api-docs`. You should see the interactive API documentation! You will be referring back to this page for the next steps so leave it open :).
+8. Make sure your server is running and browse to `http://localhost:3000/api/v1/api-docs`. You should see the interactive API documentation! You will be referring back to this page for the next steps so leave it open :).
 
 >When importing our `swaggerDesign.json` file you will notice that Typescript will complain. If we check the [Node json-modules docs](https://nodejs.org/api/esm.html#json-modules) we can see that we can import JSON directly...but that we need to add `with {type: json}` to our import statement.
 >
@@ -130,13 +130,13 @@ export interface Brand {
 
 // User schema
 export interface User {
-  _id: string;
+  _id?: string;
   email: string;
   password: string;
   name: string;
-  address: Address;
-  phoneNumbers: PhoneNumber[];
-  cart: CartItem[];
+  address?: Address;
+  phoneNumbers?: PhoneNumber[];
+  cart?: CartItem[];
   createdAt: Date;
   modifiedAt: Date;
 }
@@ -520,8 +520,8 @@ export const UserSchema = {
         }
       }
     },
-    createdAt: { type: "string", format: "date-time" },
-    modifiedAt: { type: "string", format: "date-time" }
+    createdAt: { instanceof: "Date" },
+    modifiedAt: { instanceof: "Date" }
   },
   required: ["email", "password", "name", "createdAt", "modifiedAt"]
 };
@@ -659,8 +659,8 @@ export const OrderSchema = {
         }
       }
     },
-    createdAt: { type: "string", format: "date-time" },
-    modifiedAt: { type: "string", format: "date-time" },
+    createdAt: { instanceof: "Date" },
+    modifiedAt: { instanceof: "Date" },
     totalPrice: {
       type: "number",
       description: "The total price of the order, must be a number"
@@ -708,8 +708,8 @@ export const AlertSchema = {
       enum: ["active", "inactive"],
       description: "The status of the alert, must be one of: active or inactive"
     },
-    createdAt: { type: "string", format: "date-time" },
-    modifiedAt: { type: "string", format: "date-time" }
+    createdAt: { instanceof: "Date" },
+    modifiedAt: { instanceof: "Date" }
   },
   required: ["title", "type", "status", "createdAt", "modifiedAt"]
 };
@@ -738,35 +738,53 @@ export interface QueryParams {
 }
 ```
 
->Make sure to import your new type into the `productModel.mts` file.
+>Make sure to import your new type into the `product.service.mts` file.
 
 
 Then the function declaration will look something like this:
 ```javascript
-export async function getAllProducts(query:QueryParams): Promise<{totalCount: number; data: Product[] | null}> {
+export async function getAllProducts(query:QueryParams) {
     // all the codes
 }
 ```
-Note the return type. It is an object wrapped in a Promise. The Promise wrapper happens because it is an `async` function. We will send back both the products and the total number of matches to any query that might be sent. This will be necessary to implement our pagination.
 
 Here is an outline you can follow to direct your efforts in modifying our `getAllProducts` method:
 
-1. Notice that the `find({})` method we are using in the `getAllProducts` method takes an object as an argument. If we check out the [MongoDB docs](https://docs.mongodb.com/manual/reference/method/db.collection.find/#mongodb-method-db.collection.find) You can see that we can pass in something like: `{name: "Some string"}` and it will filter on that.
+1. Notice that the `find({})` method we are using in the `getAllProducts` method takes an object as an argument. If we check out the [MongoDB docs](https://docs.mongodb.com/manual/reference/method/db.collection.find/#mongodb-method-db.collection.find) You can see that we can pass in something like: `{name: "Some string"}` and it will filter on that. You can add more than one key:value pair in that object.
 2. You should also poke around in those docs to see how [limiting](https://www.mongodb.com/docs/manual/reference/method/cursor.limit/) and [offsetting](https://www.mongodb.com/docs/manual/reference/method/cursor.skip/) work. You could also go back and review the section on [reading multiple rows](https://www.mongodb.com/developer/languages/javascript/node-crud-tutorial/#read) from the tutorial in the exploration for week 3.
-3. Start with the `q` search. (The `q` parameter would contain, for example the words you might type into a search box) For now we will search for the terms in `q` on the `name` and `descriptionHtmlSimple` fields. Check to see if you got a `q` param, if you did then build out a `find` object that you will pass into the `find()` method of our query later.
-4. Next check to see if a `category` was passed in. You will follow a similar process but this time you will be comparing to the `category` field. Note that you could get both `q` and `category` in the same request!
-5. Make sure to update your mongodb query to use your find object, and limit and offset. You should also add a second query to get the totalCount using the same `find` object. (you can get the count of total records with `await collection.countDocuments({query object})`)
+3. Some of the work will be done in `product.services` and some in `product.model` What goes where? In services we should do all the work of checking to see what parameters were sent, and validating that they are good. Ultimately we want to create a well formatted object that we can send to the model so that it can simply request the right data. The model should only make the calls we need to the database and return the data. Here is another interface you can add to `types.mts` to help guide you:
+```js
+// Create a generic Mapped Type
+type Projection<T> = {
+  [K in keyof T]?: number; // '?' means "none or many" are allowed
+};
 
->Notice that at the end of our query we call `toArray()` to convert our find object into an array. This is because the `find` method returns a cursor, which is a special type of object that allows you to iterate over all of the results in your collection. Most of the time we can just convert directly, but sometimes we may need to modify our results in some way before we use it. 
+
+export interface FindProductObj {
+  search: {
+    name?:string,
+    descriptionHtmlSimple?:string,
+    category?:string,
+  },
+  limit: number,
+  offset: number,
+  fieldFilters?: Projection<Product>
+}
+```
+4. Start in the service. We need to build the `FindProductObj` first. Use the provided interface as a guide. Declare a variable called `findProduct` and start building out the object by adding a `search`, `limit`, and `offset` property. For limit check the passed in `query` to see if one was provided, if not set it to `20`. For offset if one was not provided then default to `0`
+5.  Next work on the `q` search. (The `q` parameter would contain, for example the words you might type into a search box) For now we will search for the terms in `q` on the `name` and `descriptionHtmlSimple` fields. Check to see if you got a `q` param, if you did then build out a `find` object (of type FindProductObj) that you will pass into the model method later.
+6. Then check to see if a `category` was passed in. You will follow a similar process but this time you will be comparing to the `category` field. Note that you could get both `q` and `category` in the same request!
+7. Check to see if we have a `fields` param. If so convert your field string into an object that looks like this: `{name: 1, finalPrice: 1}`. This is something that we will probably need to do elsewhere so encapsulate this in a function called `formatFields(fields:string)` then create a files called `services/utils.mts`, place the function there and export it.
+8. Pass your object to the `getAllProducts` function in the `product.model` next. It will return some data so make sure to store that in a variable.
+9. Now move to the model. Our mongo query will look different than it did last time. We are going to break it up into multiple steps. First get a reference to the Products collection. (`const productsCollection:Collection<Product> = mongodb.getDb().collection<Product>('products');`) First get the total count of records that will match our find conditions by using `await collection.countDocuments({query object})`. Then make a `find` query with the collection with our search conditions to get the actual records.
+>In the past when we made queries, we would call `toArray()` to convert our find object into an array. This is because the `find` method returns a cursor, which is a special type of object that allows you to iterate over all of the results in your collection. Most of the time we can just convert directly, but sometimes we may need to modify our results in some way before we use it. 
 >
 >For example the last query we need to implement is the ability to restrict the results sent back to a specific list of fields. It would look something like this: `?fields=name,finalPrice` which would return only the `name` and `finalPrice` fields. The projection param specifies which fields to return in MongoDB. You can find more information on how to do this in the [MongoDB projection](https://www.mongodb.com/docs/manual/reference/method/db.collection.find/#projections) 
-6. Remove the `toArray()` from the end of our query.
-8. Check to see if we have a `fields` param. If so convert your field string into an object that looks like this: `{name: 1, finalPrice: 1}`. This is something that we will probably need to do elsewhere so encapsulate this in a function called `formatFields(fields:string)` then create a files called `services/utils.mts`, place the function there and export it.
-9. Use the fields object to limit your results. (`cursor.project(fields)`)
-10. Call `toArray()` to convert your cursor into an array. 
-11. Return the totalCount and any products found.
-11. In the route method when you get the data back from the model function you should format and send the data as a JSON object with `count`, `next` and `previous` fields, along with an array of objects that contain all of the product information. 
-sults.
+10. If you added it, remove the `toArray()` from the end of our query.
+11. Use the fields object to limit your results. (`cursor.project(fields)`)
+12. Call `toArray()` to convert your cursor into an array. 
+13. Return the totalCount and any products found to the service function, then finish formatting it (with `count`, `next` and `previous` fields, along with an array of objects that contain all of the product information. See below) and return it from the service function to the route.
+14. In the route method when you get the data back from the service function you should check the count, crete an error if there are no records, and then send the results on if there are records.
 
 If you look closely at the response for our Products endpoint in our API docs, you will notice that it should send back something like this:
 
@@ -790,10 +808,14 @@ export function buildPaginationWrapper(totalCount:number, query:QueryParams) {
     // here we check to see if there is a limit...if yes convert it to a number, if no set it to the default of 20
     const limit= query.limit? parseInt(query.limit) : 20;
     const offset= query.offset? parseInt(query.offset) : 0;
+    // assume you got 35 results back with a limit of 20, total pages would be 1.75. We can't have partial pages so Math.ceil would raise that to 2
     const totalPages = Math.ceil(totalCount / limit);
+    // offset/limit would give us 0, then we add one so we are on the first page.
     const currentPage = Math.ceil(offset / limit)+1;
+    // in this case currentPage == 1 so hasPreviousPage would be false
     const hasPreviousPage = currentPage > 1;
     console.log(currentPage, totalPages);
+    // currentPage < totalPages would be true. (1 < 2)
     const hasNextPage = currentPage < totalPages;
     let next, prev;
     // create a new URLSearchParams object from the query parameters. This will make it easy to modify the fields we need to, while passing all the others on.
@@ -821,7 +843,7 @@ export function buildPaginationWrapper(totalCount:number, query:QueryParams) {
 
 1. After making most of the changes above your initial query should look like this:
 ```javascript
-const cursor = await mongodb.getDb().collection<Product>("products").find(find).skip(offset).limit(limit);
+const cursor = await productsCollection.find(find).skip(offset).limit(limit);
 ```
 2. Then after you have converted your field filter into the correct format you would do this to finish off:
 ```javascript
@@ -829,20 +851,8 @@ if(fieldFilters) {
         cursor.project(fieldFilters);
     }
     const data = await cursor.toArray();
-    return data;
+    return {data, totalCount};
 ```
-3. If Typescript complains about your `find` object, you may want to define an interface for it:
-```javascript
-interface Find {
-    name?:string,
-    descriptionHtmlSimple?:string,
-    category?:string,
-}
-//... later when you declare your find variable
-const find:Find = {};
-
-```
-
 
 </Details>
 
@@ -873,7 +883,7 @@ export function sanitize(v:Record<string, any>) {
 Then before we send data from `req.body`, `req.params`, or `req.query` to a query we should use this function to sanitize.
 ```javascript
 const cleanQuery = sanitize(req.query);
-const results = await getAllProducts(cleanQuery);
+const results = await productService.getAllProducts(cleanQuery);
 ```
 
 We will also add some validation later to make sure that when creating records in the database the data looks good.
@@ -891,7 +901,7 @@ We have already deployed our frontend...on Netlify. For Node that would not be t
 7. Save your setup, then once you can see the Dashboard for your project click on the "Connect" button. There will be a list of ip addresses. Copy them then login in the MongoDB Atlas account your team is using. On the left sidebar find the "Network Access" menu item. Add the IP addresses from Render to the list of allowed IPs.
 8. On the project Dashboard for render click on "Manual Deploy". Wait until it finishes, then try browsing to your app address.
 
-Once you have your server running on Render, we will need to make a change to our Netlify site to point it to our new backend server. The person who created the Netlify account should log in, then goto the correct project and select "Site Configuration". Goto the Environment Variables section. check to see if you have a `VITE_SERVER_URL` defined. If you do then update it to the URL for you render server. If you do not then create it and set it.
+Once you have your server running on Render, we will need to make a change to our Netlify site to point it to our new backend server. The person who created the Netlify account should log in, then goto the correct project and select "Site Configuration". Goto the Environment Variables section. check to see if you have a `PUBLIC_SERVER_URL` defined. If you do then update it to the URL for you render server. If you do not then create it and set it.
 
 Test to make sure everything is working.
 

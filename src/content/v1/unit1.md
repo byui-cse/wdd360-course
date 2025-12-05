@@ -13,7 +13,6 @@ tags: [
 
 - [Week 1 Exploration](../../prepare/unit1a)
 - [Week 2 Exploration](../../prepare/unit1b)
-- [Week 3 Exploration](../../prepare/unit1c)
 
 ## Ponder
 
@@ -22,7 +21,6 @@ tags: [
 - [Javascript Review](../../ponder/js-review)
 - [Javascript Node Review](../../ponder/js-backend-review)
 - [Typescript Introduction](../../ponder/ts-intro)
-- [Astro Intro](../../ponder/astro)
 
 ## Prove
 

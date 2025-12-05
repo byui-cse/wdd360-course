@@ -10,10 +10,10 @@ tags: [
 
 ## Prepare
 
-- [Week 6 Exploration](../../prepare/unit3a)
-- [Week 7 Exploration](../../prepare/unit3b)
-- [Week 8 Exploration](../../prepare/unit3c)
-- [Week 9 Exploration](../../prepare/unit3d)
+- [Week 5 Exploration](../../prepare/unit3a)
+- [Week 6 Exploration](../../prepare/unit3b)
+- [Week 7 Exploration](../../prepare/unit3c)
+- [Week 8 Exploration](../../prepare/unit3d)
 
 ## Ponder
 
@@ -22,6 +22,7 @@ tags: [
 
 ## Prove
 
-- [Team 5](../../prove/v2/team-5)
-- [Team 6](../../prove/v2/team-6)
-- [Team 7](../../prove/v2/team-7)
+- [Team 5](../../prove/team-5)
+- [Team 6](../../prove/team-6)
+- [Team 7](../../prove/team-7)
+- [Team 8](../../prove/team-8)

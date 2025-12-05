@@ -1,8 +1,5 @@
 ---
-// import type { HTMLAttributes } from "astro/types";
-
-// type Props = HTMLAttributes<"summary">;
-
+// in order for the component to be reusable we will need to pass some information in when we use it. Information passed into components is usually called props
 const { summary, class: className, ...props } = Astro.props;
 ---
 

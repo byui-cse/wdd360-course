@@ -8,14 +8,15 @@ tags: [planning,
 
 ## Prepare
 
-- [Week 10 Exploration](../../prepare/unit4a)
-- [Week 11 Exploration](../../prepare/unit4b)
-- [Week 12 Exploration](../../prepare/unit4c)
+- [Week 9 Exploration](../../prepare/unit4a)
+- [Week 10 Exploration](../../prepare/unit4b)
+- [Week 11 Exploration](../../prepare/unit4c)
 
 ## Ponder
 
-- [Authentication with Clerk](../../ponder/clerk)
+- [Authentication](https://byui-cit.github.io/learning-modules/modules/css/animations/ponder1/)
 - [Testing](https://byui-cit.github.io/learning-modules/modules/css/modals/ponder1/)
+- [UX]()
 
 ## Prove
 

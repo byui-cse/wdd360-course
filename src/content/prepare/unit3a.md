@@ -1,5 +1,5 @@
 ---
-title: Week 5 Exploration.
+title: Week 6 Exploration.
 
 time: 90min
 ---

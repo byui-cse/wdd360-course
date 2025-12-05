@@ -1,0 +1,205 @@
+---
+title: OAuth with Clerk
+description: This activity will give model how to use the OAuth provider Clerk in our stack
+time: 1 hours
+---
+import Details from '../../components/Details.astro'
+import Figure from '../../components/Figure.astro'
+
+## Introduction
+
+You should have done some reading this week on OAuth. This specification allows for shared authentication services acrossed applications. It can however be a bit involved to implement directly. Because of this there are a whole bunch of OAuth providers that have popped up as full service user management and authentication providers. These providers have put a lot of work into making their tools easy to use and integrate into all sorts of applications.
+
+One of these is a provider called [Clerk](https://clerk.com). The folks at Clerk have worked hard to make their product very easy to use, and we can benefit from that. This activity will show how to doa simple integration of a web application with a separate front and backend.
+
+## **01** Getting Started
+
+We will need to setup both a frontend and backend for this. We will use an Astro Frontend (with some Svelte components) and Node/Express on the backend. This mirrors the architecture we used for the Sleepoutside project. Let's create the frontend first. Create a folder in your course sandbox folder called `clerk-ponder`. Open that folder in VSCode and open a terminal.  Then run the following commands:
+
+```bash
+(p)npm create astro@latest 
+```
+
+When prompted enter the directory name you would like your project to live in...something like `client` might work. Select "minimal template". Then you can go ahead and let it install the dependencies. It's up to you if you want to have it create a git repo for the project. (I created mine in a course sandbox directory I created earlier that is already a repo.)
+
+Next `cd` into the new directory and run: 
+
+```bash
+(p)npm astro add svelte
+```
+
+This will add the ability for us to use Svelte components in our app. Finally run:
+
+```bash
+(p)npm run dev 
+```
+
+This will start a local development server and open up a browser window to show you the default Astro app.
+
+>if you prefer using `pnpm` you can use that instead of `npm`. 
+
+We need to create a bit more structure for our site:
+1. Create the following files and folders: 
+  - `client/src/pages/profile/index.astro`
+  - `client/src/components/Header.svelte`
+  - `client/src/layouts/BaseLayout.astro`
+  - `client/.env`
+
+
+
+## **02** Create an Astro Component
+
+We often have parts of our site that show up more than once. For example you may have seen this show up in this course content a few times:
+
+<Details summary="Collapsible Details element">
+  Contents of the Details element
+</Details>
+
+This is what a normal unstyled details element looks like:
+
+<details style="padding:0; border:0">
+<summary>Unstyled</summary>
+More content
+</details>
+
+We can make this styled version easy to use wherever we want by turning it into a component.
+
+1. Create a new file called `src/components/Details.astro`. This will be our details component.
+2. Add the following to the top of the file (make sure to read the comments):
+```astro
+---
+// this section is called frontmatter. We can put javascript in here that will be used to help build the component
+// in order for the component to be reusable we will need to pass some information in when we use it. Information passed into components is usually called props
+// the next line will grab a prop called "summary", notice that the "class" attribute also gets passed as a prop. "...props" just forwards on any other attributes that may have been added
+const { summary, class: className, ...props } = Astro.props;
+---
+```
+3. Next add the following under the frontmatter (again, don't ignore the comments!): 
+```astro
+<-- This is an actual html element. Notice that we are using the props we gathered above. We can insert variables into our component by wrapping them in. { } -->
+<details class:list={[className]} {...props}>
+  <summary>{summary}</summary>
+  <!-- slot is a special element. Any children of our component will get inserted into the slot.  -->
+  <slot />
+</details>
+```
+4. Finally let's add some CSS. CSS added directly to a component is scoped to that component.
+```html
+<style>
+  details {
+    padding: 0.5em;
+    border: 1px solid;
+    margin-bottom: 1em;
+  }
+  summary {
+    cursor: pointer;
+    transition: transform 0.3s ease-in-out;
+    transform-origin: 0 50%;
+    list-style: none;
+    display: flex;
+    align-items: center;
+    gap: 0.5em;
+  }
+  details[open] summary {
+    transform: scale(1.1); /* Slightly scale up the summary */
+  }
+  details[open] > summary::before {
+    transform: rotate(90deg);
+  }
+  details > summary::before {
+    content: "\2794";
+    font-size: 1.5em;
+    line-height: 0;
+    padding-top: 4px;
+    transition: transform 0.2s;
+  }
+  details summary::marker,
+  details summary::-webkit-details-marker {
+    display: none;
+    content: "";
+  }
+</style>
+```
+5. Test the component by importing it into `pages/index.astro` and using it like any regular HTML element. 
+```html
+<Details summary="Astro Component" class="some-class" aria-label="component example">
+      <p>Child content</p>
+</Details>
+```
+
+Open your page, then inpect it in the developer tools. It's been converted back to plain old HTML!
+
+```HTML
+<details class="some-class" aria-label="component example" data-astro-cid-4jmmo4cq="">
+   <summary data-astro-cid-4jmmo4cq="">Astro Component</summary>  
+   <p>Child content</p>
+</details>
+```
+
+Note that our class and aria attribute got passed on!
+
+## **03** Create a layout
+
+Components can be used for larger parts of the page as well. In fact as we add pages to our site it would be nice if we could re-use the parts that are the same. Turns out we can...by creating a special component called a layout.
+
+1. Create a new file: `src/layouts/BaseLayout.astro` and copy the contents of `src/pages/index.astro` into it.
+2. Change the `body` to be this:
+```html
+<body>
+    <header>
+      <h1>Astro</h1>
+    </header>
+    <main>
+      <!-- the slot is where any children contents of this component will be placed. -->
+      <slot />
+    </main>
+</body>
+```
+3. Open `pages/index.astro` and remove most of the content. Keep the Details component we added in the last part.
+4. Import in the BaseLayout and wrap our remaining content in an instance of that element.
+```html
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+import Details from "../components/Details.astro";
+---
+
+<BaseLayout>
+<!-- Everything inside of the element will get inserted in to the <slot> we added above. -->
+  <Details
+    summary="Astro Component"
+    class="some-class"
+    aria-label="component example"
+  >
+    <p>Child content</p>
+  </Details>
+</BaseLayout>
+```
+5. Check your page in the browser...it should look just the same!
+
+## **04** Create more pages
+
+Let's add another page to the site. How about a "Contact Us" page. Now that we have our Layout this will be quick.
+
+1. Add a new file: `src/pages/contact.astro`
+2. Import the layout and use it.
+3. Inside the layout element we can add a title to see if things are working: `<h2>Contact Us</h2>`
+4. Browse to the page by typing it's path: `/contact`. You should see the headline. 
+>Note the page title in the tab however, then go back to the home page. They are the same. This is not good. Let's fix that, as well as get a simple navbar going. First the title
+5. Remember that we can pass information into components as props. We should pass the title of the page in to the `BaseLayout` component when we use it! Open `/pages/index.astro`. In the front matter add the following: `const title = "Home"`
+6. Update the line where we use the layout component to pass the variable title in: `<BaseLayout title={title}>`
+7. Open `src/layouts/BaseLayout.astro`. We need to catch the prop like we did earlier in the `Details` component we used. All the props live in a Global object in Astro: `Astro.props` We can use [destructuring](https://javascript.info/destructuring-assignment) to grab just the parts we want, and then use it in the template.
+```astro
+const { title } = Astro.props;
+___
+
+...
+ <title>Astro | {title}</title>
+
+```
+8. Add a title variable to the contact page as well. Then in the browser switch back and forth and make sure the title in the tab does change.
+
+
+
+## **08** Submit
+
+When you have completed the task, make sure to commit and push, then submit a link to your repository on the assignment submission page.

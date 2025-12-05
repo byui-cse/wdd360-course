@@ -1,5 +1,5 @@
 ---
-title: Week 6 Exploration.
+title: Week 7 Exploration.
 
 time: 90min
 ---

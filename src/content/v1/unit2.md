@@ -11,8 +11,8 @@ tags: [
 
 ## Prepare
 
-- [Week 4 Exploration](../../prepare/unit2a)
-- [Week 5 Exploration](../../prepare/unit2b)
+- [Week 3 Exploration](../../prepare/unit2a)
+- [Week 4 Exploration](../../prepare/unit2b)
 
 ## Ponder
 

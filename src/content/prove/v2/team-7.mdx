@@ -1,0 +1,452 @@
+---
+title: Sleepoutside - Team 7
+description: Finish Authentication.
+time: 2 hours
+---
+import Details from '../../../components/Details.astro'
+
+## Overview
+This activity will continue our work from the previous activity and setup authentication/authorization so that we can protect some of our routes and pages.
+
+## Instructions
+Complete the following assignment as a team. Designate one team member as the "main driver" and collaborate on their copy of the code. Everyone on the team should be actively engaged in writing the code and contributing to the solution. Once the solution is working, make sure that everyone on the team gets a copy of the code. Each week let someone else be the "main driver" of the coding.
+
+There are many spots where code examples have been given. To get the most out of this activity, do not look at the examples until your group has given that section a try. Then after you look at the example, resist the temptation to copy/paste. Use the examples to get correction, or help you get unstuck...do not just use them to get it done.
+
+>If you suddenly find that you cannot get your server to start it may be because of MongoDB. When you setup your project you had to allow network access to your database from your current IP address. If your IP address changes (which can happen often with home internet connections) you may need to update the IP address in your MongoDB Atlas dashboard. Log into your account, go to Network Access, then update the IP address to your current one.
+>You may need to do this for both home and on campus.
+
+## Core Requirements
+
+The driver should visit the team's copy of the Trello board for the project. Add each of the attending team members to the "Team7" task...then move it to 'Doing'. Read the details of the card together.  
+  
+>At least one member of the team needs to have finished the [Svelte Practice](../../ponder/svelte-1) assignment before you proceed!
+
+The driver should make sure to `pull` any changes from GitHub before proceeding. Next they should create a new branch of the server and client repos called `initials--team7`. So if the driver's name were John Doe the branch should be called `jd--team7`.
+
+### **01** Frontend: Logging In
+
+Now that we have the ability to get a token from the server we should update our frontend. We need to create the UI for a user to Login and Register. You have probably noticed the hiker icon on the header of the Sleepoutside site. If you click on it you will notice a Login link.  There are two options for implementing our login. First we could go to a dedicated `login.html` page that has the form on it. The other is that we could use a dialog to show the login form. We will go with the dedicated page approach for this team activity. Because we need our login to be interactive, it is a perfect option for a component.
+
+You should have a login form component that were created in the [Svelte Practice](../../ponder/svelte-1) assignment. Create a file in your project (`js/components/Login.svelte`) and copy/paste the code in. We will also need a page for this. Create a new file `pages/login/index.astro` and add the code to setup the page. Insert the path for this new page in the `UserMenu` component. Check to make sure we can get to the new page and that the form shows. You may need to fix some styling issues to get it to look right.
+
+>If everyone in your group has lost their work from that Svelte Practice activity...🙄. Here is a Login component you can refer to for this activity...
+
+<Details summary="Emergency Login form">
+```js
+<script lang="ts">
+// what is this?  We give the option to pass a function into our login component that will get called on a successful login. If no function is passed it defaults to one that will redirect the user to another page (like Home).
+  let { onSuccess = (path) => { window.location.href = path;} } = $props<{
+    onSuccess?: (data: { email: string }) => void;
+  }>();
+
+  let email = $state("user@example.com");
+  let password = $state("");
+  let errorMessage = $state("");
+
+  function loginHandler(event: Event) {
+    event.preventDefault();
+    // Handle login logic here
+    if (email === "user@example.com" && password === "password") {
+      alert(`Email: ${email}\nPassword: ${password}`);
+      errorMessage = ""; // Clear error message on successful login
+      // Call the success callback with user data
+      onSuccess("/");
+    } else {
+      errorMessage = "Invalid email or password"; // Simulate a login error for demonstration purposes
+    }
+  }
+</script>
+
+<h2>Login</h2>
+{#if errorMessage}
+  <p class="error">{errorMessage}</p>
+{/if}
+<form onsubmit={loginHandler} class="login-form">
+  <label>
+    Email:
+    <input type="email" bind:value={email} required />
+  </label>
+  <label>
+    Password:
+    <input type="password" bind:value={password} required />
+  </label>
+  <button type="submit">Login</button>
+</form>
+
+<style>
+  .login-form {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    max-width: 300px;
+    margin: 2rem auto;
+    padding: 2rem;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+  }
+  label {
+    display: flex;
+    flex-direction: column;
+    font-weight: bold;
+  }
+  input {
+    margin-top: 0.5rem;
+    padding: 0.5rem;
+    font-size: 1rem;
+  }
+  button {
+    padding: 0.5rem;
+    font-size: 1rem;
+    cursor: pointer;
+  }
+  .error {
+    color: red;
+    margin-bottom: 1rem;
+    text-align: center;
+  }
+</style>
+```
+</Details>
+
+In order to get our login to actually work we need to do the following in the Login component (this is just a list of steps...implementation will follow...):
+
+1. When the "login" button is clicked in the form, grab the email and password that were entered and send them to the login endpoint of our server. (Make sure the server code is still running on the driver's machine.)
+2. If we provide a valid email/password, the server will send back a token and some user details in the response body. If the information is invalid we will get back an error response.
+3. If we get a token back from the server, store it in local storage so that we can use it for future requests. We also want to store the login state in a form that Svelte can read as well so that we can update parts of the UI to show that the user is logged in. We should show the user's name next to the hiker icon, and change the menu. If the user is not logged in...we should only show a login button. If they are logged in then we should show: Logout, Profile, and Orders.
+
+>How can we share information across different Svelte components? One common way would be to us a shared state variable. Remember that Svelte keeps track of changes to state variables and updates the view automatically for us.
+             
+### **02** Frontend: Finish the login component
+
+1. Create a file called `js/auth.svelte.ts` We will need three functions: `login(email, password)`, `logout()`, and `checkAuth()`.
+2. Create a $state variable called `userStore`. Initialize it to: `{isLoggedIn: false, user: {}, token: ""}`. this will keep track of the authentication state of our user. Export this variable.
+>You may have problems with Typescript and your state variable. We should probably create an interface to describe it. We need to make the `user` part of it optional since it will not be set if a user is not logged in.
+>
+>```js
+>interface UserStore {
+>  isLoggedIn:boolean,
+>  user?:{
+>      name:string
+>      email:string
+>      _id:string
+>  },
+>  token:string
+>}
+> export const userStore = $state( {isLoggedIn: false, user: {}, token: ""}) as UserStore;
+>```
+3. The `login` function should make a fetch call to our server with the email and password. The path will be the `users/login` endpoint we setup earlier. If the login is successful then update the `userStore` variable, then stash it into local storage so we can access it later on. 
+4. Once that is written import it into our `Login.svelte` component and use it in the `loginHandler` function. If we get back an error, show the error message in the `Login.svelte` component. If there is no error, then redirect the user to the Home page.
+5. The `logout` function should remove the token from local storage, clear out `userStore`, update the UI to reflect that the user is not logged in, and clear out any other information about the user (such as their name).
+6. The `checkAuth` function should check to see if there is a token in local storage, and if so set `userStore` so that the application knows that the user is logged in.
+7. If the login is successful we should also have the UI update to reflect that the user is logged in...put their name next to the hiker icon. (Remember svelte allows for conditional markup with the `{#if}` syntax). We should also update the link options in `UserMenu` Instead of showing "Login" we should show "Logout", "Orders", and "Profile"
+
+>Because we are building a multipage site, everytime we navigate to a new page it will forget that we are logged in. This is what the `checkAuth` function we wrote is for. Everytime a new page loads we need to check the Auth status and set the `userStore` variable accordingly. 
+>
+>Since we already have a component that gets loaded on each page (UserMenu) That would be a logical place to make this check. Unfortunately though we don't have any way to make sure that the `UserMenu` component finishes loading before another component loads...so we need another place.
+>
+>We have an old `main.ts` file that we aren't using anymore. Let's repurpose it. Change it to import and call our `checkAuth` function, then add it to our `Layout` so it runs on every page.
+
+If you get stuck you can refer to the code below. Don't just copy/paste it though. Figure out what is going wrong in your code and fix it!
+
+<Details summary="Login.svelte">
+```js
+<script lang="ts">
+  import { login, userStore } from "../js/auth.svelte.ts";
+  import { setLocalStorage } from "../js/utils.mts";
+
+  let {
+    onSuccess = (path) => {
+      window.location.href = path;
+    }
+  } = $props<{
+    onSuccess?: (data: { email: string }) => void;
+  }>();
+
+  let email = $state("test@test.com");
+  let password = $state("");
+  let errorMessage = $state("");
+  let redirectPath = "/";
+
+  async function loginHandler(event: Event) {
+    event.preventDefault();
+    // Handle login logic here
+    try {
+      const results = await login(email, password);
+
+      onSuccess(redirectPath);
+    } catch (error: any) {
+      console.log(error);
+      errorMessage = error.message;
+    }
+  }
+</script>
+
+<h2>Login</h2>
+{#if errorMessage}
+  <p class="error">{errorMessage}</p>
+{/if}
+<form onsubmit={loginHandler} class="login-form">
+  <label>
+    Email:
+    <input type="email" bind:value={email} required />
+  </label>
+  <label>
+    Password:
+    <input type="password" bind:value={password} required />
+  </label>
+  <button type="submit">Login</button>
+</form>
+
+<style>
+  .login-form {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    max-width: 300px;
+    margin: 2rem auto;
+    padding: 2rem;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+  }
+  label {
+    display: flex;
+    flex-direction: column;
+    font-weight: bold;
+  }
+  input {
+    margin-top: 0.5rem;
+    padding: 0.5rem;
+    font-size: 1rem;
+  }
+  button {
+    padding: 0.5rem;
+    font-size: 1rem;
+    cursor: pointer;
+  }
+  .error {
+    color: red;
+    margin-bottom: 1rem;
+    text-align: center;
+  }
+</style>
+```
+</Details>
+
+<Details summary="auth.svelte.ts">
+```js
+import { getLocalStorage, setLocalStorage } from "./utils.mts";
+const baseURL = import.meta.env.PUBLIC_SERVER_URL;
+
+interface UserStore {
+  isLoggedIn:boolean,
+  user?:{
+      name:string
+      email:string
+      _id:string
+  },
+  token:string
+}
+export const userStore = $state( {isLoggedIn: false, user: {}, token: ""}) as UserStore;
+
+export async function login(email:string, password:string) {
+  const res = await fetch(`${baseURL}users/login`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ email, password }),
+  })
+  const data = await res.json();
+  if(res.ok) {
+    userStore.user = data.user;
+      userStore.isLoggedIn = true;
+      userStore.token = data.token;
+      setLocalStorage("so-user", userStore);
+    return data
+  } else {
+    throw new Error(data.error.message);
+  }
+  
+}
+
+export function logout() {
+  userStore.user = undefined;
+  userStore.token = "";
+  userStore.isLoggedIn = false;
+  setLocalStorage('so-user', null);
+  // we should probably do something if they are on a protected page when they logout...
+}
+
+export function checkAuth() {
+  // really we are just initilizing our store with data from local storage. We aren't really checking to see if the token is still valid. That will happen the next time we try to use it.
+  // if we use it and get an error from the server, we should logout and clear our local storage. 
+    const userData = getLocalStorage("so-user");
+    // console.log(userData)
+    if(userData) {
+      userStore.user = userData.user
+      userStore.token = userData.token;
+      userStore.isLoggedIn = true;
+    } else {
+      userStore.isLoggedIn = false;
+      userStore.user = undefined;
+      userStore.token = "";
+    }
+    // the double bang !! turns a variable into a boolean this will return a true or false.
+    return !!userData;
+}
+```
+</Details>
+
+<Details summary="main.ts">
+```js
+import { checkAuth } from "./auth.svelte.ts";
+
+checkAuth()
+```
+Then add this line to the Head of Layout.astro:
+```html
+<script src="../js/main.ts"></script>
+```
+</Details>
+
+### **03** Frontend: Using the token for authorization
+
+Our last step is to use our authentication to protect access to certain pages and routes of our API. We did the backend part of this by creating the `users/protected` route. We will finish with the client side.
+
+1. Create two new files in your client code called `src/pages/profile/index.astro` and `src/components/Profile.svelte` with the following content (you should review the code in `Profile.svelte` and read the comments!):
+<Details summary="pages/profile/index.astro">
+```js
+---
+import Layout from "../../layouts/Layout.astro";
+import ProductList from "../../components/Profile.svelte";
+
+const title = "Profile";
+---
+
+<Layout title={title}>
+  <section class="profile">
+    <Profile client:load/>
+  </section>
+</Layout>
+
+```
+</Details>
+
+<Details summary="src/components/Profile.svelte">
+```js
+<script lang="ts">
+  import {userStore, logout } from "../auth.svelte";
+  import { onMount } from "svelte";
+  const baseURL = import.meta.env.PUBLIC_SERVER_URL;
+  let profile = $state("");
+
+  async function getProfile() {
+    const res = await fetch(`${baseURL}users/protected`, {
+      method: "GET",
+      headers: {
+        // This is how we pass our token to the server for protected routes.
+        Authorization: `Bearer ${userStore.token}`
+      }
+    });
+    if (res.ok) {
+      return res.json();
+    } else {
+      // if we get an error back...it means there is something wrong with our token and we should log the user out.
+      logout();
+    }
+  }
+  
+  async function init() {
+    profile = await getProfile();
+  }
+  onMount(init);
+</script>
+
+{#if userStore.isLoggedIn}
+  <p>{profile.message}</p>
+{:else}
+  <p>You must login to see this page</p>
+{/if}
+
+```
+</Details>
+4. Update the link in `UserMenu.svelte` to our new profile page.
+5. Clear out `so-user` from localstorage, and browse to `/profile/index.html`. You are not logged in so you should see the message "You must login to see this page". Login, then browse back to the Profile page. You should be able to see the message now. This isn't a great user experience however. It would be better if we automatically sent the user to the Login page when needed...and then brought them back to where they were trying to go. We need a smarter redirect.
+
+### **04** Smart redirects
+
+Our authentication system is basic...but functional. There are many ways to improve this system, one of those is the ability to redirect intelligently.
+
+1. On our protected Profile page, we should check to see if the user is logged in when we mount the component. If they are not logged in we need to send them to the login page, and keep track or where we were. A URL search parameter works well for this. Since currently we only really check the validity of a token when we use it, lets add a bit more logic to our  `getProfile` function.
+
+```js
+async function getProfile() {
+    console.log(userStore.token);
+    const res = await fetch(`${baseURL}users/protected`, {
+      method: "GET",
+      headers: {
+        // This is how we pass our token to the server for protected routes.
+        Authorization: `Bearer ${userStore.token}`
+      }
+    });
+    if (res.ok) {
+      return res.json();
+    } else {
+      // if we get an error back...it means there is something wrong with our token and we should log the user out.
+      logout();
+      window.location.href = `/login/?redirect=${window.location.pathname}`;
+    }
+  }
+  ```
+
+  One line was all we needed to add.  If we are on the profile page, `window.location.pathname` will be set to `/profile/`. Now we just need to update the login page to use this when it redirects.
+
+  ```js
+
+let redirectPath = "/";
+// ... bunch of stuff ...
+onMount(() => {
+    // we added the getParam function to utils in Team 5
+    const param = getParam("redirect");
+    if (param) redirectPath = param;
+  });
+
+  ```
+
+  Test it out. Now if we goto the profile page when we are not logged in we will get sent to login automatically, and upon successful login we will get sent straight back. Very Nice.
+
+  There is one more enhancement we can make. Currently redirect only gets set on protected pages. What if a user was looking at a product page, then decided to login. It would send them home, when they would probably expect to go back to the product they were looking at. We can use `document.referrer` to fix this.
+
+  ```js
+  onMount(() => {
+    // we added the getParam function to utils in Team 5
+    const param = getParam("redirect");
+    if (param) {
+      // if the redirect param exists use that
+      redirectPath = param;
+    } else if (document.referrer != window.location.href) {
+      // otherwise send back to the referring page if set
+      redirectPath = document.referrer;
+    }
+    // otherwise redirectPath will stay "/" (send home)
+  });
+  ```
+
+  There is one more feature we really should add, but it will be left to the teams to implement this in a Trello card. We should harden up our checkAuth function. It should really communicate with the server to check to make sure the token stored in localStorage is still valid before trying to use it. The server will not give away any sensitive information, but it could cause confusion as the user might think they are logged in when it is actually expired.
+
+One other addition that will be left to a Trello card is the Register flow for creating new users.
+
+## Instructor's Solution
+
+As a part of this team activity, you are expected to look over a solution from the instructor to compare your approach to that one. One of the questions on the I-Learn submission will ask you to provide insights from this comparison.
+
+Please DO NOT open the solution until you have worked through this activity as a team for at least one hour. At the end of the hour, if you are still struggling with some of the core requirements, you are welcome to view the instructor's solution and use it to help you complete your own code. Even if you use the instructor's code to help you, you are welcome to report that you finished the core requirements, if you code them up yourself.
+
+After working with your team for the one hour activity, click here for the instructor's solution: [client](https://github.com/matkat99/sleepoutsideClient/tree/v2-team-07/src).
+
+## Make a pull request.
+
+After you have completed what you can, reviewed the instructor's solution, and gotten your code working, the driver should commit and push their changes (don't forget to lint and format your code before committing!), then submit a pull request for this branch. Then review the pull request as a team, close it, and merge the branch back into Main. Finally, someone should move the Trello card to "Done".
+
+## Submission
+
+When you have finished this activity, please fill out the assessment in I-Learn. You are welcome to complete any additional parts of this activity by yourself or with others after your meeting before submitting the assessment.

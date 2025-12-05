@@ -1,5 +1,5 @@
 ---
-title: Week 7 Exploration.
+title: Week 8 Exploration.
 
 time: 90min
 ---
@@ -9,8 +9,8 @@ time: 90min
 If you want to find your own sources and learn in your own way, here is the list of topics.
 
 1. Fetch and CORS
-2. Advantages and disadvantages of Single Page Applications (SPA)
-3. Forms and FormData
+2. Forms and FormData
+3. "this" in Javascript
 
 ## Reading
 
@@ -18,7 +18,8 @@ If you want to find your own sources and learn in your own way, here is the list
 
 1. Review [Fetch](https://javascript.info/fetch)
 2. Read [CORS](https://javascript.info/fetch-crossorigin)
-3. Read [How Single-Page Applications Work](https://blog.pshrmn.com/how-single-page-applications-work/)
-4. Read [The Problem with Single Page Apps](https://gomakethings.com/the-problem-with-single-page-apps/)
-5. Review [Form properties and methods](https://javascript.info/form-elements)
-6. Watch [Using FormData Objects Effectively](https://www.youtube.com/watch?v=GWJhE7Licjs) OR Read [FormData](https://javascript.info/formdata)
+3. Read [Object Methods, "this"](https://javascript.info/object-methods)
+    If the concept of `this` still is a bit unclear, you can continue with either this article: [This in Javascript](https://zellwk.com/blog/this/) OR this video [What is THIS in Javascript](https://www.youtube.com/watch?v=fVXp7ZWjlO4) (The concepts in the video are very well explained...but there are a
+            couple of 'bleeped' out profanities! )
+4. Review [Form properties and methods](https://javascript.info/form-elements)
+5. Watch [Using FormData Objects Effectively](https://www.youtube.com/watch?v=GWJhE7Licjs) OR Read [FormData](https://javascript.info/formdata)

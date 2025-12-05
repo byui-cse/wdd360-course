@@ -1,5 +1,5 @@
 ---
-title: Week 11 Exploration.
+title: Week 12 Exploration.
 
 time: 60min
 ---
@@ -10,7 +10,7 @@ If you want to find your own sources and learn in your own way, here is the list
 
 1. Testing code
 2. Writing Unit tests
-3. Integration Testing 
+3. Integration Testing
 
 ## Reading
 

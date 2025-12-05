@@ -1,0 +1,236 @@
+---
+title: Sleepoutside - Team 6
+description: Add Authentication.
+time: 2 hours
+---
+import Details from '../../../components/Details.astro'
+
+## Overview
+This activity will continue our work from the previous activity and setup authentication/authorization so that we can protect some of our routes and pages.
+
+## Instructions
+Complete the following assignment as a team. Designate one team member as the "main driver" and collaborate on their copy of the code. Everyone on the team should be actively engaged in writing the code and contributing to the solution. Once the solution is working, make sure that everyone on the team gets a copy of the code. Each week let someone else be the "main driver" of the coding.
+
+There are many spots where code examples have been given. To get the most out of this activity, do not look at the examples until your group has given that section a try. Then after you look at the example, resist the temptation to copy/paste. Use the examples to get correction, or help you get unstuck...do not just use them to get it done.
+
+>If you suddenly find that you cannot get your server to start it may be because of MongoDB. When you setup your project you had to allow network access to your database from your current IP address. If your IP address changes (which can happen often with home internet connections) you may need to update the IP address in your MongoDB Atlas dashboard. Log into your account, go to Network Access, then update the IP address to your current one.
+>You may need to do this for both home and on campus.
+
+## Core Requirements
+
+The driver should visit the team's copy of the Trello board for the project. Add each of the attending team members to the "Team6" task...then move it to 'Doing'. Read the details of the card together.  
+  
+>At least one member of the team needs to have finished the [Svelte Practice](../../ponder/svelte-1) assignment before you proceed!
+
+The driver should make sure to `pull` any changes from GitHub before proceeding. Next they should create a new branch of the server and client repos called `initials--team6`. So if the driver's name were John Doe the branch should be called `jd--team6`.
+
+### **01** Server: Token Based Authentication
+
+Before we go much farther on creating the rest of the API routes we need to do some work on security. Some of our routes for example need to be protected so that only people we approve can use them. We don't want people to be able to just go in and mess with our data.
+
+We will be using JWT (JSON Web Tokens) as our method of authorization. We can generate these tokens on the server and then send them back to the client so they can use it in their requests. This way we don't have to worry about sending passwords or other sensitive information over the wire.
+
+Most of the work in generating the token will be handled by a module, [jsonwebtoken](https://www.npmjs.com/package/jsonwebtoken). You should open that link and keep it handy as you proceed. To generate a token we need to do the following:
+
+1. Install jsonwebtoken as a dependency in package.json. (don't forget the types as a dev dependency as well)
+2. Add two new variables to the `.env`: `JWT_SECRET` and `JWT_EXPIRES_IN`.  The secret can be anything you want, let's set the expires in to 300s initially while testing. You will want to make it longer or shorter later depending on what you are testing and how quickly you want the token to expire.
+3. Create a few new files: `src/routes/user.routes.mts`, `src/models/user.model.mts`, and `src/services/user.service.mts`
+4. Create the `getUserByEmail()` function in `user.model.mts`. This function should make a call to mongoDB to retrieve a user by their email address. You can use the `findOne()` method on the collection to do this.
+5. We need a function to do the actual work of generating a token. Create a function called `generateToken(user)` in `utils.mts` that takes in an object with the user id and email and returns a token. The jsonwebtoken library will do most of the work for us. Check out the `sign()` method in the `jsonwebtoken` documentation for more details. Also note that for `sign()` we need to provide a secret key and an expiration time. Since we will need that secret in other places later...we stored it in the `.env` file and read it in here. You can use `process.env.JWT_SECRET` to get the value. Make sure to also read in the expiration time as well.
+>We can store information about the user in the token. For now we will just use the users `email` and `_id`.
+>
+>To create the token we import in the library (`import jwt from 'jsonwebtoken'`) then call the `sign()` method on that object. The first argument will be our payload (the data we want to store in the token: email and _id), and the second argument will be our secret, and finally any options like `expiresIn` (`jwt.sign(user, SECRET_KEY, { expiresIn: TOKEN_EXPIRATION_TIME })`)
+
+<Details summary="A note about types">
+You will probably have typescript complaining about the `expiresIn` value. If you dig into the error message popup you will find that `expiresIn` is supposed to be of type `Number | StringValue` The only problem is we have no idea what a `StringValue` is, and the types package for jsonwebtoken ([@types/jsonwebtoken](https://www.npmjs.com/package/@types/jsonwebtoken?activeTab=code)) doesn't help us out much.
+
+In the `index.d.ts` file we find this line: `import type { StringValue } from "ms";`. What the heck is `ms`?  turns out it is another @types package. It seems that the jsonwebtoken package should have handled this better for us. We have a few choices here. 
+
+1. We could add `@types/ms` to our project, import the `StringValue` type from it and appropriately type our expires in variable. But you would have to spend a bit of time to figure out that you needed to do this.
+2. We could type expires as a number and restrict ourselves to reporting our times in seconds so "10m" = 600 But that will cuase problems as well since variables from the .env file always come in as strings...
+3. We could hard code our expires time in the function call: `{expiresIn: "10m"}`... but this should really be in our .env
+4. The last is to just make the type of that variable `any`.
+    `const expires =  process.env.JWT_EXPIRES_IN || '10m' as any;`
+
+We should be careful reaching for the `any` type, but I think it's justifiable here.
+
+Oh and there might be one more type error. The SECRET is not allowed to be null. So you might have to do something like this: `const secret = process.env.JWT_SECRET || "secret"`
+
+</Details>
+6. In `user.routes.mts` create a `login` route. You can use the following as a template:
+```js
+router.post('/login', async (req, res, next) => {
+    // get the email and password from the body of the request
+  
+  // sanitize them
+
+  // call the service function, pass in the email and password.
+  // the service function should return a valid user and token  or null for either
+    
+    // forward a 401 error if either is null
+   
+    // if both values exist, Send back the token and some user info in the response 
+    // { token, user: { _id: user._id, email: user.email, name: user.name } }
+});
+```
+
+7. Create a function in `user.service` to handle the login process. Some boilerplate has been provided again:
+```js
+function login(email:string, password:string) {
+  // Check if the user exists in the database. the user will be providing an email as identifier...so we will need a function in the model to retrieve a user by email
+  let user: User | null = null;
+  let token = null;
+  const user = await userModel.getUserByEmail(email);
+    // check to see if a user was found, ANd that the password provided matches the one returned from the database. Remember that the password in the database is hashed and salted...so we need to use argon2 to verify it "argon2.verify(password, passwordHash)"
+    
+   // If the user exists and password matches...then generate a token using jsonwebtoken
+    // Send back the token and some user info to the route either or both could be null.
+};
+```
+8. Test!
+
+>You might be thinking "How can I test this? I have to make a POST request and send an email and password in the body of my request...". Luckily there are tools to help. Two popular ones are Postman and Thunder Client. Thunder Client is actually a VS Code extention. Let's use that one. Install the extention, then open it up. 
+>
+>Click "New Request". Change it to "POST", then enter the url for your server ie `http://localhost:3000/api/v1/users/login`. Then click on the "Body" tab and add some json `{"email": "test@test.com", "password": "123456"}`  Then click on the "Send" button and it should return either a token or an error message. Check your `initDB.js` file if you don't remember what your test user email and password are.
+>
+>Make sure as well that you added your user routes into your `routes/index` file.
+
+### **02** Server: Registering a new user
+
+Next we need to make it possible to register new users.
+
+1. Add a new route: `POST /users/` that takes in the email, password, and name from the body of your POST request. 
+2. Create a new function in the users model to create a new user in your database with the email, password, and name provided by the body of the POST request. You should probably check to see if the email already exists since those are supposed to be unique. Send back an error if they already exist. 
+3. Validate. We want to make sure that the correct information is provided when we create a user. If you take a look at the UserSchema in `json-schema.ts` you will see that we have some required fields and some optional ones. One of the reasons we wanted our schema in the JSONSchema format is that once there we can use it to validate input provided by our users.
+4. Install the `ajv`, `ajv-keywords`, and `ajv-formats` packages then add the types for Json-Schema: `(p)npm i -D @types/json-schema`.
+5. There is a very good chance we will want to validate more than just users in the future, so it would make sense to make our validation code reusable.Import the AJV packages into the `utils` file and do the initial setup.
+```js
+import Ajv from "ajv";
+import addFormats from "ajv-formats"
+import addKeywords from "ajv-keywords"
+import type { JSONSchema7 } from "json-schema"
+
+export function validator(schema:JSONSchema7 , data:Object) {
+    // for some reason typescript doesn't like this even though it is exactly how the documentation says to use these. We are just going to ignore the types for now 🤷🏻‍♂️
+    // @ts-ignore
+    const ajv = new Ajv();
+    // @ts-ignore
+    addFormats(ajv);
+    // @ts-ignore
+    addKeywords(ajv, "instanceof"); 
+    const validate = ajv.compile(schema)
+    if(!validate(data)) {
+        if(validate.errors) {
+            // validate.errors is an array.  I've never seen more than one error come back...but just in case we can map over it and pull out the message(s)
+            // We need to do this because our errorHandler is expecting a string...not an array of objects.
+            const message = validate.errors.map((error:any)=> error.instancePath+" "+error.message).join(", ");
+            throw new EntityNotFoundError({message:message, statusCode:400 });
+        }
+    }
+}
+```
+6. Add validation for the user in `user.service` and use it to create a new user if everything is valid. Make sure to hash the provided password before storing it in the database. You can use `await argon2.hash(password)` to do this. Your code should look something like this:
+```js
+const newUser = {
+        email,
+        password: hashedPassword,
+        name,
+        createdAt: new Date(),
+        modifiedAt: new Date()
+    }
+    
+    validator(UserSchema, newUser) //UserSchema needs to be imported from our json-schema file.
+    // create user
+```
+>Another Typescript note...
+>
+>You will need to make a couple of changes to the `json-schema.ts` file to get rid of all of the Typescript errors. Add the following to the top of that file:
+>```js
+> import type { JSONSchema7 } from "json-schema";
+>
+>// This extends the library's type definition to include your custom keyword
+>declare module "json-schema" {
+>  export interface JSONSchema7 {
+>    instanceof?: string | string[];
+>  }
+>}
+>```
+>Then find the UserSchema declaration (around line 129) and add the type to it: `export const UserSchema: JSONSchema7 = {`
+
+3. If there are no validation errors then create the user (you should probably create a function in the user.model to do this) and send back a success message.
+4. Test!
+
+>We are doing the minimum for authentication. We really should have ways to reset passwords if the use forgets and also have a way to delete an account. It's also common the validate email addresses to make sure they are real before enabling an account. All of these things and more are why people often look to pre-built solutions for identity management.
+>Not only that, but it is pretty common to give tokens short expiration times, but then refresh them each time they are used...so a user doesn't get 'logged out' while actively using a service...but if they stop using the service their token will expire. Look into "refresh tokens" if you want to learn more.
+
+### **03** Backend: Protecting a route
+
+Our last step is to use our authentication to protect access to certain routes of our API. We have two parts here...one on the backend and one on the frontend. We will start with the server side.
+
+We will use middleware to check certain requests for a token. If the token exists and is valid...we forward the request. If it is missing or invalid we throw an error.
+
+1. Create a file called `middleware/authorize.mts`. Copy the following into that file. Look over the code and make sure you understand what it does. It will give us some clues as to what we need to do on the frontend to make the request.
+<Details summary="authorize.mts">
+```js
+import type { Request, Response, NextFunction  } from 'express';
+import jwt from 'jsonwebtoken';
+
+// Define constants for secret key and token expiration time
+const SECRET_KEY = process.env.JWT_SECRET  || 'your-secret-key'; 
+
+// Create a middleware function to verify JWT tokens
+function authorize(req: Request, res: Response, next: NextFunction) {
+  // make sure there is an authorization header
+  const authHeader = req.headers['authorization'];
+  if (authHeader) {
+    // get the token from the header. It should look something like this:
+    // Bearer asdasdsdjhasdljkashdljsahdljshljhsaldjs
+    // we just want the second part so we split(" ")
+    const token = authHeader.split(' ')[1] || "";
+    // check for validity
+    jwt.verify(token, SECRET_KEY, (err, user) => {
+        if (err) {
+          //stop the request if the token is invalid
+            return res.status(403).json({ message: 'Forbidden' });
+        }
+        // set a copy of the user info from the token into locals so we can see it in the app.
+        res.locals.user = user;
+        next();
+     
+    } );
+  } else {
+    // stop the request if the token is missing
+    res.status(401).json({ message: 'Unauthorized' });
+  }
+}
+
+export default authorize;
+```
+</Details>
+2. Add a new route to Users: `GET /users/protected` We pass an id and it returns something...if a valid token is provided.
+```js
+// Protect a route with JWT authentication. Note the authorize middleware! Make sure to import it as well.
+router.get('/protected', authorize, (req: Request, res: Response) => {
+    console.log(res.locals.user)
+  res.json({ message: `Hello, ${res.locals.user.email}!` });
+});
+```
+3. Using Thunder Client again, test our protected route. Note that you will have to hit the login route first to get a token, then use that when you hit the protected route. Notice that there is an "Auth" tab where you can easily set the token. It should be type "Bearer".
+
+>Our authentication system is basic...but functional. There are many ways to improve this system, but for now it is good enough. We will be adding more features in the future.
+
+## Instructor's Solution
+
+As a part of this team activity, you are expected to look over a solution from the instructor to compare your approach to that one. One of the questions on the I-Learn submission will ask you to provide insights from this comparison.
+
+Please DO NOT open the solution until you have worked through this activity as a team for at least one hour. At the end of the hour, if you are still struggling with some of the core requirements, you are welcome to view the instructor's solution and use it to help you complete your own code. Even if you use the instructor's code to help you, you are welcome to report that you finished the core requirements, if you code them up yourself.
+
+After working with your team for the one hour activity, click here for the instructor's solution: [server](https://github.com/matkat99/sleepoutsideServer/tree/team-06/src)
+
+## Make a pull request.
+
+After you have completed what you can, reviewed the instructor's solution, and gotten your code working, the driver should commit and push their changes (don't forget to lint and format your code before committing!), then submit a pull request for this branch. Then review the pull request as a team, close it, and merge the branch back into Main. Finally, someone should move the Trello card to "Done".
+
+## Submission
+
+When you have finished this activity, please fill out the assessment in I-Learn. You are welcome to complete any additional parts of this activity by yourself or with others after your meeting before submitting the assessment.

@@ -1,0 +1,383 @@
+---
+title: Astro Introduction
+description: This activity will give some practice with using Astro to build out a basic website
+time: 1 hours
+---
+import Details from '../../components/Details.astro'
+import Figure from '../../components/Figure.astro'
+
+## Introduction
+
+You should have done some reading this week on different rendering patterns for web development. The most performant still to this day is plain old HTML/CSS, and Javascript. However in a world were much of the content on a site needs to change and adapt to new information or the actions of user, plain HTML,CSS, and Javascript can be tricky to implement in a way that is scalable and maintainable.
+
+To solve this a whole host of templating tools have been created to help take some of the monotonous work out of building static web pages. Some of these tools would run on a server and be used in a Server Side Rendered approach, others run wholly on the developers computer as a tool like Gatsby, Eleventy (11ty), or Astro. These tools use a Static site Generation (SSG) approach. The tool compiles itself out of the picture so that when you are done all that is left is HTML, CSS, and a little Javascript.
+
+Astro is a popular tool in this category and can be useful in a wide variety of situations. Especially with it's ability to have "islands" of interactivity that can be changed and updated on the fly.
+
+A very popular way to build web apps currently is by creating re-usable components. These components have all of the markup, styling, and functionality packaged up in an easy to use form. Astro is component based, which makes it easy to organize our site.
+
+## **01** Getting Started
+
+We should start by getting a local project setup that we can use to practice creating an Astro site. Open up VS Code to your sandbox project for the course. Then run the following commands:
+
+```bash
+(p)npm create astro@latest
+```
+
+When prompted enter the directory name you would like your project to live in...something like `astro-ponder` might work. Select "minimal template". Then you can go ahead and let it install the dependencies. It's up to you if you want to have it create a git repo for the project. (I created mine in a course sandbox directory I created earlier that is already a repo.)
+
+Next `cd` into the new directory and run: 
+
+```bash
+(p)npm run dev
+```
+
+This will start a local development server and open up a browser window to show you the default Astro app.
+
+>if you prefer using `pnpm` you can use that instead of `npm`. 
+
+Take a look at `index.astro` in the `src/pages` folder. This is the home page for the site. You can edit this file to change what is shown on the page. Try changing some of the text and see what happens in the browser.
+
+
+## **02** Create an Astro Component
+
+We often have parts of our site that show up more than once. For example you may have seen this show up in this course content a few times:
+
+<Details summary="Collapsible Details element">
+  Contents of the Details element
+</Details>
+
+This is what a normal unstyled details element looks like:
+
+<details style="padding:0; border:0">
+<summary>Unstyled</summary>
+More content
+</details>
+
+We can make this styled version easy to use wherever we want by turning it into a component.
+
+1. Create a new file called `src/components/Details.astro`. This will be our details component.
+2. Add the following to the top of the file (make sure to read the comments):
+```astro
+---
+// this section is called frontmatter. We can put javascript in here that will be used to help build the component
+// in order for the component to be reusable we will need to pass some information in when we use it. Information passed into components is usually called props
+// the next line will grab a prop called "summary", notice that the "class" attribute also gets passed as a prop. "...props" just forwards on any other attributes that may have been added
+const { summary, class: className, ...props } = Astro.props;
+---
+```
+3. Next add the following under the frontmatter (again, don't ignore the comments!): 
+```astro
+<-- This is an actual html element. Notice that we are using the props we gathered above. We can insert variables into our component by wrapping them in. { } -->
+<details class:list={[className]} {...props}>
+  <summary>{summary}</summary>
+  <!-- slot is a special element. Any children of our component will get inserted into the slot.  -->
+  <slot />
+</details>
+```
+4. Finally let's add some CSS. CSS added directly to a component is scoped to that component.
+```html
+<style>
+  details {
+    padding: 0.5em;
+    border: 1px solid;
+    margin-bottom: 1em;
+  }
+  summary {
+    cursor: pointer;
+    transition: transform 0.3s ease-in-out;
+    transform-origin: 0 50%;
+    list-style: none;
+    display: flex;
+    align-items: center;
+    gap: 0.5em;
+  }
+  details[open] summary {
+    transform: scale(1.1); /* Slightly scale up the summary */
+  }
+  details[open] > summary::before {
+    transform: rotate(90deg);
+  }
+  details > summary::before {
+    content: "\2794";
+    font-size: 1.5em;
+    line-height: 0;
+    padding-top: 4px;
+    transition: transform 0.2s;
+  }
+  details summary::marker,
+  details summary::-webkit-details-marker {
+    display: none;
+    content: "";
+  }
+</style>
+```
+5. Test the component by importing it into `pages/index.astro` and using it like any regular HTML element. 
+```html
+<Details summary="Astro Component" class="some-class" aria-label="component example">
+      <p>Child content</p>
+</Details>
+```
+
+Open your page, then inpect it in the developer tools. It's been converted back to plain old HTML!
+
+```HTML
+<details class="some-class" aria-label="component example" data-astro-cid-4jmmo4cq="">
+   <summary data-astro-cid-4jmmo4cq="">Astro Component</summary>  
+   <p>Child content</p>
+</details>
+```
+
+Note that our class and aria attribute got passed on!
+
+## **03** Create a layout
+
+Components can be used for larger parts of the page as well. In fact as we add pages to our site it would be nice if we could re-use the parts that are the same. Turns out we can...by creating a special component called a layout.
+
+1. Create a new file: `src/layouts/BaseLayout.astro` and copy the contents of `src/pages/index.astro` into it.
+2. Change the `body` to be this:
+```html
+<body>
+    <header>
+      <h1>Astro</h1>
+    </header>
+    <main>
+      <!-- the slot is where any children contents of this component will be placed. -->
+      <slot />
+    </main>
+</body>
+```
+3. Open `pages/index.astro` and remove most of the content. Keep the Details component we added in the last part.
+4. Import in the BaseLayout and wrap our remaining content in an instance of that element.
+```html
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+import Details from "../components/Details.astro";
+---
+
+<BaseLayout>
+<!-- Everything inside of the element will get inserted in to the <slot> we added above. -->
+  <Details
+    summary="Astro Component"
+    class="some-class"
+    aria-label="component example"
+  >
+    <p>Child content</p>
+  </Details>
+</BaseLayout>
+```
+5. Check your page in the browser...it should look just the same!
+
+## **04** Create more pages
+
+Let's add another page to the site. How about a "Contact Us" page. Now that we have our Layout this will be quick.
+
+1. Add a new file: `src/pages/contact.astro`
+2. Import the layout and use it.
+3. Inside the layout element we can add a title to see if things are working: `<h2>Contact Us</h2>`
+4. Browse to the page by typing it's path: `/contact`. You should see the headline. 
+>Note the page title in the tab however, then go back to the home page. They are the same. This is not good. Let's fix that, as well as get a simple navbar going. First the title
+5. Remember that we can pass information into components as props. We should pass the title of the page in to the `BaseLayout` component when we use it! Open `/pages/index.astro`. In the front matter add the following: `const title = "Home"`
+6. Update the line where we use the layout component to pass the variable title in: `<BaseLayout title={title}>`
+7. Open `src/layouts/BaseLayout.astro`. We need to catch the prop like we did earlier in the `Details` component we used. All the props live in a Global object in Astro: `Astro.props` We can use [destructuring](https://javascript.info/destructuring-assignment) to grab just the parts we want, and then use it in the template.
+```astro
+const { title } = Astro.props;
+___
+
+...
+ <title>Astro | {title}</title>
+
+```
+8. Add a title variable to the contact page as well. Then in the browser switch back and forth and make sure the title in the tab does change.
+
+
+## **05** Another component
+
+Let's create another component for our navigation. In fact let's create two: `Header.astro` and `HeaderLink.astro` In `Header` build out a basic navbar...do some styling as well.
+
+`HeaderLink` we are going to use to render the actual links. We are going to give it a super power...it will automatically style the active link for us! Build these two components now. *After* you have built yours you can take a look as the example below 
+
+>How can we figure out which page we are on? Turns out Astro keeps track of the current URL: `const { pathname } = Astro.url;`. We should be able to compare that to the `href` that we pass in!
+
+<Details summary="Header.astro">
+```astro
+---
+import HeaderLink from "./HeaderLink.astro";
+---
+
+<header>
+  <h1>Astro Demo</h1>
+  <nav>
+    <HeaderLink href="/">Home</HeaderLink>
+    <HeaderLink href="/contact">Contact</HeaderLink>
+  </nav>
+</header>
+
+<style>
+  header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  header a {
+    font-size: 1.2em;
+    padding-left: 1em;
+  }
+</style>
+
+```
+</Details>
+
+<Details summary="HeaderLink.astro">
+```astro
+---
+const { href, class: className, ...props } = Astro.props;
+
+const { pathname } = Astro.url;
+
+// note that this shows up in the console in VSCode. This code runs on the SERVER
+console.log(pathname, href);
+// This is a pretty basic check and might fail with more complex URLS, but it's enough to get us started.
+const isActive = href === pathname ;
+---
+
+<a href={href} class:list={[className, { active: isActive }]} {...props}>
+  <slot />
+</a>
+<style>
+  a {
+    display: inline-block;
+    text-decoration: none;
+  }
+  a.active {
+    font-weight: bolder;
+    text-decoration: underline;
+  }
+</style>
+
+```
+</Details>
+
+## **05** Collections
+
+Next topic for exploration: [Collections](https://docs.astro.build/en/guides/content-collections/). Astro has the ability to represent our content pages in code through a content collection. Collections can be built from a bunch of files in a directory, or from a query to an API server somewhere. We can then have Astro generate routes and pages for each item in the collection automatically!
+
+We must define our collections in Astro. It has two built in loaders: `glob` and `file`. `glob` would be used if we were looking at the files in a directory, and `file` in the case that the data we wanted was stored in a JSON file or something similar. You can also build custom loaders to pull data from external sources. We will start by pulling from a directory of markdown files.
+
+1. Create a directory called `src/content/posts/`. Create a few files in the directory: `post1.md`, `post2.md`, etc... The contents of the file can be something like this (Change the title for each file):
+```md
+---
+title: 'First post'
+description: 'Lorem ipsum dolor sit amet'
+pubDate: 'Jul 08 2025'
+---
+
+Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Vitae ultricies leo integer malesuada nunc vel risus commodo viverra. Adipiscing enim eu turpis egestas pretium. Euismod elementum nisi quis eleifend quam adipiscing. In hac habitasse platea dictumst vestibulum. Sagittis purus sit amet volutpat. Netus et malesuada fames ac turpis egestas. Eget magna fermentum iaculis eu non diam phasellus vestibulum lorem. Varius sit amet mattis vulputate enim. Habitasse platea dictumst quisque sagittis. Integer quis auctor elit sed vulputate mi. Dictumst quisque sagittis purus sit amet.
+```
+>If you have nver seen Markdown before it is a language designed to be quick and easy to write, and then converted into HTML. Here is a quick [markdown guide](../resources/markdown-style-guide)
+2. Create another file: `src/content.config.ts` and place the following into it. (Make sure to read the comments)
+```js
+import { defineCollection } from "astro:content";
+import { glob, file } from "astro/loaders"; 
+
+// we can create collections that load from markdown files...this is an example of how to do that.
+const posts = defineCollection({
+  loader: glob({ pattern: "**/*.md", base: "./content/posts" })
+});
+//make sure to export the collection to have it be available to use.
+export const collections = { posts };
+```
+3. Create two more files: `src/pages/posts/index.astro` and `src/pages/posts/[slug].astro`. Set both up to use the BaseLayout like the other pages we created.
+4. The index page will list out all of our posts. To do this we need to do two things. First we need to import in the `getCollection()` method from `astro:content` This is how we can get a hold of our collection. `const posts = await getCollection("posts");`
+5. Once we have the collection we can use it in the template. The collection is just an Array, so `map` is our friend here. Normally we would feed a template literal string into our map...and we could still do that, but Astro understands HTML as well. It uses a syntax similar to JSX.
+```js
+---
+import { getCollection } from "astro:content";
+import BaseLayout from "../../layouts/BaseLayout.astro";
+
+const posts = await getCollection("posts");
+const title = "Posts";
+---
+
+<BaseLayout title={title}>
+  <section>
+    <ul>
+      {
+        //note we are just returning HTML from our map function. With embedded content: {variable}
+        posts.map((post) => (
+          <li>
+            <a href={`/posts/${post.id}/`}>
+              <h4 class="title">{post.data.title}</h4>
+              <p class="date">{post.data.summary}</p>
+            </a>
+          </li>
+        ))
+      }
+    </ul>
+  </section>
+</BaseLayout>
+```
+6. Add your new page to the `Header` navbar to make it easy to browse to.
+7. Now we are ready to make the template that will be used to automatically generate a page for each item in our collection. To do this we need to use the [getStaticPaths](https://docs.astro.build/en/guides/content-collections/#building-for-static-output-default). That link has some example code that you should be able to modify to get your page working. If you get stuck see below.
+<Details summary="posts/[slug].astro">
+```astro
+---
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import { type CollectionEntry, getCollection, render } from "astro:content";
+
+export async function getStaticPaths() {
+  const posts = await getCollection("posts");
+
+  return posts.map((post) => ({
+    params: { slug: post.id },
+    props: { post }
+  }));
+}
+type Props = CollectionEntry<"posts">;
+
+const { post } = Astro.props;
+const title = post.data.title;
+const { Content } = await render(post);
+---
+
+<BaseLayout title={title}>
+  <h2>{post.data.title}</h2>
+  <Content />
+</BaseLayout>
+```
+</Details>
+
+## **06** Build
+
+Let's take a minute and run a build of our site. Stop your dev server if it is running (click into the terminal and press ctrl/cmd-c) and then run `(p)npm build` instead.  This will create a new directory called `dist` in your project. If you open that up you will find all the HTML and CSS pages your site needs to function. Open up the `posts` folder. There should be multiple files in there that were automatically generated. This is the code that will run in production. Sometimes our production and development code doens't work quite the same, and so Astro also has a `(p)npm preview` command we can run. This will serve the files out of the `dist` directory so we can check for anything that might be broken before we deploy our site.
+
+Note that the posts that we had when we built our site are all we have. If we added another Markdown file for a new post it will not automatically show up in production. We would need to do another build. This is one limitation of SSG sites. They take a snapshot of how things are at build time and do not reflect changes after that without another build.
+
+
+## **07** Islands 
+
+We have one last topic to cover. [Islands Architecture](https://docs.astro.build/en/concepts/islands/). It is basically taking a mostly static html and css site and inserting "islands" of interactivity as needed. In Astro often these "islands" will be instances of a Frontend Framework like Svelte, Vue, React, Solid, etc. But they can also just be areas of the page that we enhance by sending some extra clientside Javascript.
+
+We have been using Javascript in the Frontmatter of our components for most of this activity. An important thing to understand is that the Javascript in Frontmatter is considered server side code, and will not be sent to the browser. We also do not have access to client side APIs in Frontmatter, like `document`, `localStorage`, etc. How do we send Javascript to the browser then? The same way we always have...through `<script>` elements. 
+
+Let's say we want to pull a bit of information in real time from an API and display it. Maybe it's a shopping cart for example. This is not something we can pre-build with Astro as it will be different for each user and change at any time.
+
+1. Add a file: `src/js/cart.js`
+2. Add a variable that holds some dummy cart data:
+```js
+const cart = [
+  {id: 1, name: "Item 1", price:"10"},
+  {id: 2, name: "Item 2", price:"15"},
+  {id: 3, name: "Item 3", price:"12"}
+]
+```
+3. Write the code to build up some HTML around that data and insert into an element with an ID of `cart`.
+4. Create a new page: `src/pages/cart/index.astro` and add our layout. Also add a `<section id="cart">`
+5. Add a script element linking our `js/cart.js` to our new page.
+6. Test
+
+>One thing to be aware of. We have gotten used to adding things like `defer` or `type="module"` to our `<script>` elements. Do not do this in Astro. It will ignore the script element if you add anything but `src`. It will analyze the code and will add the other attributes as needed. See [Script Processing](https://docs.astro.build/en/guides/client-side-scripts/#script-processing) to learn more.
+
+## **08** Submit
+
+When you have completed the task, make sure to commit and push, then submit a link to your repository on the assignment submission page.
