@@ -1,0 +1,18 @@
+---
+title: Week 10 Teacher notes
+
+---
+
+This week the students will be preparing their proposals for the projects they will spend the rest of the semester building. Review the [Proposal guidelines](../../prove/team-project-proposal). This might also be a good time to recommend the help of AI. One of the big issues with using AI is keeping it focused. Providing the correct context, and keeping that context constantly in front of the AI agent is key to getting good results. Here is one way to do that using Github Copilot in VSCode:
+
+1. Have the students download this [boilerplate](/wdd360-project-base.zip) and open the project up in VSCode.
+2. We will be using the Copilot integration in VSCode. The student should be signed in to their Github account and have Copilot active.
+3. Point out the `.github` directory. First have them open and review the `chatmodes/PlanWithEdit.` file. This will create a custom agent that can be used when using Copliot Chat. The students might notice that there is already a Plan agent...but that agent cannot create files. It's nice to allow the plan agent to create the documentation files we will have it generate. Students can refine this file as needed.
+4. Then point out the `copilot-instructions.md` file. This is the constitution of our project. Copilot chat will refer back to this file every time it does something. This will help keep it on track. Students again should edit this file as needed. For example it currently makes a big deal about testing. The students may or may not want that.
+5. After reviewing the files and making any changes, open up Copilot chat, switch to the "PlanWithEdit" agent, and enter a prompt for an application. You can use the following for an example:
+>generate a project proposal in /docs for a web application that will allow for the entry and management of projects for a family owned cabin. A user should register with the site, then can login and create new projects, assign a project to themselves, or mark a project as completed. The application should allow for users to post announcements as well. Make sure to address the following points: A list of the core features you will implement, A list of additional features you may implement, Recommend project folder structure, the initial database schema, A list of the API endpoints that will need to be implemented.
+6. After the AI finishes generating the proposal the teams should **review it carefully**. They should continue to refine the proposal until in meets their needs. They can do this refinement either by editing the original prompt and trying again, or by asking the AI to make specific changes to the existing document. Model some of this.
+7. Once the team has a good proposal it would be good to then ask the AI to use the proposal as context to generate an implementation plan and a list of tasks that can be used in a project management tool like Trello or Jira.
+8. Copilot in VSCode does not have the ability to create images, but the proposal could be pasted into another AI tool in the browser to generate wireframes or mockups of the user interface if desired.
+
+>Make sure to stress the importance of reviewing and refining the AI generated content! The AI can be a great help, but it is not perfect and the students will need to ensure that the final proposal accurately reflects their vision for the project.

@@ -1,11 +1,7 @@
 ---
 title: Unit Three - SleepOutside
 summary: This unit will focus on finishing the Frontend and Backend of the SleepOutside retail web application. It will introduce a frontend framework - Svelte, and a component based approach to the design of our application.
-tags: [
-		 	frontend,
-			svelte
-			
-			]
+tags: [frontend,svelte]
 ---
 
 ## Prepare
@@ -17,11 +13,11 @@ tags: [
 
 ## Ponder
 
-- [Svelte practice](../../ponder/svelte-1)
-- [SleepOutside](../../ponder/sleepoutside)
-
-## Prove
-
+- [Svelte practice](../../ponder/svelte-editable)
 - [Team 5](../../prove/v2/team-5)
 - [Team 6](../../prove/v2/team-6)
 - [Team 7](../../prove/v2/team-7)
+
+## Prove
+
+- [SleepOutside](../../ponder/sleepoutside)

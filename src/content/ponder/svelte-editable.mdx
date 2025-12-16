@@ -1,0 +1,445 @@
+---
+title: Svelte Editable Components
+description: This activity will give some practice with using Svelte to create components by creating a reusable inline editable field component.
+time: 1 hours
+---
+import Details from '../../components/Details.astro'
+import Figure from '../../components/Figure.astro'
+
+## Introduction
+
+A very popular way to build web apps currently is by creating re-usable components. These components have all of the markup, styling, and functionality packaged up in an easy to use form. The `productDetails` module we made earlier followed this form to some extent. all we had to do to get a product to display with it's details was to call a function.
+
+Our module works, but has a few drawbacks with performance and implementation. Because it can be fairly difficult to solve those problems, and because almost everyone writing web applications runs into them many libraries and frameworks have been built to help.
+
+Part of your reading for this week was a [tutorial on Svelte](https://learn.svelte.dev/tutorial/welcome-to-svelte). Svelte is a framework for creating modern web applications with components. We will be using it in our project starting with this week to help us build our re-usable components.
+
+One nice thing about Svelte components is that they are file based. One file for all the HTML markup, CSS, and Javascript. Another nice thing is that the templates are mostly just HTML...with some Svelte specific templating additions.
+
+## **01** Getting Started
+
+We should start by getting a local project setup that we can use to practice creating Svelte components. This is pretty easy to do with a good build tool like Vite.  Open up VS Code to your sandbox project for the course. Then run the following commands:
+
+```bash
+npm create vite@latest svelte-ponder
+```
+
+When prompted select `svelte` as the framework, then typescript. Then `cd` into the new folder that was created. Next run:
+
+```bash
+npm install
+```
+This will install all the dependencies we need to get started. Finally run:
+
+```bash
+npm run dev
+```
+
+This will start a local development server and open up a browser window to show you the default Svelte app.
+
+>if you prefer using `pnpm` you can use that instead of `npm`. 
+
+Take a look at `App.svelte` in the `src` folder. This is the main component for the app. You can edit this file to change what is shown on the page. Try changing some of the text and see what happens in the browser.
+
+
+## **02** Create a Login component
+
+Before we create our editable components, let's start with a simple login form component. This will be a simple form with email and password fields and a login button.
+1. Create a new file called `src/lib/Login.svelte`. This will be our login component.
+2. Add a form with labels and inputs for email and password. Then add a button with the text `Log In`. Add an `onsubmit` attribute to the form that calls a function called `loginHandler` that we will create later.
+3. Add a `script` element and create the `loginHandler` function. We will not implement this fully today, but will just make the button log a message to the console when clicked.
+4. Add some basic styling to the component. You can add a `style` element to the component and add some CSS to style the form.
+5. Test the component by importing it into `App.svelte` and adding it to the template. You should see the form on the page and when you click the button it should log a message to the console.
+6. Try adding some basic validation to the form. For example, make sure the email is in a valid format and the password is at least 6 characters long. If the validation fails, display an appropriate error message below the form.
+
+
+## **03** Create the InlineField.svelte Component
+
+If we are making an app with CRUD (Create, Read, Update, Delete), it's not uncommon to have one page where the user can view the record, and then another where they edit it. Another common pattern is to allow the user to edit fields inline. This is a bit more complex to implement, but can provide a better user experience. We will start by creating a reusable component that allows for inline editing of a single field. We want to make sure we think about user experience and accessibility as we build this component. It should:
+- Display a label and a value
+- When the user clicks on the value, it should turn into an input field with the value pre-populated
+- The user should be able to edit the value and either save or cancel the changes
+- If the user saves the changes, the new value should be displayed
+- If the user cancels the changes, the original value should be displayed
+- The component should be accessible (e.g., keyboard navigable, screen reader friendly)
+- Typing `esc` should cancel the edit
+- Typing `enter` should save the edit
+- Leaving the input field (blur) should save the edit
+
+That is a lot to think about! This is where reusable components really shine. We can build this component once, then use it wherever we need it in our app.
+
+1. Create a file called `src/js/components/InlineField.svelte`.
+2. In the `script` element create the following variables using Svelte's `$props()` function:
+   - `label` (string): The label for the field
+   - `value` (string): The current value of the field
+   - `type` (string): The type of input field (e.g., text, number, date)
+3. Create a variable called `isEditing` (boolean) that will track whether the field is in edit mode or not. Initialize it to `false`. Remember that we will want the UI to change when this variable changes, so it needs to be reactive.
+4. In order to be able to revert changes if the user cancels, we need to keep track of the original value. Create a variable called `originalValue` (string) and initialize it to the value of the `value` prop.
+5. Begin making the template for the component. 
+    - The `label` should always be shown.
+    - If `isEditing` is true then we want to show either an input with the correct `type` set, or a `textarea`.
+    - Otherwise show a `p` with the `value` showing. 
+6. Add event handlers to the input/textarea to handle `blur`, and `click` events on the `p` element to switch to edit mode.
+7. Create functions to handle saving and cancelling edits. We can use `startEdit`, `commitEdit`, and `cancelEdit` functions for this.
+    - `startEdit`: sets `isEditing` to true and stores the current value in `originalValue`.
+    - `commitEdit`: sets `isEditing` to false.
+    - `cancelEdit`: sets `isEditing` to false and reverts `value` to `originalValue`.
+8. Create another component called `UserProfile.svelte` that will use the `InlineField` component to display and edit a user's profile information (e.g., name, email, bio).
+9. Test the component by importing it into `App.svelte` and adding it to the template. You should be able to click on the fields to edit them, and either save or cancel the changes. Make sure to include at least one text input and one textarea input to test both types.
+10. Add some styling to the component to make it look nice. Make sure to think about how your styling will let the user know that these are interactive elements that can be clicked on.
+
+>Remember to only look at the solution if you get stuck or have finished this section and want to compare your code. Do not copy/paste the solution. Figure out where you went wrong and fix your code!
+
+<Details summary="InlineField part one">
+
+```svelte
+<script lang="ts">
+  let {
+    label,
+    value = $bindable(),
+    type = "text"
+  } = $props<{
+    label: string;
+    value: string;
+    type?: "text" | "email" | "textarea";
+  }>();
+
+  let isEditing = $state(false);
+  let originalValue = value;
+ 
+  function startEdit() {
+    originalValue = value;
+    isEditing = true;
+  }
+
+  function commitEdit() {
+    isEditing = false;
+    
+  }
+  
+  function cancelEdit() {
+    value = originalValue;
+    isEditing = false;
+    
+  }
+
+  function onInputKeydown(e: KeyboardEvent) {
+    if (e.key === "Enter" && type !== "textarea") {
+      e.preventDefault();
+      commitEdit();
+    }
+    if (e.key === "Escape") {
+      e.preventDefault();
+      cancelEdit();
+    }
+  }
+</script>
+
+<div class="field">
+  <div class="label">{label}</div>
+  {#if isEditing}
+    {#if type === "textarea"}
+       <!-- did you remember to bind your value? If you don't then the input won't work! -->
+      <textarea
+        bind:value
+        onblur={commitEdit}
+        onkeydown={onInputKeydown}
+      ></textarea>
+    {:else}
+      <input
+        {type}
+        bind:value
+        onblur={commitEdit}
+        onkeydown={onInputKeydown}
+      />
+    {/if}
+  {:else}
+    <p
+      class="value"
+      onclick={startEdit}
+    >
+      {value}
+    </p>
+    
+  {/if}
+</div>
+
+<style>
+  .field {
+    margin-bottom: 1rem;
+  }
+  .label {
+    font-size: 0.75rem;
+    color: #666;
+  }
+  .value {
+    cursor: pointer;
+    padding: 0.25rem 0.5rem;
+  }
+  .value:hover {
+    background: #f5f5f5;
+  }
+</style>
+```
+</Details>
+
+## **04** Improving the user experience
+
+We have the basics done, but there are several ways we can improve the user experience. for example in the list above we mentined that we would like to allow the users to use the `enter` or `esc` keys to save or cancel edits. We can do this by adding a `keydown` event listener to the input/textarea elements.
+1. Open `InlineField.svelte` again.
+2. Add a `handleKeyDown` function that will check for the `Enter` and `Escape` keys.
+3. In the `handleKeyDown` function, if the `Enter` key is pressed, call the `commitEdit` function. If the `Escape` key is pressed, call the `cancelEdit` function.
+4. Test to make sure that pressing `enter` saves the edit and pressing `esc` cancels it on both an input field and a textarea field.
+> Did you notice anything on the textarea? Textareas handle the `enter` key differently than input fields. In a textarea, pressing `enter` creates a new line instead of submitting the form.  We don't want to lose this functionality. To handle this we can check to see if the element is a textarea before committing the edit on `enter`. If it is a textarea we can just let the default behavior happen. 
+
+## **05** Addressing Accessibility
+
+Our component is functional, but it would currently not be a good experience for someone using a screenreader or navigating the page with the keyboard instead of the mouse. For example, normally we would have a `<label>` element associated with each of our input/textarea elements. Because those inputs are not always on the screen we cannot do that in this case. So we will have to manually add those labels using the `aria-label` attribute. We also need to make sure that the paragraph we are using can be targeted by screen readers and the keyboard. In fact when we think about this through the lens of accessibility, we should think about whether a paragraph is the right element to use at all! A paragraph is supposed to just display text, not be interactive. And so it doesn't come with any of the accessibility features we would want for an interactive element. If we stick with the paragraph we would need to add `tabindex="0"` to make it focusable, and add `role="button"` to tell screen readers that it is interactive. We would also need to add keyboard event listeners to handle `enter` and `space` key presses to activate the edit mode. We are replicating a lot of functionality that we would get for free if we used a different element.
+
+A better choice would be to use an element that is intended to be interactive, like a `button` element. Buttons are interactive elements that can be focused and activated by keyboard and screen readers without any additional effort on our part. This will automatically improve the accessibility of our component.  Oh and one more thing we should do is address the `focus` of our interactive elements. When edit is enabled we should make sure the input/textarea is focused so the user can start typing right away. When edit mode is disabled we should make sure the button is focused so the user can easily re-enter edit mode if they want to.
+1. Open `InlineField.svelte` again.
+2. Change the `p` element to a `button` element.
+3. Add an `aria-label` attribute to the input/textarea elements that describes what they are for.
+4. Add another `aria-label` attribute to the button element that describes what it does (e.g., `Edit {label}`).
+5. Add a variable called `buttonRef` and use Svelte's `bind:this` directive to bind it to the button element.
+6. In the `commitEdit` and `cancelEdit` functions, after setting `isEditing` to false, call `buttonRef.focus()` to focus the button.
+7. Add an `autofocus` attribute to the input/textarea elements to automatically focus them when they are rendered.
+8. Update your styling to make sure the button looks like plain text when not in edit mode. Though still keep in mind that we need to communicate to our users that this is an interactive element.
+9. Test the component again to make sure everything still works as expected.
+
+<Details summary="Accessible InlineField">
+
+```svelte
+<script lang="ts">
+  let {
+    label,
+    value = $bindable(),
+    type = "text"
+  } = $props<{
+    label: string;
+    value: string;
+    type?: "text" | "email" | "textarea";
+  }>();
+
+  let isEditing = $state(false);
+  let originalValue = value;
+  let displayEl: HTMLElement | null = null;
+
+  function startEdit() {
+    originalValue = value;
+    isEditing = true;
+  }
+
+  function commitEdit() {
+    isEditing = false;
+    displayEl?.focus();
+  }
+
+  function cancelEdit() {
+    value = originalValue;
+    isEditing = false;
+    displayEl?.focus();
+  }
+
+  // if we kept the paragraph approach for display we would have to add this function to make it possible for keyboard users to be able to trigger our edit.
+  //   function onDisplayKeydown(e: KeyboardEvent) {
+  //     if (e.key === "Enter" || e.key === " ") {
+  //       e.preventDefault();
+  //       startEdit();
+  //     }
+  //   }
+
+  function handleKeydown(e: KeyboardEvent) {
+    if (e.key === "Enter" && type !== "textarea") {
+      e.preventDefault();
+      commitEdit();
+    }
+    if (e.key === "Escape") {
+      e.preventDefault();
+      cancelEdit();
+    }
+  }
+</script>
+
+<div class="field">
+  <div class="label">{label}</div>
+  {#if isEditing}
+    {#if type === "textarea"}
+      <textarea
+        bind:value
+        aria-label={label}
+        autofocus
+        onblur={commitEdit}
+        onkeydown={handleKeydown}
+      ></textarea>
+    {:else}
+      <input
+        {type}
+        bind:value
+        aria-label={label}
+        autofocus
+        onblur={commitEdit}
+        onkeydown={handleKeydown}
+      />
+    {/if}
+  {:else}
+    <!-- This is what our paragraph would end up looking like once we added everything we needed for accessibility -->
+    <!-- <p
+      class="value"
+      role="button"
+      tabindex="0"
+      aria-label={`Edit ${label}`}
+      bind:this={displayEl}
+      onclick={startEdit}
+      onkeydown={onDisplayKeydown}
+    >
+      {value}
+    </p> -->
+    <button
+      type="button"
+      class="value"
+      aria-label={`Edit ${label}`}
+      bind:this={displayEl}
+      onclick={startEdit}
+    >
+      {value}
+    </button>
+  {/if}
+</div>
+
+<style>
+  .field {
+    margin-bottom: 1rem;
+  }
+  .label {
+    font-size: 0.75rem;
+    color: #666;
+  }
+  .value {
+    cursor: pointer;
+    padding: 0.25rem 0.5rem;
+  }
+  .value:hover {
+    background: #f5f5f5;
+  }
+</style>
+```
+
+</Details>
+
+## **06** Form State Management
+
+In our current implementation, the `InlineField` component manages its own state for the field value. But to really use this component it would be combined with many others to build an entire form or profile page. That page will usually have the responsibility of tracking changes to all the inputs, and eventually saving the changes to a server. For example, what if a user changes two or three fields, and then changes their mind and wants to cancel all the changes? Or, how do we actually keep track of everything that has changed to be able to save the changes once the user is done editing?
+
+We handled part of this already. When we created our `InlineField` component we made `value` a prop. If you looked at either of the solutions above you may have noticed that we used Svelte's `$bindable()` function to make `value` bindable. This allows us to use Svelte's two-way binding feature to bind the value of the field to a variable in the parent component. This way, when the user edits the field, the changes are automatically reflected in the parent component! If you do not have that in your code, add it.
+
+For the rest we need to build out some functionality that can be used in any component that uses `InlineField`. Notice the goal...we would really like to be able to use this in *any* component that needs inline editing. So instead of adding the functionality directly to `UserProfile.svelte` we will create a new function that can be imported and used in any component.
+
+1. Open `UserProfile.svelte` that you created earlier.
+2. add a `user` object that we can use for testing. The object should have `name`, `email`, and `bio` properties.
+```js
+const user = {
+    name: "Jane Doe",
+    email: "jane@example.com",
+    bio: "Frontend developer who loves Svelte."
+  };
+```
+3. Create a new file called `src/components/useInlineEdit.svelte.ts`. Create and export a function called `useInlineEdit` that takes an object and a function as a parameter. This object will represent the data we are editing (e.g., the user profile). And the function will describe what should happen on a save.  You can use the following as a starting point:
+<Details summary="useInlineEdit function">
+
+```svelte
+export function useInlineEdit<T extends Record<string, any>>(
+  initial: T,
+  onSave: (value: T) => Promise<void> | void
+) {
+    // we need to keep track of the original value so we can revert if needed
+    // we also need to take the initial value and make a draft copy that we can edit...that is reactive.
+  const draft = 
+  let original = 
+
+// we can create a derived value that tells us if the draft has changes compared to the original. Why is this in a function? If we did it like this:
+//    const isDirty = $derived(SON.stringify(draft) !== JSON.stringify(original)) without the function then the value would be set once, when the component is created, and would never update. By using a function we ensure that it is re-evaluated whenever draft or original changes.
+// note that draft and original need to be reactive for this to work. That way if either of them changes the derived value will be re-evaluated.
+  const isDirty = $derived(
+    () => JSON.stringify(draft) !== JSON.stringify(original)
+  );
+
+
+  async function save() {
+    // call the onSave function with the draft value
+    
+    // update the original value to match the draft
+    
+  }
+
+  function cancel() {
+    // revert the draft to the original value
+   
+  }
+
+  function reset(newValue: T) {
+    // reset both the draft and original to the new value
+    
+  }
+
+    // we create a closure here that returns the draft, isDirty, save, cancel, and reset functions. This way we can use this functionality in any component that needs inline editing.
+  return {
+    draft,
+    isDirty,
+    save,
+    cancel,
+    reset
+  };
+}
+```
+</Details>
+4. Fill in the missing pieces of the function.
+5. Now go back to `UserProfile.svelte` and import the `useInlineEdit` function. We can use it like this: ` const edit = useInlineEdit(user, saveProfile);`
+6. Create a `saveProfile` function that will be called when the user saves their changes. For now, just have it log the new profile to the console.
+7. Update the `InlineField` components to bind their values to the corresponding properties on `edit.draft`.
+8. Add `Save` and `Cancel` buttons to the component that call `edit.save` and `edit.cancel` respectively. Only show the buttons if `edit.isDirty()` is false.
+9. Test the component to make sure everything works as expected. You should be able to edit the fields, and when you click `Save` the new profile should be logged to the console. If you click `Cancel` the changes should be reverted.
+
+As always only look at the solution if you get stuck or have finished and want to compare your code.
+
+<Details summary="UserProfile.svelte with useInlineEdit">
+
+```svelte
+<script lang="ts">
+  import InlineField from "./InlineField.svelte";
+  import { useInlineEdit } from "./useInlineEdit.svelte.ts";
+
+  const user = {
+    name: "Jane Doe",
+    email: "jane@example.com",
+    bio: "Frontend developer who loves Svelte."
+  };
+
+  async function saveProfile(updated) {
+    // add a short delay to simulate server latency
+    await new Promise((r) => setTimeout(r, 500));
+    Object.assign(user, updated);
+    console.log("Profile saved:", user);
+  }
+
+  const edit = useInlineEdit(user, saveProfile);
+</script>
+
+<h2>User Profile</h2>
+<!-- Composable -->
+<InlineField label="Name" bind:value={edit.draft.name} />
+<InlineField label="Email" type="email" bind:value={edit.draft.email} />
+<InlineField label="Bio" type="textarea" bind:value={edit.draft.bio} />
+
+{#if edit.isDirty()}
+  <button onclick={edit.save}>Save</button>
+  <button onclick={edit.cancel}>Cancel</button>
+{/if}
+```
+
+</Details>
+
+
+## **07** Submit
+
+When you have completed the task, make sure to commit and push, then submit a link to your repository on the assignment submission page.
