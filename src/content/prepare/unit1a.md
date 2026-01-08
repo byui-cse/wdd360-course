@@ -23,7 +23,7 @@ where you spend all your time for the week on concepts that you may have already
 
 - Read the Syllabus
 - Read through these tips for [Working with Groups](https://byui-cit.github.io/learning-modules/modules/general/team-work/) for more effective team projects
-- Read through this short article about [Managing the Modern Frontend Workflow](../resources/workflow-info-only)
-- Complete the [Course Setup](../resources/course-setup) activity
+- Read through this short article about [Managing the Modern Frontend Workflow](../../resources/workflow-info-only)
+- Complete the [Course Setup](../../resources/course-setup) activity
 - Complete [Introduction to Git](https://github.com/skills/introduction-to-github)
 - Finally read through this short article on [Github Flow](https://docs.github.com/en/get-started/using-github/github-flow)
