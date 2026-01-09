@@ -13,11 +13,11 @@ is designed to give you the flexibility to spend your time in the areas you need
 where you spend all your time for the week on concepts that you may have already mastered. This approach will frustrate some of you, but becomes very powerful once you adjust to it.
 >For example, you might read through the chapter on Functions and maybe the author's explanation left some questions in your mind about arguments. So you do a quick search which turns up this article about [How to Use ES6 Arguments and Parameters](https://www.smashingmagazine.com/2016/07/how-to-use-arguments-and-parameters-in-ecmascript-6/). Then you visit the list of exercises below and find this list of [JavaScript Functions](https://www.w3resource.com/javascript-exercises/javascript-functions-exercises.php) that will give you as much practice as you need writing functions that use arguments and parameters.
 >- Again, don't be afraid to find your own sources! Sometimes the way an author explains a concept will not compute with your brain. Go find another explanation! As a starting point, here are some additional resources you have free access to:
->    * [Modern Javascript Tutorial (javascript.info)](https://javascript.info) (SitePoint)
->    * [Eloquent JavaScript (EJS)](http://eloquentjavascript.net/index.html)
->    * [You Don't Know JS Yet](https://github.com/getify/You-Dont-Know-JS)
->    * [Exploring ES6](http://exploringjs.com/es6/index.html#toc_ch_overviews)
->    * [MDN Web Docs](https://developer.mozilla.org/en-US/)
+>   - [Modern Javascript Tutorial (javascript.info)](https://javascript.info) (SitePoint)
+>   - [Eloquent JavaScript (EJS)](http://eloquentjavascript.net/index.html)
+>   - [You Don't Know JS Yet](https://github.com/getify/You-Dont-Know-JS)
+>   - [Exploring ES6](http://exploringjs.com/es6/index.html#toc_ch_overviews)
+>   - [MDN Web Docs](https://developer.mozilla.org/en-US/)
 
 ## Reading
 
