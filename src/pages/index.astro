@@ -2,7 +2,7 @@
 import { SITE_TITLE, SITE_DESCRIPTION } from "../consts";
 import { getCollection } from "astro:content";
 import BaseLayout from "../layouts/BaseLayout.astro";
-const posts = await getCollection("semester");
+const posts = await getCollection("units");
 ---
 
 <BaseLayout title={SITE_TITLE} description={SITE_DESCRIPTION}>
@@ -73,7 +73,7 @@ const posts = await getCollection("semester");
       {
         posts.map((post) => (
           <li>
-            <a href={`/semester/${post.slug}/`}>
+            <a href={`/units/${post.id}/`}>
               <h4 class="title">{post.data.title}</h4>
               <p class="date">{post.data.summary}</p>
             </a>
