@@ -408,9 +408,9 @@ Go back to your frontend application and try adding a product to cart again. You
 
 Go to `models/types.mts` in your server code and copy the contents. Paste them into `js/types.mts` in your frontend code. Replace what was in there.
 
-Now you can open up `productDetails.mts` and you will notice that there is a red line under this portion of your template: `src="${product.Image}"`. If you hover over it you will see the following error message: "Property 'Image' does not exist on type 'Product'". Because we have updated the type for a Product, Typescript is helping to fix errors that have arisen from the updated data structure. Change `Image` to `images.` As soon as you put the dot you should see the valid options. Pick one...extra large would probably be good. Check the page in the browser again to make sure it is working.
+Now you can open up `cart.ts` and you will notice that there is a red line under this portion of your template: `src="${product.image}"`. If you hover over it you will see the following error message: "Property 'image' does not exist on type 'Product'". Because we have updated the type for a Product, Typescript is helping to fix errors that have arisen from the updated data structure. Change `image` to `images.` As soon as you put the dot you should see the valid options. Pick one...extra large would probably be good. Check the page in the browser again to make sure it is working.
 
-Oh, and you should go update `cart.ts` as well...it also uses the product image.
+Oh, and check the product detail page as well...it also uses the product image.
 
 >**Note** After this branch is merged back into main, each member of the team will need to run `(p)npm install` again after they pull `main` to get the cors package installed into their local environment.
 

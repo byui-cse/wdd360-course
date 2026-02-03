@@ -28,4 +28,4 @@ tags: [
 
 - [Team 1](../../prove/team-1)
 - [First Trello Card](../../ponder/first-trello-card)
-- [Team 2](../../prove/team-2)
+- [Team 2](../../prove/v2/team-2)

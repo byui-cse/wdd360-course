@@ -60,7 +60,13 @@ sleepAstro/
 
 ```
 
-We need to move some of our existing code into this new structure. Start by moving the contents of the `sleepoutsideClient/src/images` directory into the `sleepoutsideClient/sleepAstro/public` directory. Next move the contents of the `sleepoutsideClient/src/js` directory into a new directory called `sleepAstro/src/js`. Then move the contents of the `sleepoutsideClient/src/css` directory into a new directory called `sleepAstro/src/css`. Oh and we will need the files in the `json` directory as well. Move those into a new directory called `sleepAstro/public/json`. Finally move the contents of the original `sleepoutsideClient/src/public` directory into the `public` directory in the new Astro project.
+We need to move some of our existing code into this new structure. 
+
+1. Start by moving the contents of the `sleepoutsideClient/src/images` directory into the `sleepoutsideClient/sleepAstro/public` directory.
+2. Next move the contents of the `sleepoutsideClient/src/js` directory into a new directory called `sleepAstro/src/js`. 
+3. Then move the contents of the `sleepoutsideClient/src/css` directory into a new directory called `sleepAstro/src/css`. 
+4. Oh and we will need the files in the `json` directory as well. Move those into a new directory called `sleepAstro/public/json`. 
+5. Finally move the contents of the original `sleepoutsideClient/src/public` directory into the `public` directory in the new Astro project.
 
 The `sleepAstro/pages/index.astro` file is the main entry point for your website. In Astro, each `.astro` file in the `pages` directory corresponds to a route on your website. So `index.astro` will be served at the root URL (`/`).  If you open it up you might be surprised at how small it is.
 
@@ -93,7 +99,7 @@ Next copy/paste everything else from `sleepoutsideClient/src/index.html` into th
 5. We don't want all of our pages to have the same title. Currently the title is hardcoded in the `Layout.astro` file. We can make that dynamic by using a [prop](https://docs.astro.build/en/basics/astro-components/#component-props). In the frontmatter section of `Layout.astro` add the following line:
 
 ```astro
-let {title: string} = Astro.props;
+let {title} = Astro.props;
 ```
 Then change the contents of the `<title>` tag to be `<title>Sleep Outside | {title}</title>` Then open up `pages/index.astro` again and add a frontmatter section for the title prop, then use that prop in the `<Layout>` tag like this:
 
@@ -106,10 +112,10 @@ const title = "Home";
 ...rest of the page...
 </Layout>
 ```
-6. Fix the CSS. We could do this in a few different ways. One way would be to just change the link tag to point to the CSS file in `src/css` like this: `<link rel="stylesheet" href="css/styles.css" />`, but you might find that figuring out the right path can be tricky. Another way would be to import the CSS file directly into the Layout.astro file using an `import` statement in the frontmatter section. You can read about that [here](https://docs.astro.build/en/guides/styling/#importing-css). One big advantage about using the import is that Astro will optimize our CSS when we build the site for production. Let's go ahead and use that method. So remove the `<link>` tag and add the following line to the frontmatter section of `Layout.astro`:
+6. Fix the CSS. We could do this in a few different ways. One way would be to just change the link tag to point to the CSS file in `src/css` like this: `<link rel="stylesheet" href="css/style.css" />`, but you might find that figuring out the right path can be tricky. Another way would be to import the CSS file directly into the Layout.astro file using an `import` statement in the frontmatter section. You can read about that [here](https://docs.astro.build/en/guides/styling/#importing-css). One big advantage about using the import is that Astro will optimize our CSS when we build the site for production. Let's go ahead and use that method. So remove the `<link>` tag and add the following line to the frontmatter section of `Layout.astro`:
 
 ```javascript
-import '../css/styles.css';
+import '../css/style.css';
 ```
 
 Fire up your site by running `(p)npm run dev` in the terminal. You should see your site looking just like before, but now using Astro!
