@@ -182,7 +182,7 @@ Astro by default runs in static generation mode. Meaning that for any components
 
 One really nice feature of Astro is that components can be selectively hydrated. To instruct Astro to do this we just need to add an attribute to the component when we use it. Like this: `<UserMenu client:load />`. That's it. Add that and check your page in the browser again. It should work on all pages now.
 
-### **05** Create a `ProductList` component
+### **06** Create a `ProductList` component
 
 Now that we can get the right data for our products, and have verified that Svelte is installed and working, we need to display them. Create a new file `js/components/ProductList.svelte` that we will use for the code to generate a list of product summary cards in HTML from an array. (It's common practice in most component based libraries to name components in this way. PascalCased...camelCased but capitalized).
 
@@ -233,7 +233,7 @@ We can add Javascript to our component with a `<script>` element. Your code thus
 >Reminder: we can embed variables into our template using the curly braces. This is similar to what we have done before with template literal strings. We just don't need the $ in this case or the backticks.
 
 
-### **06** Finish ProductList
+### **07** Finish ProductList
 
  As you think about how to build out our list it would be good to break it down into parts:
 
@@ -310,7 +310,7 @@ After reviewing the links above, update your template to use an `{#each}` block.
 
 At this point you should see a lot of copies of the same thing. We need to update our template to pull the information from our products list instead of having it hard coded like we currently do. Before we do that however...a product summary is something that we might want to use in other locations. We can create a new component to handle that and reuse it in other places. Let's do that now.
 
-### **07** Create a `ProductSummary.svelte` component
+### **08** Create a `ProductSummary.svelte` component
 
 Create a new file called `ProductSummary.svelte` in the components directory and refactor your code to make it work. You should pass the current product in as a prop.
 
@@ -324,7 +324,7 @@ Create a new file called `ProductSummary.svelte` in the components directory and
 
 Update the `ProductSummary` component to insert the correct variables into your template. Then test again to make sure everything is displaying correctly. Remember to remove the hard coded products in the `/index.html` file so we don't have any duplicates. Don't forget to insert in the product.id into the href in the link!
 
-### **08** Update the Astro collection
+### **09** Update the Astro collection
 
 Once you finish the product list page, if you try and click on most of the links they will be broken! There are two things going on. First click on on of the product links and look carefully at the URL...
 
@@ -351,7 +351,9 @@ const products = defineCollection({
 });
 ```
 
-### **09** Check to make sure nothing broke!
+>Note that we just added an environment variable to our local environment. If we do not also add this to Netlify then our production build will break on deploy. Add this environment variable to your Netlify settings but make sure to use the correct URL from Render. It should be something like `https://sleep-outside-api.onrender.com/api/v1/`
+
+### **10** Check to make sure nothing broke!
 
 Go through your application and test each page to make sure nothing broke with our refactoring. If you find any broken links, images, or functionality fix it!
 
