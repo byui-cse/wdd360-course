@@ -1,0 +1,127 @@
+---
+title: Week 06 Teacher notes
+
+---
+
+Back to Frontend this week and will be introducing a component based framework. The students are supposed to work thruogh the first half of a Svelte tutorial. I would suggest that you go through the tutorial yourself before the week starts so that you can help them with any issues they might run into.
+
+For the lab you might do something like this:
+
+1. Start by having the students open up the Svelte [REPL](https://svelte.dev/repl). This will allow you to introduce the components without having to worry initially about tooling.
+2. Start by explaining the parts of a Svelte component. Script, Markup, styles. Mention that one of the big things we gain from a tool like Svelte (and the other frontend frameworks) is <em>reactivity</em>. Make some changes to the default, add a style block, point out the JS variable that is inserted into the markup.
+3. Show how we can make a request to an API to bring some data in. You could use [https://dummyjson.com/posts](https://dummyjson.com/posts) to get some fake blog post records. Create a function to make the fetch, then you could make an `async init()` function, call init() directly, or you could introduce `onMount()`.
+4. The init function needs to do the following: get the posts data, and set a state variable called `filteredPosts` equal to the list of all the posts.
+5. Next talk about displaying the post. This is something we may want to do in multiple places, so we can create another component to make it easy to re-use. Add a new file called <kbd>Post.svelte</kbd>. Add a script block and a variable called `post` to act as a prop. Stop and talk about props. Then add some markup to display the post...something like
+```html
+<div>
+    <h2>{post.title}</h2>
+    <ul>
+    {#each post.tags as tag}
+        <li>{tag}</li>
+    {/each}
+    </ul>
+    <p>{post.body}</p>
+</div>
+``` 
+6. Next use an `{#each}` block and our new component to display the posts.
+7. You may want to stop and have the students create one more component `TagList.svelte` for practice. Then have them replace the code in Post.svelte with the new component.
+8. If you have more time Style the page, and if things go really well you could get an early start on binding and events and add a search field. (see week 5 for the code)
+
+See below for the finished code:
+```js
+<script>
+// App.svelte
+import Post from './Post.svelte';
+import {onMount} from 'svelte'
+
+// declare reactive variables
+let posts = [];
+let filteredPosts = [];
+    
+async function getPosts() {
+    const res = await fetch('https://dummyjson.com/posts/')
+    return res.json()
+}
+async function init() {
+    posts = await getPosts();
+    console.log(posts)
+    filteredPosts = posts.posts;
+}
+
+init()
+// 	onMount(init)
+</script>
+
+<main>
+<h1>My Blog</h1>
+
+<section>
+    <h2>Posts</h2>
+{#each filteredPosts as post}
+        <Post {post} layoutClass="post" />
+{/each}
+</section>
+</main>
+
+<style>
+main {
+    font-family: courier;
+}
+section {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1em;
+}
+h2 {
+    grid-column: 1/3;
+    justify-self: center
+}
+/* 	We want the parent to have layout control over the child. We can do this by passing a class (post) in as a prop, then add the :global flag to make this class able to apply */
+:global(.post) {
+    max-width: 66ch;
+    border: 1px solid
+    
+}
+</style>
+```
+```svelte
+<script>
+// Post.svelte
+<script>
+import TagList from './TagList.svelte';
+export let post = {};
+</script>
+
+<h2>
+    {post.title}
+</h2>
+<TagList tags={post.tags} />
+<p>
+{post.body}
+</p>
+ ```
+ ```svelte
+// TagList.svelte
+<script>
+export let tags = [];
+</script>
+
+<ul>
+{#each tags as tag}
+    <li>{tag}</li>
+{/each}
+</ul>
+
+<style>
+ul {
+    display: flex;
+    list-style-type: none;
+}
+li {
+    padding: .2em .5em;
+    border: 1px solid;
+}
+</style>
+```
+
+
