@@ -20,7 +20,7 @@ There are many spots where code examples have been given. To get the most out of
 
 The driver should visit the team's copy of the Trello board for the project. Add each of the attending team members to the "Team7" task...then move it to 'Doing'. Read the details of the card together.  
   
->At least one member of the team needs to have finished the [Svelte Practice](../../ponder/svelte-1) assignment before you proceed!
+>At least one member of the team needs to have finished the [Svelte Practice](../../../ponder/svelte-1) assignment before you proceed!
 
 The driver should make sure to `pull` any changes from GitHub before proceeding. Next they should create a new branch of the server and client repos called `initials--team7`. So if the driver's name were John Doe the branch should be called `jd--team7`.
 
@@ -28,7 +28,7 @@ The driver should make sure to `pull` any changes from GitHub before proceeding.
 
 Now that we have the ability to get a token from the server we should update our frontend. We need to create the UI for a user to Login and Register. You have probably noticed the hiker icon on the header of the Sleepoutside site. If you click on it you will notice a Login link.  There are two options for implementing our login. First we could go to a dedicated `login.html` page that has the form on it. The other is that we could use a dialog to show the login form. We will go with the dedicated page approach for this team activity. Because we need our login to be interactive, it is a perfect option for a component.
 
-You should have a login form component that were created in the [Svelte Practice](../../ponder/svelte-1) assignment. Create a file in your project (`js/components/Login.svelte`) and copy/paste the code in. We will also need a page for this. Create a new file `pages/login/index.astro` and add the code to setup the page. Insert the path for this new page in the `UserMenu` component. Check to make sure we can get to the new page and that the form shows. You may need to fix some styling issues to get it to look right.
+You should have a login form component that were created in the [Svelte Practice](../../../ponder/svelte-1) assignment. Create a file in your project (`js/components/Login.svelte`) and copy/paste the code in. We will also need a page for this. Create a new file `pages/login/index.astro` and add the code to setup the page. Insert the path for this new page in the `UserMenu` component. Check to make sure we can get to the new page and that the form shows. You may need to fix some styling issues to get it to look right.
 
 >If everyone in your group has lost their work from that Svelte Practice activity...🙄. Here is a Login component you can refer to for this activity...
 
@@ -109,7 +109,7 @@ You should have a login form component that were created in the [Svelte Practice
 ```
 </Details>
 
-In order to get our login to actually work we need to do the following in the Login component (this is just a list of steps...implementation will follow...):
+In order to get our login to actually work we need to do the following in the Login component (**this is just a list of steps...implementation will follow...**):
 
 1. When the "login" button is clicked in the form, grab the email and password that were entered and send them to the login endpoint of our server. (Make sure the server code is still running on the driver's machine.)
 2. If we provide a valid email/password, the server will send back a token and some user details in the response body. If the information is invalid we will get back an error response.
