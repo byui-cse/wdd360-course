@@ -1,0 +1,59 @@
+---
+title: Authentication with Better-Auth and MongoDB
+description: This activity will show how to implement authentication using Better-Auth in an Astro/Node stack with MongoDB Atlas
+time: 1 hours
+aiUsage: green
+---
+import Details from '../../components/Details.astro'
+import Figure from '../../components/Figure.astro'
+
+## Introduction
+
+You should have done some reading this week on OAuth. This specification allows for shared authentication services across applications. Implementing an Auth flow can be complex and time-consuming. So using an identity provider like Auth0, Okta, or Clerk can be a very attractive option. These services handle the complexity of authentication for you, allowing you to focus on building your application. They come with a downside however, you don't have full control over your data, and if your application gets big enough they can become expensive. They are very easy to set up and get going though!
+
+Another approach is to use an auth library like Better-Auth. Better-Auth provides code to help you implement your authentication locally in your app. The advantage to this approach is you have full control over your user data and can customize the authentication flow to your needs, without the complexity of building everything from scratch.
+
+In this activity, we will implement authentication in our Astro frontend and Node/Express backend using Better-Auth with MongoDB for data storage. This approach gives you the benefits of a solid auth library while maintaining complete control over your user data. Better-Auth handles the complexity of secure password hashing, token generation, and session management, so you don't have to implement these details yourself.
+
+## **01** Getting Started
+
+>Assume that your supervisor drops a new project on your desk that requires user authentication. You have heard about Better-Auth and think it might be a good fit for this project. You are given a simple starter template for the frontend and backend, but it does not have any authentication implemented yet. Your task is to set up Better-Auth on both the frontend and backend, and implement a basic login and registration flow.
+
+First you should download the [starter template](/better-auth.zip) and open it up in your code editor. The backend is a simple Node/Express server with a few routes set up, but no authentication. The frontend is an Astro project with Svelte components, but no auth logic.
+
+Whenever you are working in a new project it is important to spend some time exploring the codebase and understanding how everything is set up. Take some time to review the code and get familiar with the structure of both the frontend and backend. AI can be of help here. Try asking an AI agent to give you a high level overview of how the code is structured and how the different pieces fit together. Ask it to place that information into a file called `project-overview.md`. This will help you understand where to add the authentication logic and how to integrate Better-Auth into the existing codebase.
+
+The information in the `project-overview.md` file is probably more suited for your consumption that for an AI agent, so it would also be good to ask the AI to create a `copilot-instructions.md` file as well. This file will be referenced by the AI agent each time you ask it to advise you or make changes to the codebase. 
+
+You can create this file manually, or use the VSCode Copilot Chat to generate it for you. 
+
+1. Open up Copilot Chat in VSCode 
+2. Click on the Settings icon (gear), and choose "Instructions and Rules". Then select the "Generate agent instructions" option. This will create a new file called `.github/copilot-instructions.md` in the root of your project.
+3. Compare the `copilot-instructions.md` file with the `project-overview.md` file. The `copilot-instructions.md` file should be focused on giving instructions to the AI agent about how to make changes to the codebase, while the `project-overview.md` file should be focused on giving you an understanding of how the code is structured and how the different pieces fit together. You can edit both files as needed, but make sure to keep the `copilot-instructions.md` file focused on instructions for the AI agent.
+ 
+Follow the instructions in the `README.md` file in the root of the project to set up your development environment and get the server and client running. Make sure you can run both the frontend and backend without any errors before proceeding to the next step.  
+
+## **02** Better-Auth Setup
+
+>After completing the initial setup of the project you return to your supervisor. They explain that while the simple application currently allows a user to create a simple note that will be saved to a database, the plan is to have notes be associated with specific users. A user should be logged in to create a note, and they should only be able to see the notes that they have created.
+>
+>Step one in this will be to implement authentication. We will use Better-Auth to handle all of the authentication logic for us. We will need to set up Better-Auth on both the frontend and backend.
+>
+>After explaining the task you are sent back to your desk to get started. 
+
+Where to start? You should probably start by reviewing the Better-Auth documentation and getting familiar with how it works. Then you can start implementing the authentication logic in the backend. This will involve setting up the necessary routes for registration, login, and logout, and using Better-Auth's library to handle the authentication logic. Once the backend is set up, you can then move on to the frontend and use Better-Auth's client SDK to create a login form and handle user authentication on the client side.
+
+This is a common scenario when working on a new project. You are given a task to implement a feature that you are not familiar with, and you need to learn how to do it while also getting it implemented in a timely manner. In cases like this we are more concerned about getting the task done well, and less worried about the path you take to get there. This is where AI can be a great help. You can use an AI agent to help you understand the documentation, generate code snippets, and even review your code for potential issues. Just make sure to review and test any AI-generated code carefully before using it in your project!
+
+## **03** Submission
+
+Once you have implemented the authentication system using Better-Auth, you should test it thoroughly to make sure it works as expected. Try registering a new user, logging in with that user, and accessing protected routes to ensure that the authentication flow is working correctly. Once you are satisfied with your implementation, respond to the following questions:
+
+1. What were the biggest challenges you faced when implementing authentication with Better-Auth, and how did you overcome them?
+2. How does Better-Auth handle password hashing and token generation, and why is this important for security?
+3. What are the advantages and disadvantages of using a library like Better-Auth for authentication compared to implementing authentication from scratch or using a third-party identity provider?
+4. How did you integrate Better-Auth into the existing codebase, and what changes did you need to make to the frontend and backend to support authentication?
+5. If you were to implement additional features related to authentication (e.g., password reset, email verification, social login (OAuth)), how would you approach these using Better-Auth?
+6. How did you use AI to assist you in implementing authentication, and what were the benefits and limitations of using AI in this process?
+
+

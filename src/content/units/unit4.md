@@ -14,8 +14,9 @@ tags: [planning,
 
 ## Ponder
 
-- [Authentication with Clerk](../../ponder/clerk)
-- [Testing](https://byui-cit.github.io/learning-modules/modules/css/modals/ponder1/)
+- [Other Frameworks](../../ponder/other-frameworks)
+- [Authentication with Better-Auth](../../ponder/better-auth)
+- [Testing](../../ponder/testing)
 
 ## Prove
 

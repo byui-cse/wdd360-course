@@ -1,0 +1,323 @@
+---
+title: Testing Code
+description: This activity will discuss the importance of testing, types of testing, and how to implement testing in your projects. 
+time: 1 hours
+aiUsage: green
+---
+import Details from '../../components/Details.astro'
+
+## Introduction
+
+In this activity, you will learn *why* teams test software, how test-driven development (TDD) changes the way code is written, and how to write practical tests for web applications.
+
+By the end, you should be able to:
+
+- Explain why testing improves quality and team velocity.
+- Describe the difference between unit and integration tests.
+- Write unit tests with Vitest.
+- Write basic integration tests with Playwright.
+- Use AI effectively to generate, review, and improve tests.
+
+## **01** Why Testing?
+
+Testing is not just about finding bugs at the end. Good tests help you:
+
+- Catch regressions when refactoring.
+- Document expected behavior for future developers.
+- Move faster with confidence.
+- Reduce debugging time and production incidents.
+
+Think of tests as a *safety net*. If your codebase grows without tests, every change becomes riskier.
+
+### Test-Driven Development (TDD)
+
+TDD is a workflow where you write tests *before* implementation code.
+
+The TDD cycle is often called **Red → Green → Refactor**:
+
+1. **Red**: Write a failing test for desired behavior.
+2. **Green**: Write the simplest code to make the test pass.
+3. **Refactor**: Improve design while keeping tests passing.
+
+TDD pushes you to define behavior clearly and keep logic small and testable.
+
+## **02** Types of Testing
+
+In web development, these two are especially important:
+
+### Unit Testing
+
+- Tests a small piece of code in isolation (usually one function or method).
+- Fast and focused.
+- Great for business logic (formatters, validators, calculations, reducers, utilities).
+
+### Integration Testing
+
+- Tests how multiple parts work together.
+- For web apps, often includes UI + routing + network behavior in a realistic flow.
+- Slower than unit tests, but catches issues unit tests cannot.
+
+> Many teams also add end-to-end (E2E) tests. In this activity, we will use Playwright to cover browser-level integration flows.
+
+## **03** Unit Testing with Vitest
+
+### What to test (and what not to)
+
+Good candidates for unit tests:
+
+- Inputs and outputs of pure functions.
+- Edge cases (empty input, null/undefined, max/min values).
+- Error behavior (throws, rejects, validation failures).
+- Branches in conditional logic.
+
+Usually avoid unit tests for:
+
+- Framework internals.
+- Simple getters/setters with no logic.
+- Third-party library behavior you do not control.
+
+### Example: Function + Tests
+
+Suppose you have this function:
+
+```js
+export function formatPrice(cents) {
+	if (!Number.isInteger(cents) || cents < 0) {
+		throw new Error('Price must be a non-negative integer in cents')
+	}
+
+	return `$${(cents / 100).toFixed(2)}`
+}
+```
+
+Vitest tests:
+
+```js
+import { describe, it, expect } from 'vitest'
+import { formatPrice } from './formatPrice'
+
+describe('formatPrice', () => {
+	it('formats integer cents to dollars', () => {
+		expect(formatPrice(0)).toBe('$0.00')
+		expect(formatPrice(99)).toBe('$0.99')
+		expect(formatPrice(2599)).toBe('$25.99')
+	})
+
+	it('throws for negative values', () => {
+		expect(() => formatPrice(-1)).toThrow()
+	})
+
+	it('throws for non-integers', () => {
+		expect(() => formatPrice(12.5)).toThrow()
+	})
+})
+```
+
+Notice how each test checks one behavior and uses clear names.
+
+### Characteristics of strong unit tests
+
+- **Focused**: one behavior per test.
+- **Deterministic**: same result every run.
+- **Fast**: no real network/database dependence.
+- **Readable**: clear test names and setup.
+
+## **04** Integration Testing with Playwright
+
+Integration tests check realistic user workflows across components/pages.
+
+Example Playwright test for a login flow:
+
+```ts
+import { test, expect } from '@playwright/test'
+
+test('user can log in and see dashboard', async ({ page }) => {
+	await page.goto('http://localhost:4321/login')
+
+	await page.getByLabel('Email').fill('student@example.com')
+	await page.getByLabel('Password').fill('correct-horse-battery-staple')
+	await page.getByRole('button', { name: 'Sign In' }).click()
+
+	await expect(page).toHaveURL(/.*dashboard/)
+	await expect(page.getByRole('heading', { name: 'Dashboard' })).toBeVisible()
+})
+```
+
+### Good integration test targets
+
+- Critical user journeys (auth, checkout, assignment submission).
+- Interactions between UI and API.
+- Routing and page transitions.
+- Error handling states users actually see.
+
+## **05** Practice: Write Tests
+
+Complete the exercises below. Write the tests first, then implementation if needed.
+
+### Starter files
+
+Download the [starter code](/testing.zip) for this activity, extract it, and open the folder in your code editor. The `README.md` has instructions for running the tests. 
+
+Run tests with:
+
+```bash
+pnpm test:unit
+pnpm test:integration
+```
+
+Instructor solution tests are also included:
+
+- `tests/solutions/unit/calcSubtotal.solution.test.js`
+- `tests/solutions/unit/isValidPassword.solution.test.js`
+- `tests/solutions/integration/contact.solution.spec.ts`
+
+Run instructor solutions with:
+
+```bash
+pnpm test:unit:solutions
+pnpm test:integration:solutions
+```
+
+### Exercise A: Unit Tests (Vitest)
+
+Given this function:
+
+```js
+// src/utils/calcSubtotal.js
+export function calcSubtotal(items) {
+	return items.reduce((sum, item) => sum + item.price * item.qty, 0)
+}
+```
+
+Write at least **4 tests** that cover:
+
+1. Typical multiple-item cart.
+2. Empty cart.
+3. Item with zero quantity.
+4. Decimal prices.
+
+<Details summary="Possible test cases (show after you try)">
+
+```js
+import { describe, it, expect } from 'vitest'
+import { calcSubtotal } from './calcSubtotal'
+
+describe('calcSubtotal', () => {
+	it('calculates subtotal for multiple items', () => {
+		const items = [
+			{ price: 10, qty: 2 },
+			{ price: 5, qty: 1 }
+		]
+		expect(calcSubtotal(items)).toBe(25)
+	})
+
+	it('returns 0 for an empty cart', () => {
+		expect(calcSubtotal([])).toBe(0)
+	})
+
+	it('handles zero quantity items', () => {
+		const items = [
+			{ price: 10, qty: 0 },
+			{ price: 3, qty: 4 }
+		]
+		expect(calcSubtotal(items)).toBe(12)
+	})
+
+	it('supports decimal prices', () => {
+		const items = [
+			{ price: 2.5, qty: 2 },
+			{ price: 1.25, qty: 1 }
+		]
+		expect(calcSubtotal(items)).toBe(6.25)
+	})
+})
+```
+
+</Details>
+
+### Exercise B: Unit Tests for Validation Logic
+
+Given:
+
+```js
+// src/utils/isValidPassword.js
+export function isValidPassword(password) {
+	return (
+		password.length >= 8 &&
+		/[A-Z]/.test(password) &&
+		/[a-z]/.test(password) &&
+		/\d/.test(password)
+	)
+}
+```
+
+Write tests that prove:
+
+- It accepts a valid password.
+- It rejects short passwords.
+- It rejects missing uppercase/lowercase/number.
+
+### Exercise C: Integration Test with Playwright
+
+Write a test for a basic form page that should:
+
+1. Navigate to `/contact`.
+2. Fill name, email, and message.
+3. Submit form.
+4. Assert success message appears.
+
+Starter template:
+
+```ts
+import { test, expect } from '@playwright/test'
+
+test('contact form submits successfully', async ({ page }) => {
+	await page.goto('http://localhost:4321/contact')
+
+	await page.getByLabel('Name').fill('Ada Lovelace')
+	await page.getByLabel('Email').fill('ada@example.com')
+	await page.getByLabel('Message').fill('I enjoy this class!')
+
+	await page.getByRole('button', { name: 'Send' }).click()
+
+	await expect(page.getByText('Thanks for your message')).toBeVisible()
+})
+```
+
+## **06** Using AI Effectively for Testing
+
+AI can accelerate testing, but you need to guide it with clear expectations.
+
+### Prompt patterns that work well
+
+- “Generate Vitest unit tests for this function, including normal, edge, and failure cases.”
+- “Identify missing test cases for this test file and explain why each matters.”
+- “Refactor these tests to improve readability and remove duplication.”
+- “Create Playwright tests for this user flow: login → create item → delete item.”
+
+### Best practices when using AI for tests
+
+- Ask for **test intent** in plain language before code.
+- Verify generated assertions actually match business rules.
+- Keep flaky tests out: avoid arbitrary timeouts when possible.
+- Review selectors in browser tests (`getByRole`, `getByLabel`) for robustness.
+- Treat AI as a collaborator, not an oracle.
+
+## **07** Deliverable
+
+Submit:
+
+1. Your Vitest tests for Exercise A and B.
+2. Your Playwright test for Exercise C.
+3. A short reflection (4-6 sentences):
+	 - What was hardest to test?
+	 - What did tests reveal about your code design?
+	 - How did AI help (or not help) your process?
+
+## Wrap Up
+
+Testing is a core engineering skill. Strong developers do not just write code that works once—they write code that can be changed safely. Combining unit tests, integration tests, and thoughtful AI assistance will help you build web apps with confidence.
+
+
+
+
