@@ -64,7 +64,7 @@ We need to move some of our existing code into this new structure.
 
 1. Start by moving the contents of the `sleepoutsideClient/src/images` directory into the `sleepoutsideClient/sleepAstro/public` directory.
 2. Next move the contents of the `sleepoutsideClient/src/js` directory into a new directory called `sleepAstro/src/js`. 
-3. Then move the contents of the `sleepoutsideClient/src/css` directory into a new directory called `sleepAstro/src/css`. 
+3. Then move the contents of the `sleepoutsideClient/src/css` directory into a new directory called `sleepAstro/src/css`.
 4. Oh and we will need the files in the `json` directory as well. Move those into a new directory called `sleepAstro/public/json`. 
 5. Finally move the contents of the original `sleepoutsideClient/src/public` directory into the `public` directory in the new Astro project.
 
@@ -95,7 +95,7 @@ Next copy/paste everything else from `sleepoutsideClient/src/index.html` into th
 1. Remove the contents of the `<main>` element and replace it with `<slot />`. That will be provided by the individual page files.
 2. Remove the `<script>` tags that reference local JavaScript files. Remember that we only want to include things in the template that will be the same on every page. The JavaScript files will change on different pages.
 3. Update the paths in the header to the links that point to the home page and to the cart page. They will break on child pages if we leave them as relative paths. 
-4. Open 'pages/index.astro'. We will add the script tags for the JavaScript files we need for that page here. Add `<script src="../../js/main.ts"></script>` inside the `<Layout>` tags but before the `</Layout>` closing tag. Notice that we removed the `type="module"` attribute. Astro automatically adds that for us when it builds the site.
+4. Open 'pages/index.astro'. We will add the script tags for the JavaScript files we need for that page here. Add `<script src="../js/main.ts"></script>` inside the `<Layout>` tags but before the `</Layout>` closing tag. Notice that we removed the `type="module"` attribute. Astro automatically adds that for us when it builds the site.
 5. We don't want all of our pages to have the same title. Currently the title is hardcoded in the `Layout.astro` file. We can make that dynamic by using a [prop](https://docs.astro.build/en/basics/astro-components/#component-props). In the frontmatter section of `Layout.astro` add the following line:
 
 ```astro
@@ -194,7 +194,7 @@ const product = Astro.props;
 >Why `product.data.name`? If you look at the `getStaticPaths` function you will see that we are returning the entire product object as props. That object has a `data` property that contains all of the fields from the JSON file.
 >
 >Also, why no `$` before the curly braces? In Astro files you do not need to use the `$` like you do in normal template literals in JavaScript. 
-6. Update the title variable in the frontmatter section to use the product name: `const title = product.data.Name;
+6. Update the title variable in the frontmatter section to use the product name: `const title = product.data.name;
 7. Finally we need to update the links on the main page to point to our new dynamic product pages. Open up `src/pages/index.astro` and update the hrefs for each product link to point to the new dynamic route. For example, change this:
 
 ```html
