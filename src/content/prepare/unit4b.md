@@ -11,6 +11,8 @@ If you want to find your own sources and learn in your own way, here is the list
 1. JWT - JSON web tokens
 2. OAuth - Open authorization
 3. Implementing Authentication
+4. Setup your Team and project in the App we will be using to do reviews next week.
+   One person in your team should visit [Course-tools](https://course-tools.netlify.app/wdd360/). Make sure that the semester in the top right is showing the correct term. Go to Teams and create a team. Then create your project and attach your team to it. Make sure to include the URL to your hosted version and any notes that someone would need to successfully review your application. Please get this done before the end of this week so it is ready to be reviewed next week!
 
 ## Reading
 
