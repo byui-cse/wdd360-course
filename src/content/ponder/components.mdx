@@ -1,0 +1,552 @@
+---
+title: Custom Web Components
+description: This activity introduces custom web components, attributes, and shadow DOM, then has you refactor a plain JavaScript app to use components.
+time: 1 hours
+aiUsage: green
+---
+import Details from '../../components/Details.astro'
+
+## Introduction
+
+Custom web components let us create our own reusable HTML elements.
+
+If you have ever wished `<product-card>` or `<user-profile>` were real HTML tags, web components are how you build them.
+
+In this activity you will:
+
+- Learn what web components are.
+- Build a simple custom element.
+- Pass data into a component with an attribute.
+- Style a component using Shadow DOM.
+- Refactor a plain JavaScript app to use web components.
+
+## **01** What Are Web Components?
+
+Web components are a set of browser standards for building reusable UI pieces without a framework.
+
+The main parts are:
+
+1. **Custom Elements**: Define new HTML tags like `<hello-card>`.
+2. **Shadow DOM**: Encapsulate markup and CSS so styles do not leak in or out.
+3. **Templates** (optional but common): Reusable chunks of markup cloned into components.
+
+At minimum, you only need Custom Elements to get started.
+
+Here is the full boilerplate for a custom element with all the lifecycle hooks you are likely to use:
+
+```js
+class MyElement extends HTMLElement {
+  // ── Constructor ────────────────────────────────────────────────────────────
+  // Called when the element is first created (not yet in the page).
+  // Always call super() first. This is a good place to:
+  //   • Attach a shadow root with this.attachShadow({ mode: 'open' })
+  //   • Set up initial private state
+  //   • Create and append any static child elements that do not depend on attributes or external data
+  // Do NOT read attributes here — they are not reliably available yet.
+  constructor() {
+    super()
+    this._data = null
+  }
+
+  // ── connectedCallback ──────────────────────────────────────────────────────
+  // Fires every time the element is inserted into the DOM.
+  // This is the most commonly-used lifecycle method. Use it to:
+  //   • Read attributes and set up initial rendering
+  //   • Start timers, fetch data, or add event listeners
+  connectedCallback() {
+    this.render()
+  }
+
+  // ── disconnectedCallback ───────────────────────────────────────────────────
+  // Fires when the element is removed from the DOM.
+  // Use it to clean up anything that would otherwise leak:
+  //   • Remove event listeners attached to external targets
+  //   • Cancel timers or ongoing network requests
+  //   • Disconnect MutationObservers, ResizeObservers, etc.
+  disconnectedCallback() {
+    // cleanup goes here
+  }
+
+  // ── observedAttributes ────────────────────────────────────────────────────
+  // A static list of attribute names the browser should watch.
+  // Only attributes listed here will trigger attributeChangedCallback.
+  static get observedAttributes() {
+    return ['label', 'theme']
+  }
+
+  // ── attributeChangedCallback ───────────────────────────────────────────────
+  // Fires whenever a watched attribute is added, removed, or changed.
+  // The three arguments tell you exactly what changed and from/to what value.
+  // Use it to re-render or update only the part of the DOM that needs it.
+  attributeChangedCallback(name, oldValue, newValue) {
+    if (oldValue === newValue) return
+    this.render()
+  }
+
+  // ── render (custom, not a lifecycle hook) ──────────────────────────────────
+  // This is not a built-in method — it is a common pattern you will see in
+  // web component code to keep rendering logic in one reusable place.
+  render() {
+    const label = this.getAttribute('label') || 'default'
+    this.textContent = label
+  }
+}
+
+customElements.define('my-element', MyElement)
+```
+
+> Custom element names **must contain a hyphen** (`my-element`, not `myelement`). This prevents clashes with current or future built-in HTML tags.
+
+## **02** First Component: A Very Simple Example
+
+Create an `index.html` and add this code:
+
+```html
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Web Components - Simple Example</title>
+  </head>
+  <body>
+    <hello-card></hello-card>
+
+    <script>
+      class HelloCard extends HTMLElement {
+        constructor() {
+            super()
+            this.innerHTML = `<p>Hello from a custom element.</p>`
+
+        }
+        connectedCallback() {
+            // we don't really need this for this simple example, but this is where you would normally do setup that depends on being in the page, like reading attributes or adding event listeners.
+        }
+      }
+
+      customElements.define('hello-card', HelloCard)
+    </script>
+  </body>
+</html>
+```
+
+How it works:
+
+- `class HelloCard extends HTMLElement` creates your element class.
+- `constructor()` runs when the element is created. Here we set the initial content.
+- `connectedCallback()` runs when the element is added to the page.
+- `customElements.define('hello-card', HelloCard)` registers your tag name.
+
+## **03** Enhance It With an Attribute
+
+Now let us make the component customizable with a `name` attribute.
+
+Update the script:
+
+```html
+<script>
+  class HelloCard extends HTMLElement {
+    constructor() {
+      super()
+      // this is our basic template that does not depend on attributes. We will update the name slot in connectedCallback.
+      this.innerHTML = `<p>Hello, <span id="name">student</span>.</p>`
+        this.nameSpan = this.querySelector('#name')
+    }
+    connectedCallback() {
+      const name = this.getAttribute('name') || 'student'
+      this.nameSpan.textContent = name;
+    }
+  }
+
+  customElements.define('hello-card', HelloCard)
+</script>
+```
+
+Then use it like this:
+
+```html
+<hello-card name="Alex"></hello-card>
+<hello-card name="Sam"></hello-card>
+<hello-card></hello-card>
+```
+
+Notice that each instance can display different content.
+
+<Details summary="Optional challenge: respond when attribute changes">
+
+If you want updates when the attribute changes after initial render, use `observedAttributes` and `attributeChangedCallback`.
+
+```js
+class HelloCard extends HTMLElement {
+  static get observedAttributes() {
+    return ['name']
+  }
+
+  connectedCallback() {
+    this.render()
+  }
+
+  attributeChangedCallback() {
+    this.render()
+  }
+
+  render() {
+    const name = this.getAttribute('name') || 'student'
+    this.innerHTML = `<p>Hello, ${name}.</p>`
+  }
+}
+```
+</Details>
+
+## **04** Styling With Shadow DOM
+
+One of the biggest advantages of web components is style encapsulation.
+
+Update `HelloCard` to use Shadow DOM:
+
+```html
+<script>
+  class HelloCard extends HTMLElement {
+    connectedCallback() {
+      const name = this.getAttribute('name') || 'student'
+      const shadow = this.attachShadow({ mode: 'open' })
+
+      shadow.innerHTML = `
+        <style>
+          :host {
+            display: inline-block;
+            margin: 0.5rem;
+          }
+
+          .card {
+            font-family: Arial, sans-serif;
+            border: 2px solid #2c7a7b;
+            border-radius: 10px;
+            padding: 0.75rem 1rem;
+            background: #e6fffa;
+            color: #1f2937;
+          }
+        </style>
+        <div class="card">Hello, ${name}.</div>
+      `
+    }
+  }
+
+  customElements.define('hello-card', HelloCard)
+</script>
+```
+
+Try adding this to your page-level CSS:
+
+```css
+.card {
+  background: hotpink;
+}
+```
+
+It will **not** affect `.card` inside the component's shadow root.
+
+That is Shadow DOM style isolation.
+
+## **05** Slots Example: `callout-box`
+
+So far our examples have generated all of their own content. That is useful, but many realistic components need a mix of:
+
+- structure and styling provided by the component
+- content provided by whoever uses the component
+
+This matches how HTML elements normally work. The contents for the element are provided through children. With web components, children are passed through using **slots**.
+
+Let us build a small `callout-box` component that could be used for tips, warnings, or notes.
+
+Use it like this:
+
+```html
+<callout-box type="warning">
+  <span slot="title">Heads up</span>
+  Save your work before refreshing the page.
+</callout-box>
+```
+
+In this example:
+
+- the component controls the box layout and styles
+- the `title` slot lets us provide a heading
+- the default slot holds the main message
+
+### Build the component
+
+```html
+<script>
+  class CalloutBox extends HTMLElement {
+    constructor() {
+      super()
+      this.attachShadow({ mode: 'open' })
+
+      this.shadowRoot.innerHTML = `
+        <style>
+            /* :host refers to the custom element itself, so we can style it based on attributes or just set general styles for the element. */
+          :host {
+            display: block;
+            margin: 1rem 0;
+          }
+
+          .box {
+            border-left: 6px solid #2563eb;
+            background: #eff6ff;
+            color: #1e293b;
+            padding: 1rem;
+            border-radius: 8px;
+            font-family: Arial, sans-serif;
+          }
+
+          .title {
+            display: block;
+            font-weight: bold;
+            margin-bottom: 0.4rem;
+          }
+            /* :host([type='warning']) means "when this element has an attribute 'type' with the value 'warning', apply these styles". Since the attribute is on the custom element itself we have to use :host() to target it. */
+          :host([type='warning']) .box {
+            border-left-color: #d97706;
+            background: #fffbeb;
+          }
+
+          :host([type='success']) .box {
+            border-left-color: #059669;
+            background: #ecfdf5;
+          }
+        </style>
+
+        <div class="box">
+          <span class="title"><slot name="title">Note</slot></span>
+          <div class="content"><slot></slot></div>
+        </div>
+      `
+    }
+  }
+
+  customElements.define('callout-box', CalloutBox)
+</script>
+```
+
+How it works:
+
+- `<slot name="title">` creates a **named slot** for the heading.
+- `<slot></slot>` creates the **default slot** for the main content.
+- `:host(...)` lets us style the custom element itself based on attributes like `type="warning"`.
+- Shadow DOM keeps the internal box styles self-contained.
+
+>A word about `:host`
+>
+> `:host` is a special CSS selector that targets the custom element itself from within its shadow DOM. It allows you to apply styles to the component based on its attributes or state. 
+>
+>Why do we need `:host`? Because the styles inside the shadow DOM cannot directly target the custom element from the outside. If we were styling a normal `button` element we could write `button {}` directly as the selector. In this example the custom element is the `<callout-box>` element. We might be tempted to do the same thing with it, but that element does not exist inside the shadow DOM. If we try to style the whole element by doing `callout-box {}` it won't work, because we can't use `callout-box` as a selector from within the shadow DOM. The `:host` selector bridges that gap, letting us target the custom element container from within the shadow DOM.
+>
+>What about applying conditional styles based on the component's attributes? We can do that with `:host([attribute=value])`. For example, if we had the following HTML: `<button type="warning">`, we could write the following to select it: `button[type='warning']`. If instead we had `<callout-box type="warning">`, we would be tempted to try the same thing: `callout-box[type="warning"]`...but that will not work inside the shadow DOM! Instead we would use `:host([type='warning'])` to apply styles that depend on the component's attributes.
+
+Try a few versions:
+
+```html
+<callout-box>
+  <span slot="title">Note</span>
+  This is the default style.
+</callout-box>
+
+<callout-box type="warning">
+  <span slot="title">Warning</span>
+  Save your work before leaving this page.
+</callout-box>
+
+<callout-box type="success">
+  <span slot="title">Success</span>
+  Your profile was updated.
+</callout-box>
+```
+
+Why does this example need Shadow DOM? Without it, the classes like `.box`, `.title`, and `.content` could easily be affected by page-level CSS. Shadow DOM makes the component more reliable and reusable.
+
+## **06** Guided Practice: Word Count Component
+
+Build a component called `<word-count>` that can be dropped inside a container like `<section>` or `<article>`, then display how many words are in that parent element.
+
+### Goal
+
+Given markup like this:
+
+```html
+<article>
+  <h2>My Post</h2>
+  <p>This is a simple paragraph with some words.</p>
+  <word-count></word-count>
+</article>
+```
+
+The component should render something like: `Word count: 12`
+
+### Step-by-step guide
+
+Start simple and build it up one step at a time.
+
+1. Create the class and register it.
+2. In the `constructor`, do static setup only:
+   - Call `super()`.
+   - Create a label element (like a `<p>` or `<small>`).
+   - Add placeholder text such as `Word count: ...`.
+   - Append that label to the component.
+   - Test that the placeholder renders on the page before moving on to the next step.
+
+<Details summary="Step 2 check: class + constructor skeleton">
+
+```js
+class WordCount extends HTMLElement {
+  constructor() {
+    super()
+    this.output = document.createElement('p')
+    this.output.innerHTML = 'Word count: <span id="count">...</span>'
+    this.append(this.output)
+    this.countSpan = this.output.querySelector('#count')
+  }
+
+  connectedCallback() {
+    // add logic in the next steps
+  }
+}
+
+customElements.define('word-count', WordCount)
+```
+</Details>
+
+3. In `connectedCallback`, do dynamic work:
+   - Find the parent with `this.parentElement`.
+   - Read text from the parent.
+   - Clean and count the words.
+   - Update the label text with the final count.
+
+
+
+Now focus on the count logic.
+
+4. Get the source text:
+   - `const parent = this.parentElement`
+   - `const text = parent?.textContent || ''`
+5. Remove this component's own label from the text so it does not count itself.
+   - `String.replace(...)` is useful here.
+6. Normalize whitespace and split into words.
+   - `String.trim()` removes extra space at the edges.
+   - `String.split(...)` breaks text into an array.
+   - `split(/\s+/)` means split on one-or-more whitespace characters.
+7. Handle empty text safely.
+   - If the cleaned string is empty, the answer should be `0`.
+8. Render the final value.
+
+<Details summary="Step 2 hint: cleaning + counting snippet">
+
+```js
+const cleaned = text
+  .replace(/Word count:\s*\d+|Word count:\s*\.\.\./gi, '')
+  .trim()
+
+// if you haven't seen this below...it is called a ternary operator. It is a one-line if/else statement that says "if cleaned is not empty (?), split and count the words, otherwise (:) return 0". 
+const count = cleaned ? cleaned.split(/\s+/).length : 0
+```
+
+>`/\s+/` explanation:
+>
+>- `\s` means any whitespace character (space, tab, newline).
+>- `+` means one or more of those in a row.
+> So `split(/\s+/)` will split on any amount of whitespace, treating multiple spaces as a single separator.
+
+>`/Word count:\s*\d+|Word count:\s*\.\.\./gi` explanation:
+>
+>- This regex matches either:
+> 1. `Word count:` followed by optional whitespace (`\s*`) and a number (`\d+`) (the final count).
+> 2. `Word count:` followed by optional whitespace and `...` (the placeholder). A `.` in regex means "any character", so we escape it with `\.` to match a literal dot.
+>- The `|` means "or", so it matches either pattern.
+>- The `*` after `\s` means "zero or more whitespace characters", so it will match both `Word count: 12` and `Word count:    ...` with any amount of space in between.
+>- The `g` flag means "global", so it will replace all occurrences, not just the first one.
+>- The `i` flag means "case-insensitive", so it will match `Word count:`, `word count:`, etc.
+
+</Details>
+
+<Details summary="Full solution (compare after you try)">
+
+```js
+class WordCount extends HTMLElement {
+  constructor() {
+    super()
+    this.output = document.createElement('p')
+    this.output.innerHTML = 'Word count: <span id="count">...</span>'
+    this.append(this.output)
+    this.countSpan = this.output.querySelector('#count')
+  }
+
+  connectedCallback() {
+    const parent = this.parentElement
+    if (!parent) return
+
+    const text = parent.textContent || ''
+    const cleaned = text
+      .replace(/Word count:\s*\d+|Word count:\s*\.\.\./gi, '')
+      .trim()
+
+    const count = cleaned ? cleaned.split(/\s+/).length : 0
+    this.countSpan.textContent = count
+  }
+}
+
+customElements.define('word-count', WordCount)
+```
+
+</Details>
+
+<Details summary="Optional challenge: update automatically when content changes">
+
+Use a `MutationObserver` in `connectedCallback()` to watch the parent element and recalculate whenever text changes.
+
+Remember to disconnect the observer in `disconnectedCallback()` to avoid leaks.
+
+### What is a MutationObserver?
+A [MutationObserver](https://developer.mozilla.org/en-US/docs/Web/API/MutationObserver) is a built-in browser API that lets you watch for changes to the DOM. You can configure it to observe specific types of mutations, such as changes to child elements, attributes, or text content. When a mutation occurs, the observer calls a callback function where you can react to the change, such as by updating the word count in this case.
+
+An easy way to test this is to add the `contenteditable` attribute to the parent element in your HTML, like this:
+
+```html 
+<article contenteditable>
+  <h2>My Post</h2>
+  <p>This is a simple paragraph with some words.</p>
+  <word-count></word-count>
+</article>
+```
+
+That will allow us to change the contents inside the article just by typing. A simple example of using a MutationObserver to watch for changes in the parent element would look like this:
+
+```js
+connectedCallback() {
+  // ... existing setup code ...
+    // Create a MutationObserver to watch for changes in the parent element
+    this.observer = new MutationObserver(() => {
+      //the callback will run whenever a mutation (change) occurs, so in this case we want to re-calculate the word count.
+    })
+    this.observer.observe(parent, { characterData: true, childList: true, subtree: true })
+}
+disconnectedCallback() {
+  // Clean up the MutationObserver when the component is removed from the DOM
+  if (this.observer) {
+    this.observer.disconnect()
+  }
+}
+```
+
+>Why not just add a `input` event listener to the parent element? Because not all changes to the text content will come from user input events. 
+>
+>For example, if the text is updated programmatically with JavaScript (e.g., `parent.textContent = "New text"`), it would not trigger an `input` event. A MutationObserver will catch all changes to the DOM, regardless of how they occur, ensuring that the word count stays accurate in all cases.
+
+</Details>
+
+## **07** Next Step: Prove Activity
+
+You are ready for the implementation challenge.
+
+Continue in [Prove: Web Components Refactor](../../prove/components/) where you will take a plain JavaScript app and convert it to custom web components.
+
+Assume everything you built in this ponder activity as your foundation.
