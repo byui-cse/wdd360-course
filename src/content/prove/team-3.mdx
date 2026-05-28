@@ -372,7 +372,7 @@ export default {
 
 Open the Frontend code in a new editor window, and start up the development server. Currently the frontend is pulling data from a local json file. Now that we have a server setup with the ability to look up a product by its id, we need to update the code to pull from the backend server instead. 
 
-The first thing we need to do is to identify the URL for our API. We could hardcode this...but this value will usually change between development and production environments. Just like we used environment files in our server, they can be useful on the frontend as well. Vite will actually load and make our environment variables available to us. We can use the `process.env` object to access them.
+The first thing we need to do is to identify the URL for our API. We could hardcode this...but this value will usually change between development and production environments. Just like we used environment files in our server, they can be useful on the frontend as well. Vite will actually load and make our environment variables available to us. One difference between .env on the back end and frontend is where we find them. On the backend we used the `process.env` object. For the frontend we will find our variables in the `import.meta.env` object.
 
 1. Create a file called `/.env` in the 'root' directory. Add the following: `PUBLIC_SERVER_URL=http://localhost:3000/api/v1/`
 2. Open the `productData.mts` file up and add a variable towards the top. This will pull the URL from the .env file and make it available to use. We will need to do this slightly differently from on our server however. On the server the environment variables are found in `process.env`.  With Vite they are found in `import.meta.env`. So our variable declaration will look like this: `const baseURL = import.meta.env.PUBLIC_SERVER_URL;`
@@ -392,7 +392,7 @@ export async function findProductById(id:string) {
 
 Try going to one of the product detail pages. Then click on the "Add to Cart" button. This should make a call to our api. Check the console to see if your product showed up. You will find that nothing is showing! If you open up the Developer tools and go to the Network tab we can inspect the request. (If you don't see the request, refresh the page with the Network tab open) Find the line for our request. It should be red. This means that our request failed! Depending on which browser you are in the error will show up differently, but all of them should mention something called CORS.
 
-We are making a request from frontend Javascript from one origin (localhost:5173) to another origin (localhost:3000). This is called CORS, or Cross-Origin Resource Sharing.  CORS is governed by a security feature in browsers that prevents websites from making requests to other domains unless they have been explicitly allowed to do so. We have not allowed this on the server.
+We are making a request from frontend Javascript from one origin (localhost:5173) to another origin (localhost:3000). This is called CORS, or Cross-Origin Resource Sharing.  CORS is governed by a security feature in browsers that prevents websites from making requests to other domains unless they have been explicitly allowed to do so. We have not allowed this on our server.
 
 ### **07** CORS
 
@@ -413,6 +413,8 @@ Now you can open up `cart.ts` and you will notice that there is a red line under
 Oh, and check the product detail page as well...it also uses the product image.
 
 >**Note** After this branch is merged back into main, each member of the team will need to run `(p)npm install` again after they pull `main` to get the cors package installed into their local environment.
+
+>Each member of the team will also need to manually create their own `.env` file with the backend connection information. This file is not included in the repo and so it won't be automatically pulled down. 
 
 
 ## Instructor's Solution

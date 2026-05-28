@@ -25,7 +25,7 @@ The driver should make sure to `pull` any changes from GitHub before proceeding.
 
 ### **02** Refactor
 
-Create a new directory in `src/pages` called `product-list`, and create an `index.astro` file in it. Add the Layout to our new page to get the foundation up...header, footer, styles, etc. 
+Open up your Frontend project. Create a new directory in `src/pages` called `product-list`, and create an `index.astro` file in it. Add the Layout to our new page to get the foundation up...header, footer, styles, etc. 
 
 Go back to the Home page (`src/pages/index.astro`) and add a grid of 4 boxes, one for each category. (But don't delete the list of product links yet...we will need that markup later) They should look something like this:
 
@@ -89,7 +89,7 @@ pnpm astro add svelte
 
 We do need to finish up the work we started with the product listing page, but first let's just make sure we can get a Svelte component working in our project.
 
-On the Home page of our site, if you click on the hiker icon it will display a menu. This is a great candidate for a component. This needs to be on every page, and if we need to make changes to the menu it would be much nicer to make the change in one place and have it automatically update everywhere we use it. Below you will find the code for a Svelte component to create the User Menu. Create a new file in `js/components` called `UserMenu.svelte` and add the following code to it:
+On the Home page of our site, if you click on the hiker icon it will display a menu. This is a great candidate for a component. This needs to be on every page, and if we need to make changes to the menu it would be much nicer to make the change in one place and have it automatically update everywhere we use it. Below you will find the code for a Svelte component to create the User Menu. Create a new file in `src/components` called `UserMenu.svelte` and add the following code to it:
 
 <Details summary="UserMenu.svelte">
 
@@ -184,7 +184,7 @@ One really nice feature of Astro is that components can be selectively hydrated.
 
 ### **06** Create a `ProductList` component
 
-Now that we can get the right data for our products, and have verified that Svelte is installed and working, we need to display them. Create a new file `js/components/ProductList.svelte` that we will use for the code to generate a list of product summary cards in HTML from an array. (It's common practice in most component based libraries to name components in this way. PascalCased...camelCased but capitalized).
+Now that we can get the right data for our products, and have verified that Svelte is installed and working, we need to display them. Create a new file `components/ProductList.svelte` that we will use for the code to generate a list of product summary cards in HTML from an array. (It's common practice in most component based libraries to name components in this way. PascalCased...camelCased but capitalized).
 
 Add some initial HTML...something like `<h2>Products</h2>`, then add the code we need to mount the component to our `product-list/index.astro` page. You will do this just like we used the UserMenu component above.
 
