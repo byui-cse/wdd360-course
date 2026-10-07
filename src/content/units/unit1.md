@@ -1,12 +1,7 @@
 ---
 title: Unit One - Introduction and Setup
 summary: This unit will introduce the course. Teams will be formed and time will be spent discussing strategies for being successful in teams. We will also review using Javascript for client and server side applications.
-tags: [
-	Teamwork,
-	Git,
-	Project Management,
-	Review
-]
+tags: [Teamwork, Git, Project Management, Review]
 ---
 
 ## Prepare

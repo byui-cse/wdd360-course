@@ -1,9 +1,7 @@
 ---
 title: Unit Four - Final Project
 summary: This unit will allow the students to design and build a fullstack project of their choosing with a team.
-tags: [planning,
-		 	capstone
-			]
+tags: [planning, capstone]
 ---
 
 ## Prepare

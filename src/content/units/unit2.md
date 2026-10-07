@@ -1,12 +1,7 @@
 ---
 title: Unit Two - Database & API Development
 summary: This Unit will introduce NoSql databases and data models. Principles of good API design will also be learned.
-tags: [
-	API,
-	nosql,
-	rest,
-	rpc
-]
+tags: [API, nosql, rest, rpc]
 ---
 
 ## Prepare
